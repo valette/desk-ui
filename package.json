@@ -3,9 +3,14 @@
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
   "license" : "CECILL-B",
-  "version": "0.0.1",
-  "devDependencies": {},
+  "version": "0.2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/valette/desk-ui.git"
+  },
   "dependencies": {
+  },
+  "devDependencies": {
     "async": ">0.0.0",
     "brace": ">0.0.0",
     "browserify": ">0.0.0",
@@ -23,16 +28,13 @@
     "numeric": ">0.0.0",
     "operative": ">0.0.0",
     "pretty-data": ">0.0.0",
+    "qooxdoo" : "git://github.com/qooxdoo/qooxdoo#release_5_0_1"
     "random-js": ">0.0.0",
-    "shelljs": ">0.0.0",
     "socket.io-client": ">0.0.0",
     "three" : ">0.0.0",
     "uploadmgr": ">0.0.0",
     "vinyl-source-stream" : ">0.0.0",
     "webworkify": ">0.0.0"
-  },
-  "devDependencies": {
-    "qooxdoo" : "git://github.com/qooxdoo/qooxdoo#release_5_0_1"
   },
   "engines": {
     "node": "*"
