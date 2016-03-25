@@ -1,0 +1,72 @@
+{
+  "name"    : "desk-ui",
+
+  "include" :
+  [
+    {
+      "path" : "${QOOXDOO_PATH}/tool/data/config/application.json"
+    }
+  ],
+
+  "export" :
+  [
+    "api",
+    "api-data",
+    "build",
+    "clean",
+    "distclean",
+    "dependencies",
+    "fix",
+    "info",
+    "lint",
+    "migration",
+    "pretty",
+    "profiling",
+    "source",
+    "source-all",
+    "source-hybrid",
+    "source-server",
+    "source-server-reload",
+    "source-httpd-config",
+    "test",
+    "test-source",
+    "translation",
+    "validate-config",
+    "validate-manifest",
+    "watch"
+  ],
+  
+  "default-job" : "source-hybrid",
+
+  "let" :
+  {
+    "APPLICATION"  : "desk.ui",
+    "QOOXDOO_PATH" : "node_modules/qooxdoo",
+    "QXTHEME"      : "desk.ui.theme.Theme",
+    "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*", "${APPLICATION}.test.*", "${APPLICATION}.simulation.*"],
+    "LOCALES"      : [ "en" ],
+    "CACHE"        : "cache",
+    "ROOT"         : "."
+  },
+
+  "config-warnings" : 
+  {
+    "job-shadowing" : ["libraries"]
+  },
+
+  "jobs" :
+  {
+    "libraries" : 
+    {
+      "library" :
+      [
+        {
+          "manifest" : "lib/ui/Manifest.json"
+        },
+        {
+          "manifest"   : "node_modules/uploadmgr/Manifest.json"
+        }
+      ]
+    }
+  }
+}
