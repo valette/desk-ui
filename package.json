@@ -3,7 +3,7 @@
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
   "license" : "CECILL-B",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "repository": {
     "type": "git",
     "url": "git://github.com/valette/desk-ui.git"
@@ -43,6 +43,9 @@
     "transform": ["browserify-css"]
   },
   "scripts" : {
-    "build": "node lib/build.js"
+    "buildBrowserified": "node lib/build.js",
+    "buildQooxdoo": "python generate.py source && python generate.py build && python generate.py api",
+    "clean": "rm -rf build && rm -rf source/script/desk.ui.*",
+    "build" : "npm run clean && npm run buildQooxdoo && npm run buildBrowserified"
   }
 }
