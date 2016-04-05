@@ -746,8 +746,7 @@ qx.Class.define("desk.Actions",
 						alert (err);
 					}
 					console.log("Desk ready, baseURL : " + desk.FileSystem.getBaseURL());
-					console.log("actions (version " + settings.version + ")");
-					console.log(settings);
+					console.log("Settings : ", settings);
 					this.fireEvent('changeReady');
 				}.bind(this));
 
