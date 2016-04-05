@@ -48,6 +48,10 @@ qx.Class.define("desk.Actions",
 			};
 			if (typeof window.nw === 'undefined') {
 				console.log("powered by electron.js");
+				var ipcRenderer = require('electron').ipcRenderer
+				window.prompt = function(title, val) {
+					return ipcRenderer.sendSync('prompt', {title, val})
+				}
 			} else {
 				console.log("powered by nw.js");
 			}
@@ -118,13 +122,12 @@ qx.Class.define("desk.Actions",
 
 			if (options.listener) {
 				params.stream = true;
-				parameters.listener = desk.Actions.getInstance().__socket.on("actionEvent",
-					function (message) {
-						if (params.handle === message.handle) {
-							options.listener(message);
-						}
+				parameters.listener = function (message) {
+					if (params.handle === message.handle) {
+						options.listener(message);
 					}
-				);
+				};
+				actions.__socket.on("actionEvent", parameters.listener);
 			}
 
 			if (actions.__recordedActions && !actions.__rpcPresent) {
@@ -155,6 +158,25 @@ qx.Class.define("desk.Actions",
 		*/
 		getSettingsButton : function () {
 			return desk.Actions.getInstance().__settingsButton;
+		},
+
+		/**
+		* kills an action
+		* @param handle {String} action handle to kill
+		* @param callback {Function} callback when the action has been killed
+		* @param context {Object} optional context for the callback
+		*/
+		killAction : function (action, callback, context) {
+			desk.Actions.getInstance().killAction(action, callback, context);
+		},
+
+		/**
+		* Returns the JSON object defining a specific action
+		* @param name {String} the action name
+		* @return {Object} action parameters as a JSON object
+		*/
+		getAction : function (name) {
+			return desk.Actions.getInstance().getAction(name);
 		}
 	},
 

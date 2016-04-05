@@ -39,6 +39,10 @@ qx.Class.define("desk.SceneContainer",
 			this.setConvertVTK(opts.convertVTK);
 		}
 
+		if (!desk.Actions.getAction('mesh2ctm')) {
+			this.setConvertVTK(false);
+		}
+
 		var leftContainer = this.__leftContainer = new qx.ui.container.Composite();
 		leftContainer.setLayout(new qx.ui.layout.VBox());
 		this.add(leftContainer, {left : 0, top : 30});
