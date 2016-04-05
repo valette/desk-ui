@@ -45,10 +45,10 @@
     "transform": ["browserify-css"]
   },
   "scripts" : {
-    "buildBrowserified": "node lib/build.js",
-    "buildQooxdoo": "python generate.py source && python generate.py build",
+    "buildBrowserified": "node source/build.js",
+    "buildQooxdoo": "python generate.py source-hybrid && python generate.py build",
     "clean": "rm -rf build && rm -rf source/script/desk.ui.*",
     "build" : "npm run clean && npm run buildQooxdoo && npm run buildBrowserified",
-    "buildAddons" : "node lib/buildAddons.js"
+    "buildAddons" : "node source/buildAddons.js"
   }
 }

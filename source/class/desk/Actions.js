@@ -10,6 +10,7 @@
  * @ignore (jsSHA)
  * @ignore (prettyData.json)
  * @lint ignoreDeprecated (alert)
+ * @lint ignoreDeprecated (confirm)
  * @require(desk.LogContainer)
  * @require(desk.Random)
  */

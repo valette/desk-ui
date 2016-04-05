@@ -61,9 +61,6 @@
       "library" :
       [
         {
-          "manifest" : "lib/ui/Manifest.json"
-        },
-        {
           "manifest"   : "node_modules/uploadmgr/Manifest.json"
         }
       ]
