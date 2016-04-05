@@ -320,6 +320,11 @@ qx.Class.define("desk.SceneContainer",
 			case "obj":
 			case "stl":
 			case "off":
+				if (!desk.Actions.getAction('mesh2ctm')) {
+					var message = "Error : action mesh2ctm is not installed. Please install binary addons to read more formats than VTK";
+					alert(message);
+					throw new Error(message);
+				}
 				desk.Actions.execute({
                     "action" : "mesh2ctm",
 					"input_mesh" : file},

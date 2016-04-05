@@ -28,6 +28,12 @@ qx.Class.define("desk.VolumeSlice",
 	construct : function(file, orientation, opts, callback, context) {
 		this.base(arguments);
 
+		if (!desk.Actions.getAction('slice_volume')) {
+			var message = "Error : action volume_slice is not installed. Please install binary addons to slice volumes."
+			alert(message);
+			throw new Error(message);
+		}
+
 		if (typeof(opts) == "function") {
 			context = callback;
 			callback = opts;
