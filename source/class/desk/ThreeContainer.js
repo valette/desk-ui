@@ -5,6 +5,7 @@
  * @ignore(requestAnimationFrame)
  * @ignore(Blob)
  * @ignore(Uint8Array)
+ * @lint ignoreDeprecated (alert)
 */
 qx.Class.define("desk.ThreeContainer", 
 {
