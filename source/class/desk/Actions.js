@@ -50,7 +50,7 @@ qx.Class.define("desk.Actions",
 				console.log("powered by electron.js");
 				var ipcRenderer = require('electron').ipcRenderer
 				window.prompt = function(title, val) {
-					return ipcRenderer.sendSync('prompt', {title, val})
+					return ipcRenderer.sendSync('prompt', {title : title, val : val});
 				}
 			} else {
 				console.log("powered by nw.js");
