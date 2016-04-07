@@ -55,6 +55,7 @@ qx.Class.define("desk.Actions",
 			} else {
 				console.log("powered by nw.js");
 			}
+			this.__loadSettings();
 		} catch (e) {}
 
 		if (!this.__rpcPresent) {
@@ -72,10 +73,11 @@ qx.Class.define("desk.Actions",
 
 		this.__socket.on("actions updated", this.__setSettings.bind(this));
 		this.__ongoingActions = new qx.ui.container.Composite(new qx.ui.layout.VBox());
-		this.__loadSettings();
 	},
 
 	statics : {
+		__serverRandomValue : null,
+
 		/**
 		* Calls callback when the actions list is constructed
 		* @internal
@@ -674,6 +676,17 @@ qx.Class.define("desk.Actions",
 		* refreshes the actions
 		*/
 		__setSettings : function(settings) {
+			if (this.__serverRandomValue && (this.__serverRandomValue != settings.randomValue)) {
+				console.warn("Server has restarted");
+			}
+			this.__serverRandomValue = settings.randomValue;
+
+			if (this.__settings && this.__settings.version == settings.version) {
+				this.debug("update avoided");
+				// avoid updating when version is the same
+				return;
+			}
+
 			this.debug("Updating settings");
 			this.__actionMenu = new qx.ui.menu.Menu();
 
@@ -706,13 +719,19 @@ qx.Class.define("desk.Actions",
 
 			settings.init = settings.init || [];
 
-			if (this.__settings === null) {
+			console.log("Desk launched, baseURL : " + desk.FileSystem.getBaseURL());
+			console.log("Settings : ", settings);
+
+			if (this.__settings) {
+				this.debug("Init files already loaded");
 				this.__settings = settings;
-				if (settings.permissions) {
-					this.__createActionsMenu();
-				}
+				return;
 			}
+
 			this.__settings = settings;
+			if (settings.permissions) {
+				this.__createActionsMenu();
+			}
 
 			this.debug("loading init files");
 			var initDir = 'code/init';
@@ -745,8 +764,6 @@ qx.Class.define("desk.Actions",
 					if (err) {
 						alert (err);
 					}
-					console.log("Desk ready, baseURL : " + desk.FileSystem.getBaseURL());
-					console.log("Settings : ", settings);
 					this.fireEvent('changeReady');
 				}.bind(this));
 
