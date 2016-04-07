@@ -25,20 +25,20 @@ qx.Class.define("desk.Uploader",
 		win.setLayout( new qx.ui.layout.VBox() );
 		win.set({width : 450, alwaysOnTop : true});
 
-  		var btn = new com.zenesis.qx.upload.UploadButton( "Add File(s)" );
-  		var lst = new qx.ui.form.List();
-  		var uploadCount = 0;
+		var btn = new com.zenesis.qx.upload.UploadButton( "Add File(s)" );
+		var lst = new qx.ui.form.List();
+		var uploadCount = 0;
   
-  		var uploader = new com.zenesis.qx.upload.UploadMgr( btn, 
+		var uploader = new com.zenesis.qx.upload.UploadMgr( btn, 
 			desk.FileSystem.getBaseURL() + 'upload');
   		
-  		// Parameter tp be added to all uploads (can be overridden by individual files)
+		// Parameter tp be added to all uploads (can be overridden by individual files)
 		//	uploader.setParam("myGlobalParam", "global123");
   		
-  		// Optionally restrict the max number of simultaneous uploads (default is 5)
-  		uploader.getUploadHandler().setMaxConnections(1);
-  		
-  		uploader.addListener( "addFile", function( evt ) {
+		// Optionally restrict the max number of simultaneous uploads (default is 5)
+		uploader.getUploadHandler().setMaxConnections(5);
+
+		uploader.addListener( "addFile", function( evt ) {
   			var file = evt.getData(),
   				item = new qx.ui.form.ListItem( file.getFilename() + " (queued for upload)", null, file );
   			lst.add(item);
@@ -96,19 +96,19 @@ qx.Class.define("desk.Uploader",
   			if (file.getState() == "uploading" || file.getState() == "not-started")
   				uploader.cancel(file);
   		}, this);
+
+		// Auto upload? (default=true)
+		var cbx = new qx.ui.form.CheckBox("Automatically Upload");
+		cbx.setValue(true);
+		cbx.bind("value", uploader, "autoUpload");
   		
-  		// Auto upload? (default=true)
-  		var cbx = new qx.ui.form.CheckBox("Automatically Upload");
-  		cbx.setValue(true);
-  		cbx.bind("value", uploader, "autoUpload");
-  		
-  		// add them to the UI
-  		win.add(cbx);
-  		win.add(lst, {flex : 1});
-  		win.add(btnCancel);
-  		win.open();
-        win.center();
-  		this.__window = win;
+		// add them to the UI
+		win.add(cbx);
+		win.add(lst, {flex : 1});
+		win.add(btnCancel);
+		win.open();
+		win.center();
+		this.__window = win;
 	},
 	
 	members : {		
