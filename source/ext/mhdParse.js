@@ -37,9 +37,7 @@ MHD = {
         function int(value) {return parseInt(value, 10);}
         
         function vec(value) {
-           return value.split(" ").map(function(value) {
-               return parseFloat(value); 
-            });
+           return value.split(" ").map(parseFloat);
         }
         
         var keys = {
