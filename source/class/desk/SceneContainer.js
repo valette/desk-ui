@@ -507,7 +507,6 @@ qx.Class.define("desk.SceneContainer",
 			var geometry = new THREE.PlaneBufferGeometry( 1, 1);
 			var material = volumeSlice.getMaterial();
 			var mesh = new THREE.Mesh(geometry,material);
-
 			var listenerId = volumeSlice.addListener('changeImage', function () {
 				var coords = volumeSlice.getCornersCoordinates();
 				var vertices = geometry.attributes.position;
@@ -568,7 +567,7 @@ qx.Class.define("desk.SceneContainer",
 
 			var group = new THREE.Group();
 			this.addMesh(group, _.extend({branch : true, label : file}, opts));
-			async.eachSeries([0, 1, 2], function (orientation, callback) {
+			async.eachSeries(opts.orientations || [0, 1, 2], function (orientation, callback) {
 				var slice = new desk.VolumeSlice(file, orientation,
 					{sliceWith : opts.sliceWith}, function (err) {
 					if (err) {
