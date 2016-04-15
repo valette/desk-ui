@@ -102,7 +102,7 @@ qx.Class.define("desk.FileBrowser",
 	},
 
 	members : {
-		__focusedRow : null,
+		__displayHiddenFiles : false,
 
 		__iconOptions : {
 			converter : function(value, model) {
@@ -155,9 +155,12 @@ qx.Class.define("desk.FileBrowser",
 			filterBox.add(resetButton);
 			this.__files.setDelegate({
 				filter : function (node) {
-					return node.getChildren || node.getName().toLowerCase()
-						.indexOf(filterField.getValue().toLowerCase()) != -1;
-				}
+					var name = node.getName().toLowerCase();
+					if (!this.__displayHiddenFiles &&  name.indexOf(".") === 0) {
+						return false;
+					}
+					return node.getChildren || name.indexOf(filterField.getValue().toLowerCase()) != -1;
+				}.bind(this)
 			});
 
 			if(this.__standAlone) {
@@ -611,6 +614,15 @@ qx.Class.define("desk.FileBrowser",
 		*/
 		__createDefaultStaticActions : function () {
 			var menu = new qx.ui.menu.Menu();
+
+			var hideButton = new qx.ui.menu.CheckBox("Show hidden files");
+			hideButton.setBlockToolTip(false);
+			hideButton.setToolTipText("Enable this to see hidden files");
+			hideButton.addListener("changeValue", function (event) {
+				this.__displayHiddenFiles = event.getData();
+				this.__files.refresh();
+			}, this);
+			menu.add(hideButton);
 
 			// the default "open" button
 			var openButton = new qx.ui.menu.Button("Open");
