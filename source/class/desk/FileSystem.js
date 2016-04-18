@@ -335,7 +335,7 @@ qx.Class.define("desk.FileSystem",
 				script.setAttribute('type','text/javascript');
 				script.text = '(function (__dirname) {' + content
 					+ '\n})("' + desk.FileSystem.getFileDirectory(file)
-					+ '")\n//@ sourceURL=' + file;
+					+ '")\n//# sourceURL=' + file;
 				document.getElementsByTagName('body')[0].appendChild(script);
 				if (typeof callback === "function") callback.call(context, err);
 			});
