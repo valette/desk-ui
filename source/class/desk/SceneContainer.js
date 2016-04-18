@@ -137,10 +137,11 @@ qx.Class.define("desk.SceneContainer",
 		}
 		this.__vtkLoader = new THREE.VTKLoader();
 
-		this.__queue = async.queue(this.__urlLoad.bind(this), 10);
+		var concurrency = (navigator && 2 * navigator.hardwareConcurrency) || 4;
+		this.__queue = async.queue(this.__urlLoad.bind(this), concurrency);
 
-		this.__setData = _.throttle(this.__meshes.getDataModel().setData.
-			bind(this.__meshes.getDataModel()), 500);
+		this.__setData = _.throttle(this.__meshes.getDataModel().setData
+			.bind(this.__meshes.getDataModel()), 500);
 
 		if (file) {
 			this.addFile(file, opts, callback, context);
