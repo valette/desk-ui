@@ -435,6 +435,13 @@ qx.Class.define("desk.Action",
 		* @return {Boolean} true if the aprameter is valid
 		*/
 		__flagValidator : function(value, item) {
+			if ((value == null) || (value == '')) {
+				if (this.required) {
+					item.setInvalidMessage('"' + this.name + '" is empty');
+					return false;
+				} else return true;
+			}
+
 			switch(value.toLowerCase()) {
 				case "true": case "yes": case "1": 
 				case "false": case "no": case "0": return true;
