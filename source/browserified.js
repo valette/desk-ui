@@ -36,6 +36,7 @@ operative.setBaseURL(window.location.protocol + '//'
 	+ '/');
 
 io        = require('socket.io-client');
+d3		  = require ('d3');
 c3        = require ('c3');
 			require ('../node_modules/c3/c3.css');
 
