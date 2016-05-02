@@ -502,6 +502,7 @@ qx.Class.define("desk.FileBrowser",
 		* @param node {Object} file node
 		*/
 		__uploadAction : function (node) {
+			node = node || this.__root;
 			var dir = node.getFullName();
 			if (!node.getChildren) {
 				dir = desk.FileSystem.getFileDirectory(dir);
@@ -628,6 +629,7 @@ qx.Class.define("desk.FileBrowser",
 			var openButton = new qx.ui.menu.Button("Open");
 			openButton.addListener("execute", this.__onDbltap, this);
 
+			menu.addSeparator();
 			menu.add(openButton);
 			menu.addSeparator();
 
@@ -653,6 +655,9 @@ qx.Class.define("desk.FileBrowser",
 			this.addAction("delete", this.__deleteAction, this);
 			this.addAction('rename', this.__renameAction, this);
 			this.addAction('new file', this.__newFileAction, this);
+			this.addAction('properties', function (node) {
+				alert(node.getName() + " : " + node.getSize() + " bytes");
+			});
 		},
 
 		/**
