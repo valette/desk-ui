@@ -283,7 +283,9 @@ qx.Class.define("desk.FileBrowser",
 				desk.Actions.execute({
 						action : actionType,
 						source : file,
-						destination : destination},
+						destination : destination,
+						recursive : true
+					},
 						callback);
 				}, function (err) {
 					var directories = files.map(function (file) {
