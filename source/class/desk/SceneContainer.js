@@ -526,9 +526,6 @@ qx.Class.define("desk.SceneContainer",
 				this.render();
 			}, this);
 
-			this.addMesh(mesh, _.extend({label : 'View ' + (volumeSlice.getOrientation()+1),
-				volumeSlice : volumeSlice}, opts));
-
 			var lineMaterial = new THREE.LineBasicMaterial({linewidth: 3,
 				color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()]});
 
@@ -539,6 +536,9 @@ qx.Class.define("desk.SceneContainer",
 			mesh.add(line);
 
 			volumeSlice.fireEvent('changeImage');
+
+			this.addMesh(mesh, _.extend({label : 'View ' + (volumeSlice.getOrientation()+1),
+				volumeSlice : volumeSlice}, opts));
 
 			mesh.addEventListener("removed", function () {
 				volumeSlice.removeListenerById(listenerId);
