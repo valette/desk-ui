@@ -377,6 +377,7 @@ qx.Class.define("desk.SceneContainer",
 		 */
 		removeAllMeshes : function (dispose) {
 			this.removeMeshes(this.getMeshes(), dispose);
+			this.resetView();
 		},
 
 		/**
