@@ -108,10 +108,11 @@ qx.Class.define("desk.FileSystem",
 		},
 
 		/**
-		* Writes a string to a file
+		* Writes content to a file
 		*
 		* @param file {String} the file to write to
 		* @param content {String} the string to write
+		* @param options {Object} options (optional) such as {binary : true}
 		* @param callback {Function} callback when done
 		* @param context {Object} optional context for the callback
 		* 
@@ -122,16 +123,30 @@ qx.Class.define("desk.FileSystem",
 		* });<br>
 		* </pre>
 		*/
-		writeFile : function (file, content, callback, context) {
-			desk.Actions.execute({
-				action : "write_binary",
+		writeFile : function (file, content, options, callback, context) {
+			if (typeof options === "function") {
+				context = callback;
+				callback = options;
+				options = {};
+			}
+
+			var params = {
+				action : "write_string",
 				file_name : desk.FileSystem.getFileName(file),
-				base64data : qx.util.Base64.encode(content, true),
+				data : content,
 				output_directory : desk.FileSystem.getFileDirectory(file)
-			}, callback, context);
+			};
+
+			if (options.binary) {
+				params.action = "write_binary";
+				delete params.data;
+				content.base64data = qx.util.Base64.encode(content, true);
+			}
+
+			desk.Actions.execute(params, callback, context);
 		},
-	    
-	    
+
+
 		/**
 		* Writes an object to a JSON file
 		*
