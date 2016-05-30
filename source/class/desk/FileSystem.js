@@ -90,14 +90,7 @@ qx.Class.define("desk.FileSystem",
 			}
 			var req = new qx.io.request.Xhr(url);
 			req.addListener('load', function () {
-				if (typeof callback === "function") {
-					try {
-						callback.call(context, null, req.getResponseText());
-					} catch (e) {
-						console.error("Error in a desk.FileSystem.readFile() callback. API has changed : response is pure text, maybe you need to parse it");
-						throw (e);
-					}
-				}
+				if (typeof callback === "function") callback.call(context, null, req.getResponseText());
 				req.dispose();
 			});
 			req.addListener('fail', function (e) {
