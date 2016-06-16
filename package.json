@@ -47,8 +47,8 @@
   },
   "scripts" : {
     "buildBrowserified": "node source/build.js",
-    "buildQooxdoo": "python generate.py source && python generate.py build",
-    "clean": "rm -rf build && rm -rf source/script/desk.ui.*",
+    "buildQooxdoo": "python generate.py source && python generate.py build && python generate.py api",
+    "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
     "build" : "npm run clean && npm run buildQooxdoo && npm run buildBrowserified",
     "buildAddons" : "node source/buildAddons.js"
   }
