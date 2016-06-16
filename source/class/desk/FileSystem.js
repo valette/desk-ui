@@ -117,7 +117,9 @@ qx.Class.define("desk.FileSystem",
 		* </pre>
 		*/
 		writeFile : function (file, content, options, callback, context) {
-			if (typeof options === "function") {
+			if (!options) {
+				options = {};
+			} else if (typeof options === "function") {
 				context = callback;
 				callback = options;
 				options = {};
