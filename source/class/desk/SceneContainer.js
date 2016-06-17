@@ -87,26 +87,19 @@ qx.Class.define("desk.SceneContainer",
 
 		}, this);
 
-
-		var button = new qx.ui.form.Button("+").set({opacity : 0.5, width : 30});
+		var button = this.__optionsButton = new qx.ui.form.ToggleButton("+").set({opacity : 0.5, width : 30});
 		this.add (button, {left : 0, top : 0});
-		button.addListener("execute", function () {
-			if (leftContainer.getVisibility() === "visible") {
-				leftContainer.setVisibility("excluded");
-				button.setLabel("+");
-			} else {
-				leftContainer.setVisibility("visible");
-				button.setLabel("-");
-				var ren = this.__meshes.getDataRowRenderer();
-				var color = this.getRenderer().getClearColor();
-				var colors = ren._colors;
-				colors.colNormal = "rgb(" + (255 * (1 - color.r)) + "," +
-					(255 * (1 - color.g)) + "," + (255 * (1 - color.b)) + ")";
-				colors.bgcolEven = colors.bgcolOdd = colors.horLine = "transparent";
-				colors.bgcolFocused = "rgba(249, 249, 249, 0.5)";
-				colors.bgcolFocusedSelected = "rgba(60, 100, 170, 0.5)";
-				colors.bgcolSelected = "rgba(51, 94, 168, 0.5)";
-			}
+		button.addListener("changeValue", function () {
+			leftContainer.setVisibility(button.getValue() ? "visible" : "excluded");
+			button.setLabel(button.getValue() ? "-" : "+");
+			var color = this.getRenderer().getClearColor();
+			var colors = this.__meshes.getDataRowRenderer()._colors;
+			colors.colNormal = "rgb(" + (255 * (1 - color.r)) + "," +
+				(255 * (1 - color.g)) + "," + (255 * (1 - color.b)) + ")";
+			colors.bgcolEven = colors.bgcolOdd = colors.horLine = "transparent";
+			colors.bgcolFocused = "rgba(249, 249, 249, 0.5)";
+			colors.bgcolFocusedSelected = "rgba(60, 100, 170, 0.5)";
+			colors.bgcolSelected = "rgba(51, 94, 168, 0.5)";
 		}, this);
 
 		var buttons = new qx.ui.container.Composite(new qx.ui.layout.HBox());
@@ -194,6 +187,16 @@ qx.Class.define("desk.SceneContainer",
 		__setData : null,
 
 		__leftContainer : null,
+
+		__optionsButton : null,
+
+		/**
+		 * Returns the button opening the options pane
+		 * @return {qx.ui.form.ToggleButton} button opening the options pane
+		 */
+		getOptionsButton : function () {
+			return this.__optionsButton;
+		},
 
 		/**
 		 * Returns the objects handled in the scene
