@@ -111,13 +111,13 @@ qx.Class.define("desk.SceneContainer",
 		leftContainer.add(buttons);
 
 		this.__meshes = new qx.ui.treevirtual.TreeVirtual(["meshes"]);
-		this.__meshes.setBackgroundColor("transparent");
-		this.__meshes.setSelectionMode(qx.ui.treevirtual.TreeVirtual.SelectionMode.MULTIPLE_INTERVAL);
 		this.__meshes.set({
 			width  : 180,
 			rowHeight: 22,
 			columnVisibilityButtonVisible : false,
-            statusBarVisible : false		
+            statusBarVisible : false,
+            backgroundColor : "transparent",
+            selectionMode : qx.ui.treevirtual.TreeVirtual.SelectionMode.MULTIPLE_INTERVAL
 		});
 
         leftContainer.add(this.__meshes,{flex : 1});
@@ -276,7 +276,14 @@ qx.Class.define("desk.SceneContainer",
 			}, this);
 			container.add(filterField);
 
-			var filter = qx.lang.Function.bind(function(node) {
+			var resetButton = new qx.ui.form.Button("Reset filter");
+			resetButton.setAllowGrowY(false);
+			resetButton.addListener("execute",function(e){
+				filterField.setValue("");
+			}, this);
+
+			container.add(resetButton);
+			dataModel.setFilter(function(node) {
 				if (node.type == qx.ui.treevirtual.MTreePrimitive.Type.LEAF) {
 					var label = node.label;
 					var mesh = this.__getMeshFromNode(node);
@@ -290,16 +297,7 @@ qx.Class.define("desk.SceneContainer",
 					return visibility;
 				}
 				return true;
-			}, this);
-
-			var resetButton = new qx.ui.form.Button("Reset filter");
-			resetButton.setAllowGrowY(false);
-			resetButton.addListener("execute",function(e){
-				filterField.setValue("");
-			}, this);
-
-			container.add(resetButton);
-			dataModel.setFilter(filter);
+			}.bind(this));
 			return container;
 		},
 
@@ -940,9 +938,8 @@ qx.Class.define("desk.SceneContainer",
 				});
 
 			label.addListener("droprequest", function(e) {
-					var type = e.getCurrentType();
-					if (type === "meshView") {
-						e.addData(type, this);
+					if (e.getCurrentType() === "meshView") {
+						e.addData(e.getCurrentType(), this);
 					}
 				}, this);
 
