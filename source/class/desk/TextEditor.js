@@ -4,17 +4,17 @@
  */
 qx.Class.define("desk.TextEditor", 
 {
-  extend : qx.ui.window.Window,
+  extend : qx.ui.container.Composite,
 
 	/**
-	* Creates a new text editor window
+	* Creates a new text editor
 	*
 	* @param file {String} the file to edit
 	*/
-	construct : function(file) {
+	construct : function(file, options) {
+	    options = options || {};
 		this.base(arguments);
-		this.set({layout : new qx.ui.layout.VBox(), 
-			height :700, width : 700, showMinimize : false});
+		this.setLayout(new qx.ui.layout.VBox());
 
 		this.__reload = new qx.ui.form.Button("Reload");
 		this.__reload.addListener("execute", function(e) {
@@ -69,9 +69,17 @@ qx.Class.define("desk.TextEditor",
 		}
 
         this.add(this.__text, {flex : 1});
-		this.open();
-		this.center();
-        this.addListener('close', this.destroy, this);
+
+        if (options.standalone !== false) {
+			var window = this.__window = new qx.ui.window.Window();
+			window.set({layout : new qx.ui.layout.VBox(),
+				height :700, width : 700, showMinimize : false});
+			window.addListener('close',this.destroy, this);
+			window.add(this, {flex : 1});
+			window.setCaption(file);
+			window.open();
+			window.center();
+        }
 	},
 
 	destruct : function(file) {
@@ -96,6 +104,8 @@ qx.Class.define("desk.TextEditor",
 
 		__buttons : null,
 		__script : null,
+
+        __window : null,
 
         /**
 		* Removes the script from the DOM
@@ -174,7 +184,6 @@ qx.Class.define("desk.TextEditor",
 			this.__reload.setEnabled(false);
 			desk.FileSystem.readFile(file, function (error, result) {
 				this.__text.setCode(result);
-				this.setCaption(file);
 				this.__reload.setEnabled(true);
 			}, this, {forceText : true});
 		}
