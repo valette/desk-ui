@@ -14,14 +14,13 @@ THREE.TrackballControls2 = function ( object ) {
 	this.setSize = function(width, height) {
 		this.width = width;
 		this.height = height;
-		this.radius = width  + height;
 	};
 
 	this.setSize();
 
 	this.rotateSpeed = 15;
 	this.zoomSpeed = 5;
-	this.panSpeed = 2.2;
+	this.panSpeed = 1;
 
 	this.noRotate = false;
 	this.noZoom = false;
@@ -29,6 +28,8 @@ THREE.TrackballControls2 = function ( object ) {
 
 	this.minDistance = 0;
 	this.maxDistance = Infinity;
+
+	this.zoomUsingZ = false;
 
 	// internals
 
@@ -111,8 +112,8 @@ THREE.TrackballControls2 = function ( object ) {
 	this.getMouseOnScreen = function( x, y ) {
 
 		return new THREE.Vector2(
-			x / this.radius,
-			y / this.radius
+			x / this.width,
+			y / this.height
 		);
 
 	};
@@ -124,7 +125,7 @@ THREE.TrackballControls2 = function ( object ) {
 		var angle;
 
 		if ( this._dy !== 0 ) {
-			angle = this.rotateSpeed * this._dy / this.radius;
+			angle = this.rotateSpeed * this._dy / this.height;
 
 			axis.crossVectors( _eye, this.object.up ).normalize();
 			quaternion.setFromAxisAngle( axis, angle );
@@ -134,7 +135,7 @@ THREE.TrackballControls2 = function ( object ) {
 		}
 
 		if ( this._dx !== 0 ) {
-			angle = - this.rotateSpeed * this._dx / this.radius;
+			angle = - this.rotateSpeed * this._dx / this.width;
 			axis.copy( this.object.up ).normalize();
 			quaternion.setFromAxisAngle( axis , angle );
 
@@ -152,17 +153,25 @@ THREE.TrackballControls2 = function ( object ) {
 	};
 
 	this.zoomCamera = function() {
+		if ( !this.zoomUsingZ) {
 
-		var factor = 1.0 + ( _zoomEnd - _zoomStart ) * this.zoomSpeed;
+			var factor = ( _zoomEnd - _zoomStart ) * this.zoomSpeed;
+			this.object.zoom = Math.exp( Math.log( this.object.zoom ) - factor);
+			_zoomStart = _zoomEnd;
 
-		if ( factor !== 1.0 && factor > 0.0 ) {
+		} else {
 
-			_eye.multiplyScalar( factor );
+			factor = 1.0 + ( _zoomEnd - _zoomStart ) * this.zoomSpeed;
+
+			if ( factor !== 1.0 && factor > 0.0 ) {
+
+				_eye.multiplyScalar( factor );
 
 				_zoomStart = _zoomEnd;
 
-		}
+			}
 
+		}
 	};
 
 	this.panCamera = function() {
@@ -171,14 +180,11 @@ THREE.TrackballControls2 = function ( object ) {
 
 		if ( mouseChange.lengthSq() ) {
 
-			mouseChange.multiplyScalar( _eye.length() * this.panSpeed );
-
-			var pan = _eye.clone().cross( this.object.up ).setLength( mouseChange.x );
-			pan.add( this.object.up.clone().setLength( mouseChange.y ) );
-
+			mouseChange.multiplyScalar( this.panSpeed / this.object.zoom);
+			var pan = _eye.clone().cross( this.object.up ).setLength( mouseChange.x * this.width);
+			pan.add( this.object.up.clone().setLength( mouseChange.y * this.height) );
 			this.object.position.add( pan );
 			this.target.add( pan );
-
 			_panStart = _panEnd;
 
 		}
@@ -236,6 +242,7 @@ THREE.TrackballControls2 = function ( object ) {
 		this._dx = 0;
 		this._dy = 0;
 		this._alpha = 0;
+		this.object.updateProjectionMatrix();
 	};
 
 

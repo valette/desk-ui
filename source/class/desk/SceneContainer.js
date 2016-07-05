@@ -27,14 +27,23 @@ qx.Class.define("desk.SceneContainer",
 	 */
 	construct : function(file, opts, callback, context) {
 
-        this.base(arguments, opts);
 		qx.Class.include(qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode);
+
+		if (typeof file != "string") {
+
+			opts = file;
+			file = callback = context = undefined;
+
+		}
+
 		if (typeof opts === "function") {
 			callback = opts;
 			context = callback;
 			opts = {};
 		}
 		opts = opts || {};
+
+        this.base(arguments, opts);
 
 		if (opts.convertVTK !== undefined) {
 			this.setConvertVTK(opts.convertVTK);
@@ -718,21 +727,18 @@ qx.Class.define("desk.SceneContainer",
 			var y = this.__y - origin.top;
 
 			var elementSize = this.getInnerSize();
-			var x2 = ( x / elementSize.width ) * 2 - 1;
-			var y2 = - ( y / elementSize.height ) * 2 + 1;
+			var mouse = new THREE.Vector2();
+			mouse.x = ( x / elementSize.width ) * 2 - 1;
+			mouse.y = - ( y / elementSize.height ) * 2 + 1;
 
-			var vector = new THREE.Vector3().set( x2, y2, 0.5 );
-			var camera = this.getCamera();
-			vector.unproject(camera);
-
-			var ray = new THREE.Raycaster(camera.position,
-				vector.sub(camera.position).normalize());
+			var raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(mouse, this.getCamera());
 
 			meshes = meshes || _.filter(this.getMeshes(), function (mesh) {
 				return mesh.visible;
 			});
 
-			return ray.intersectObjects(meshes);
+			return raycaster.intersectObjects(meshes);
 		},
 
 		/**

@@ -15,7 +15,9 @@ qx.Class.define("desk.ThreeContainer",
 	/**
 	 * Constructor
 	*/
-	construct : function() {
+	construct : function( opts ) {
+		if (typeof opts === "function") opts = {};
+		opts = opts || {};
 		this.base(arguments);
 		this.setLayout(new qx.ui.layout.Canvas());
 
@@ -26,7 +28,7 @@ qx.Class.define("desk.ThreeContainer",
 		if (!Detector.webgl) alert("Error! : webGL is not available! Check your configuration");
 
 		var scene = this.__scene = new THREE.Scene();
-		var camera = this.__camera = new THREE.PerspectiveCamera(60,1, 0.01, 1e10);
+		var camera = this.__camera = opts.orthographic ? new THREE.OrthographicCamera() : new THREE.PerspectiveCamera();
 		var controls = this.__controls = new THREE.TrackballControls2(camera, canvas);
 		controls.zoomSpeed = 6;
 		scene.add(camera);
@@ -253,8 +255,16 @@ qx.Class.define("desk.ThreeContainer",
 		__resizeThreeCanvas : function () {
 			var width = this.__threeCanvas.getCanvasWidth();
 			var height = this.__threeCanvas.getCanvasHeight();
-			this.__renderer.setViewport(0, 0, width, height);
-			this.__camera.aspect = width / height;
+			this.__renderer.setSize ( width, height, false );
+
+			if (this.__camera instanceof THREE.PerspectiveCamera) {
+				this.__camera.aspect = width / height;
+			} else {
+				this.__camera.left = - 0.5 * width;
+				this.__camera.right = 0.5 * width;
+				this.__camera.bottom = - 0.5 * height;
+				this.__camera.top = 0.5 * height;
+			}
 			this.__camera.updateProjectionMatrix();
 			this.__controls.setSize(width, height);
 			this.__controls.update();
@@ -368,7 +378,7 @@ qx.Class.define("desk.ThreeContainer",
 				var center = bbox.center();
 				this.__boudingBoxDiagonalLength = bbdl;
 				camera.position.copy(center);
-				camera.position.z -= bbdl;
+				camera.position.z += bbdl;
 				camera.up.set(0,1,0);
 				controls.target.copy(center);
 			} else {
@@ -379,8 +389,16 @@ qx.Class.define("desk.ThreeContainer",
 					.add(controls.target);
 			}
 
-			camera.near = bbdl / 1000;
-			camera.far = bbdl * 10;
+			if (camera instanceof THREE.PerspectiveCamera) {
+				camera.near = bbdl / 1000;
+				camera.far = bbdl * 10;
+				camera.zoom = 1;
+			} else {
+				camera.near = - bbdl * 10;
+				camera.far = bbdl * 10;
+				camera.zoom = ( camera.top + camera.right ) / bbdl;
+			}
+
 			camera.updateProjectionMatrix();
 			controls.update();
 			this.render();
