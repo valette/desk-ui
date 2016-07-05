@@ -26,7 +26,8 @@ qx.Class.define("desk.SceneContainer",
 	 * @param context {Object} optional context for the callback
 	 */
 	construct : function(file, opts, callback, context) {
-        this.base(arguments);
+
+        this.base(arguments, opts);
 		qx.Class.include(qx.ui.treevirtual.TreeVirtual, qx.ui.treevirtual.MNode);
 		if (typeof opts === "function") {
 			callback = opts;
@@ -1094,11 +1095,11 @@ qx.Class.define("desk.SceneContainer",
 		 * @param mesh {THREE.Mesh} mesh to remove
 		 */
 		removeMesh : function (mesh) {
+			mesh.children.forEach(this.removeMesh, this);
+
 			if (mesh.parent) {
 				mesh.parent.remove(mesh);
 			}
-
-			mesh.children.forEach(this.removeMesh, this);
 
 			var params = mesh && mesh.userData && mesh.userData.viewerProperties;
 			if (params) {
@@ -1141,7 +1142,6 @@ qx.Class.define("desk.SceneContainer",
 
 			mesh.geometry = mesh.material  = undefined;
 			this._deleteMembers(mesh.userData);
-			this._deleteMembers(mesh);
 			this.render();
         },
 
