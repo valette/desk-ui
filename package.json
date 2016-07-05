@@ -51,6 +51,6 @@
     "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
     "build" : "npm run clean && npm run buildBrowserified && npm run buildQooxdoo",
     "buildAddons" : "node source/buildAddons.js",
-    "updateAndBuild" : "npm install && npm update && npm run build"
+    "updateAll" : "rm -rf node_modules && git pull && npm install && npm run build"
   }
 }
