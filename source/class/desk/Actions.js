@@ -276,6 +276,14 @@ qx.Class.define("desk.Actions",
 			});
 			devMenu.add(debugButton);
 
+			var changelogButton = new qx.ui.menu.Button("Changelog");
+			changelogButton.addListener('execute', function () {
+				var win = window.open('https://github.com/valette/desk-ui/commits/master', '_blank');
+				win.focus();
+			});
+			devMenu.add(changelogButton);
+
+
 			['make', 'qooxdoo'].forEach(function (action) {
 				var button = new qx.ui.menu.Button(action);
 				button.addListener('execute', function () {
