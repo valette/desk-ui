@@ -19,7 +19,7 @@
     "browserify": ">0.0.0",
     "browserify-css": ">0.0.0",
     "c3": ">0.0.0",
-    "d3": ">0.0.0",
+    "d3": "3.5.17",
     "gulp": ">0.0.0",
     "gulp-uglify": ">0.0.0",
     "gulp-streamify": ">0.0.0",
