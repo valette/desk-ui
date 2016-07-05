@@ -29,7 +29,7 @@ THREE.TrackballControls2 = function ( object ) {
 	this.minDistance = 0;
 	this.maxDistance = Infinity;
 
-	this.zoomUsingZ = false;
+	this.zoomUsingZ = object instanceof THREE.PerspectiveCamera;
 
 	// internals
 
