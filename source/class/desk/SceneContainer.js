@@ -116,6 +116,7 @@ qx.Class.define("desk.SceneContainer",
 		buttons.add(this.__getDragLabel(), {flex : 1});
 		buttons.add(this.__getSaveViewButton(), {flex : 1});
 		buttons.add(this.__getResetViewButton(), {flex : 1});
+		buttons.add(this.__getSnapViewButton(), {flex : 1});
 		buttons.add(this.__getSnapshotButton());
 		buttons.add(this.__getCameraPropertiesButton());
 		leftContainer.add(buttons);
@@ -874,8 +875,33 @@ qx.Class.define("desk.SceneContainer",
 		 * @return {qx.ui.form.Button} the button
 		 */
 		__getResetViewButton : function () {
-			var button = new qx.ui.form.Button("reset view");
-			button.addListener("click", this.resetView, this);
+			var button = new qx.ui.form.Button("reset");
+			button.addListener("execute", this.resetView, this);
+			return button;
+		},
+
+		/**
+		 * creates the snap view button
+		 * @return {qx.ui.form.Button} the button
+		 */
+		__getSnapViewButton : function () {
+			var button = new qx.ui.form.Button("snap");
+			button.addListener( "execute", function (){
+				var camera = this.getCamera();
+				var euler = new THREE.Euler().setFromQuaternion( camera.quaternion );
+				["x", "y", "z"].forEach(function (coord) {
+					euler[ coord ] = 0.5 * Math.PI * Math.round( 2 * euler[ coord ] / Math.PI);
+				});
+				var target = this.getControls().target;
+				var eye = camera.position.clone().sub( target );
+				camera.quaternion.setFromEuler( euler );
+				var m = new THREE.Matrix4().makeRotationFromQuaternion(camera.quaternion);
+				camera.up.set( 0, 1, 0 ).transformDirection(m);
+				var dir = new THREE.Vector3( 0, 0, -1 ).transformDirection(m);
+				dir.multiplyScalar( dir.dot( eye ) );
+				camera.position.copy( target ).add( dir );
+				this.render();
+			}, this );
 			return button;
 		},
 
@@ -884,7 +910,7 @@ qx.Class.define("desk.SceneContainer",
 		 * @return {qx.ui.form.Button} the button
 		 */
 		__getSaveViewButton : function () {
-			var button = new qx.ui.form.Button("save view");
+			var button = new qx.ui.form.Button("save");
 			button.addListener("click", function () {
 				console.log("viewPoint : ");
 				console.log(JSON.stringify(this.getViewpoint()));
@@ -897,6 +923,7 @@ qx.Class.define("desk.SceneContainer",
 						button.setEnabled(true);
 				});
 			}, this);
+
 			return button;
 		},
 
