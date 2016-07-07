@@ -413,7 +413,7 @@ qx.Class.define("desk.FileBrowser",
 				if (desk.Actions.getInstance().getSettings().permissions) {
 					desk.FileSystem.executeScript(file);
 				} else {
-					new desk.TabTextEditor (file);
+					desk.TabTextEditor.open(file);
 				}
 				break;
 			case 'log':
@@ -421,7 +421,7 @@ qx.Class.define("desk.FileBrowser",
 			case 'cpp':
 			case 'cxx':
 			case 'h':
-				new desk.TabTextEditor (file);
+				desk.TabTextEditor.open(file);
 				break;
 			case "vtk":
 			case "ply":
@@ -429,7 +429,7 @@ qx.Class.define("desk.FileBrowser",
 			case "stl":
 			case "ctm":
 			case "off":
-				new desk.MeshViewer(file);
+				desk.TabTextEditor.open(file);
 				break;
 			case "xml":
 				desk.FileSystem.readFile(file, function (error, xmlDoc) {
@@ -608,7 +608,7 @@ qx.Class.define("desk.FileBrowser",
 		*/
 		__viewEditAction : function (node) {
 			if (!node.getChildren) {
-				new desk.TabTextEditor(node.getFullName());;
+				desk.TabTextEditor.open(node.getFullName());;
 			}
 		},
 

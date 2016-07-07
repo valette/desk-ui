@@ -4,59 +4,65 @@
  */
 qx.Class.define("desk.TabTextEditor",
 {
-  extend : qx.core.Object,
+	extend : qx.core.Object,
+	type : "singleton",
 
 	/**
 	* Creates a new text editor
 	*
 	* @param file {String} the file to edit
 	*/
-	construct : function(file) {
+	construct : function() {
 	    this.base(arguments);
-        var win = desk.TabTextEditor.win;
-        if (!win) {
-    		win = desk.TabTextEditor.win = new qx.ui.window.Window();
-    		win.set({layout : new qx.ui.layout.VBox(),
-    			height :700, width : 700, showMinimize : false});
-    		win.addListener('close',this.__clean, this);
-    		win.setCaption("Desk Text Editor");
-    		win.add(new desk.TabView(), {flex : 1});
-    		win.open();
-    		win.center();
-        }
-
-        var found = false;
-	    desk.TabTextEditor.win.getChildren()[0].getChildren().forEach(function (e) {
-	        if (e.getLabel() === file) {
-	            found = true;
-                e.getButton().execute();
-	        }
-	    });
-
-        if (found) return;
-
-        var editor = new desk.TextEditor(file, {standalone : false});
-        var element = win.getChildren()[0].addElement(file,editor);
-        element.getButton().execute();
-        element.setShowCloseButton(true);
-        element.show();
-        element.addListener('close', editor.destroy, editor);
 	},
 
 	statics : {
-		win : null
+
+		/**
+		* Creates a new text editor
+		* @param file {String} the file to edit
+		*/
+		open : function(file) {
+			var win = desk.TabTextEditor.getInstance().__window;
+			if (!win) {
+				win = desk.TabTextEditor.getInstance().__window = new qx.ui.window.Window();
+				win.set( { layout : new qx.ui.layout.VBox(),
+					height : 700, width : 700, showMinimize : false } );
+				win.addListener( 'close', function () {
+					var instance = desk.TabTextEditor.getInstance();
+					instance.__window.getChildren()[0].getChildren().forEach( function (e) {
+						e.destroy();
+					});
+					instance.__window.destroy();
+					instance.__window = 0;
+				});
+				win.setCaption( "Desk Text Editor" );
+				win.add( new desk.TabView(), { flex : 1 } );
+				win.open();
+				win.center();
+			}
+
+			var found = false;
+			win.getChildren()[0].getChildren().forEach(function (e) {
+				if (e.getLabel() === file) {
+					found = true;
+					e.getButton().execute();
+				}
+			});
+
+			if (found) return;
+
+			var editor = new desk.TextEditor(file, {standalone : false});
+			var element = win.getChildren()[0].addElement(file,editor);
+			element.getButton().execute();
+			element.setShowCloseButton(true);
+			element.show();
+			element.addListener('close', editor.destroy, editor);
+		}
+
 	},
 
 	members : {
-        __window : null,
-
-        __clean : function() {
-    	    desk.TabTextEditor.win.getChildren()[0].getChildren().forEach(
-	        function (e) {
-	            e.destroy();
-	        });
-	        desk.TabTextEditor.win.destroy();
-	        desk.TabTextEditor.win = 0;
-        }
+        __window : null
 	}
 });
