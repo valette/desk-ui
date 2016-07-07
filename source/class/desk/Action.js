@@ -92,6 +92,9 @@ qx.Class.define("desk.Action",
 		__manager : null,
 
 		__fileBrowser : null,
+		__logContainer : null,
+		__outputTab : null,
+		__logTab : null,
 
 		/**
 		* Returns the buttons container
@@ -226,17 +229,14 @@ qx.Class.define("desk.Action",
 			return this.__tabView;
 		},
 
-		__outputTabTriggered : false,
-
 		/**
 		* Constructs the tab containing the output directory file browser
 		*/
 		__addOutputTab : function () {
-			if (this.__action.voidAction || this.__outputTabTriggered) {
+			if (this.__action.voidAction || this.__outputTab) {
 				return;
 			}
-			this.__outputTabTriggered = true;
-			var page = new qx.ui.tabview.Page("Output");
+			var page = this.__outputTab = new qx.ui.tabview.Page("Output");
 			this.__tabView.add( page );
 			page.addListenerOnce('appear', function () {
 				page.setLayout(new qx.ui.layout.HBox());
@@ -251,6 +251,24 @@ qx.Class.define("desk.Action",
 		},
 
 		/**
+		* Constructs the tab containing the output log
+		* @return {qx.ui.tabview.Page} log tab
+		*/
+		getLogTab : function () {
+			if ( this.__logTab ) {
+				return this.__logTab;
+			}
+			var page = this.__logTab = new qx.ui.tabview.Page("Log");
+			this.__tabView.add( page );
+			page.setLayout(new qx.ui.layout.HBox());
+			this.__logContainer = new desk.LogContainer();
+			this.__logContainer.setBackgroundColor('black');
+			page.add( this.__logContainer , { flex : 1 } );
+			return page;
+		},
+
+
+		/**
 		* Refreshes the file browser
 		*/
 		__updateFileBrowser : function () {
@@ -263,7 +281,6 @@ qx.Class.define("desk.Action",
 
 		__status : null,
 
-		__showLog : null,
 
 		/**
 		* Fired whenever the execute button has been pressed
@@ -333,8 +350,57 @@ qx.Class.define("desk.Action",
 		__executeAction : function (params) {
 			var id = this.__actionsCounter;
 			this.__actionsCounter++;
-			desk.Actions.execute(params, function (err, response) {
-				this.__afterExecute(id, response);
+
+			var logTab, log, started;
+
+			if (this.__action.voidAction !== true) {
+				logTab = this.getLogTab();
+				logTab.getButton().execute();
+				log = logTab.getChildren()[0];
+				log.clear();
+				var options = {
+					listener : function (message) {
+						if (message.type === "outputDirectory") {
+							return;
+						}
+
+						if (!started) {
+							started = true;
+							log.log("Starting", "yellow");
+						}
+						var color;
+						switch (message.type) {
+							case "stdout" : 
+								color = 'white';
+								break;
+							case "stderr" : 
+								color = 'red';
+								break;
+							default : return;
+						}
+						log.log(message.data, color);
+					}
+				};
+			}
+
+			desk.Actions.execute(params, options, function (err, res) {
+				if (started) {
+					log.log("Finished", "yellow");
+				} else if ( log && (res.status === 'CACHED')) {
+					log.log("Replaying cached output : ", "green");
+					desk.FileSystem.readFile(res.outputDirectory + "/action.log", function (err, stdout) {
+						stdout.split('/n').forEach(function (line) {
+							log.log(line, 'white');
+						});
+						desk.FileSystem.readFile(res.outputDirectory + "/action.err", function (err, stderr) {
+							stderr.split('/n').forEach(function (line) {
+								log.log(line, 'red');
+							});
+						});
+						log.log("Cache replay ended", "green");
+					});
+				}
+				this.__afterExecute(id, res);
 			}, this);
 			this.fireDataEvent("actionTriggered", {id : id, params : params});
 		},
@@ -354,9 +420,6 @@ qx.Class.define("desk.Action",
 			}
 
 			this.__status.setValue(res.status);
-			if (!this.__action.voidAction) {
-				this.__showLog.setVisibility("visible");
-			}
 			this.fireDataEvent("actionUpdated", {id : id, response : res});
 		},
 
@@ -546,19 +609,13 @@ qx.Class.define("desk.Action",
 			this.__controls.add(this.__update, {flex : 1});
 
 			this.__forceUpdate = new qx.ui.form.CheckBox("force");
+			this.__forceUpdate.setToolTipText("Check to disable caching for this action");
 			this.bind("forceUpdate", this.__forceUpdate, "value");
 			this.__forceUpdate.bind("value", this, "forceUpdate");
 			this.__controls.add(this.__forceUpdate, {flex : 1});
 
 			this.__status = new qx.ui.form.TextField().set({readOnly: true});
 			this.__controls.add(this.__status, {flex : 1});
-
-			this.__showLog = new qx.ui.form.Button("Show console log");
-			this.__showLog.addListener("execute",function () {
-				new desk.TextEditor(this.getOutputDirectory() + "action.log");
-			}, this);
-			this.__showLog.setVisibility("excluded");
-			this.add(this.__showLog);
 
 			// add a listener to the form manager for the validation complete
 			this.__manager.addListener("complete", this.__afterValidation, this);
