@@ -180,10 +180,23 @@ THREE.TrackballControls2 = function ( object ) {
 
 		if ( mouseChange.lengthSq() ) {
 
-			mouseChange.multiplyScalar( this.panSpeed / this.object.zoom);
-			var pan = _eye.clone().cross( this.object.up ).setLength( mouseChange.x * this.width);
-			pan.add( this.object.up.clone().setLength( mouseChange.y * this.height) );
-			this.object.position.add( pan );
+			var pan;
+
+			if (this.zoomUsingZ) {
+
+				mouseChange.multiplyScalar( _eye.length() * this.panSpeed );
+				pan = _eye.clone().cross( this.object.up ).setLength( mouseChange.x )
+					.add( this.object.up.clone().setLength( mouseChange.y ) );
+
+			} else {
+
+				mouseChange.multiplyScalar( this.panSpeed / this.object.zoom);
+				pan = _eye.clone().cross( this.object.up ).setLength( mouseChange.x * this.width)
+					.add( this.object.up.clone().setLength( mouseChange.y * this.height) );
+				this.object.position.add( pan );
+
+			}
+
 			this.target.add( pan );
 			_panStart = _panEnd;
 
