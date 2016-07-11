@@ -353,7 +353,7 @@ qx.Class.define("desk.Action",
 
 			var logTab, log, started;
 
-			if (this.__action.voidAction !== true) {
+			if ( ( this.__standalone === true ) && ( this.__action.voidAction !== true ) ) {
 				logTab = this.getLogTab();
 				logTab.getButton().execute();
 				log = logTab.getChildren()[0];
