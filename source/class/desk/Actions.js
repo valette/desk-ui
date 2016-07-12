@@ -29,15 +29,25 @@ qx.Class.define("desk.Actions",
 		if (qx.bom.Cookie.get("homeURL")) {
 			// support for node.js
 			this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
-			this.__rpcPresent = true;
+			this.__engine = "node";
 			this.__socket.on("action finished", this.__onActionEnd.bind(this));
 			console.log("powered by node.js");
+			setTimeout( function () {
+				// add already running actions
+				desk.Actions.execute( { manage : 'list'}, function (err, res) {
+					var actions = res.ongoingActions
+					Object.keys(actions).forEach( function ( handle ) {
+						desk.Actions.getInstance().__addActionToList( actions[ handle ] );
+						desk.Actions.getInstance().__runingActions[ handle ] = actions[ handle ];
+					});
+				}.bind(this));
+			}, 1000);
 		} else try {
 			// support for electron.js / nw.js
 			this.__socket = require('desk-base');
 			this.__setEmitLog = this.__socket.setEmitLog;
 			this.__socket.setLogToConsole(false);
-			this.__rpcPresent = true;
+			this.__engine = "electron/nw";
 			this.__execute = function (params) {
 				this.__socket.execute(params, this.__onActionEnd.bind(this));
 			};
@@ -47,6 +57,7 @@ qx.Class.define("desk.Actions",
 				}.bind(this), 10);
 			};
 			if (typeof window.nw === 'undefined') {
+				this.__engine = "electron";
 				console.log("powered by electron.js");
 				var ipcRenderer = require('electron').ipcRenderer
 				window.prompt = function(title, val) {
@@ -54,11 +65,12 @@ qx.Class.define("desk.Actions",
 				}
 			} else {
 				console.log("powered by nw.js");
+				this.__engine = "nw";
 			}
 			this.__loadSettings();
 		} catch (e) {}
 
-		if (!this.__rpcPresent) {
+		if (!this.__engine) {
 			desk.FileSystem.readFile(this.__savedActionsFile,
 				function (err, result) {
 					if (err) {
@@ -108,7 +120,6 @@ qx.Class.define("desk.Actions",
 				options = {};
 			}
 			options = options || {};
-
 			params = JSON.parse(JSON.stringify(params));
 			params.handle = Math.random().toString();
 			var actions = desk.Actions.getInstance();
@@ -132,7 +143,7 @@ qx.Class.define("desk.Actions",
 				actions.__socket.on("actionEvent", parameters.listener);
 			}
 
-			if (actions.__recordedActions && !actions.__rpcPresent) {
+			if (actions.__recordedActions && !actions.__engine) {
 				var response = actions.__recordedActions[actions.__getActionSHA(params)];
 				if (response) {
 					response.handle = params.handle;
@@ -207,7 +218,7 @@ qx.Class.define("desk.Actions",
 		__savedActionsFile : 'cache/responses.json',
 		__firstReadFile : null,
 		__settingsButton : null,
-		__rpcPresent : false,
+		__engine : false,
 
 		__setEmitLog : function (value) {
 			this.__socket.emit('setEmitLog', value);
@@ -295,7 +306,7 @@ qx.Class.define("desk.Actions",
 			var button = this.__settingsButton = new qx.ui.form.MenuButton(null, "icon/16/categories/system.png", menu);
 			button.setToolTipText("Files/Configuration");
 
-			if (!this.__rpcPresent) return;
+			if (!this.__engine) return;
 
 			this.__socket.on("loadavg", function (loadavg) {
 				var load = Math.max(0, Math.min(100, Math.round(100 * loadavg[0])));
@@ -538,7 +549,7 @@ qx.Class.define("desk.Actions",
 				this.__socket.removeListener("actionEvent", params.listener);
 			}
 
-			if (this.__recordedActions && this.__rpcPresent) {
+			if (this.__recordedActions && this.__engine) {
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
@@ -745,7 +756,7 @@ qx.Class.define("desk.Actions",
 			var initDir = 'code/init';
 			async.waterfall([
 				function (cb) {
-					if (!this.__rpcPresent) {
+					if (!this.__engine) {
 						cb(1);
 						return;
 					}
