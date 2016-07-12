@@ -50,6 +50,7 @@ qx.Class.define("desk.TabTextEditor",
 				}
 			});
 
+			win.getLayoutParent().getWindowManager().bringToFront(win); 
 			if (found) return;
 
 			var editor = new desk.TextEditor(file, {standalone : false});
