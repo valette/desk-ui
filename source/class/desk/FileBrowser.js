@@ -445,6 +445,7 @@ qx.Class.define("desk.FileBrowser",
 			case "jpg":
 			case "bmp":
 			case "mhd":
+			case "nii":
 				new desk.VolumeViewer(file);
 				break;
 			case "gz":
