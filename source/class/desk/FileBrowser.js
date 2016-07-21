@@ -311,6 +311,7 @@ qx.Class.define("desk.FileBrowser",
 		__files : null,
 		__rootId : null,
 		__filterField : null,
+		__actionButton : null,
 
 		__actionNames : null,
 		__actionCallbacks : null,
@@ -429,7 +430,7 @@ qx.Class.define("desk.FileBrowser",
 			case "stl":
 			case "ctm":
 			case "off":
-				desk.TabTextEditor.open(file);
+				new desk.MeshViewer(file);
 				break;
 			case "xml":
 				desk.FileSystem.readFile(file, function (error, xmlDoc) {
@@ -636,15 +637,15 @@ qx.Class.define("desk.FileBrowser",
 			menu.add(openButton);
 			menu.addSeparator();
 
-			var actionsButton = new qx.ui.menu.Button("Actions");
-			menu.add(actionsButton);
+			this.__actionButton = new qx.ui.menu.Button("Actions");
+			menu.add(this.__actionButton);
 			menu.addSeparator();
 
 			this.__files.setContextMenu(menu);
 			qx.util.DisposeUtil.disposeTriggeredBy(menu, this);
-			this.__files.addListener("contextmenu", function (e) {
-				actionsButton.setMenu(desk.Actions.getInstance().getActionsMenu(this));
-			}, this);
+
+			desk.Actions.getInstance().addListener( 'update', this.__updateActions, this);
+			this.__updateActions();
 
 			if (desk.Actions.getInstance().getSettings().permissions < 1) {
 				return;
@@ -661,6 +662,63 @@ qx.Class.define("desk.FileBrowser",
 			this.addAction('properties', function (node) {
 				alert(node.getName() + " : " + node.getSize() + " bytes");
 			});
+		},
+
+		__updateActions : function () {
+			this.__files.addListenerOnce( "contextmenu", function (e) {
+				function myComparator (a, b) {
+					return a.toLowerCase().localeCompare(b.toLowerCase());
+				}
+
+				var actionMenu = new qx.ui.menu.Menu();
+				this.__actionButton.setMenu( actionMenu );
+
+				var actions = desk.Actions.getInstance().getSettings().actions;
+
+				var libs = {};
+				Object.keys(actions).forEach(function (name) {
+					var action = actions[name];
+					if ( !libs[ action.lib ] ) {
+						libs[ action.lib ] = [];
+					}
+					libs[ action.lib ].push( name );
+				}, this);
+
+				Object.keys( libs ).sort( myComparator ).forEach( function ( lib ) {
+					var menu = new qx.ui.menu.Menu();
+					var menubutton = new qx.ui.menu.Button( lib, null, null, menu );
+					libs[ lib ].sort( myComparator ).forEach( function ( name ) {
+						var button = new qx.ui.menu.Button( name );
+						var description = actions[ name ].description;
+						if ( description ) {
+							button.setBlockToolTip( false );
+							button.setToolTipText( description );
+						}
+						button.addListener( "execute", this.__launch, this );
+						menu.add( button );
+					}, this);
+					actionMenu.add( menubutton );
+				}, this );
+			}, this);
+		},
+
+		/**
+		* fired when an action is launched via the action menu
+		* @param e {qx.event.type.Event} button event
+		*/
+		__launch : function (e) {
+			var name = e.getTarget().getLabel();
+			var action = new desk.Action(name, {standalone : true});
+			_.some(desk.Actions.getInstance().getSettings().actions[name].parameters, function (param) {
+				if ((param.type !== "file") && (param.type !== "directory")) {
+					return false;
+				}
+				var parameters = {};
+				parameters[param.name] = this.getSelectedFiles()[0];
+				action.setParameters(parameters);
+				return true;
+			}.bind(this));
+			action.setOutputDirectory("actions/");
 		},
 
 		/**

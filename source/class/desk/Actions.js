@@ -204,16 +204,19 @@ qx.Class.define("desk.Actions",
 		/**
 		* Fired when the actions list is ready
 		*/	
-		"changeReady" : "qx.event.type.Event"
+		"changeReady" : "qx.event.type.Event",
+
+		/**
+		* Fired when the actions list is updated
+		*/
+		"update" : "qx.event.type.Event"
 	},
 
 	members : {
 		__socket : null,
 		__runingActions : {},
-		__actionMenu : null,
 		__settings : null,
 		__ongoingActions : null,
-		__currentFileBrowser : null,
 		__recordedActions : null,
 		__savedActionsFile : 'cache/responses.json',
 		__firstReadFile : null,
@@ -481,15 +484,6 @@ qx.Class.define("desk.Actions",
 			return action ? JSON.parse(JSON.stringify(action)) : null;
 		},
 
-		/**
-		* Returns the menu containing all actions. Advanced usage only...
-		* @param fileBrowser {desk.FileBrowser} 
-		* @return {qx.ui.menu.Menu} actions menu
-		*/
-		getActionsMenu : function (fileBrowser) {
-			this.__currentFileBrowser = fileBrowser;
-			return this.__actionMenu;
-		},
 		
 		/**
 		* Returns the container which lists all ongoing actions
@@ -653,35 +647,6 @@ qx.Class.define("desk.Actions",
 		},
 
 		/**
-		* fired when an action is launched via the action menu
-		* @param e {qx.event.type.Event} button event
-		*/
-		__launch : function (e) {
-			var name = e.getTarget().getLabel();
-			var action = new desk.Action(name, {standalone : true});
-			_.some(this.__settings.actions[name].parameters, function (param) {
-				if ((param.type !== "file") && (param.type !== "directory")) {
-					return false;
-				}
-				var parameters = {};
-				parameters[param.name] = this.__currentFileBrowser.getSelectedFiles()[0];
-				action.setParameters(parameters);
-				return true;
-			}.bind(this));
-			action.setOutputDirectory("actions/");
-		},
-
-		/**
-		* custom comparator for the sort operator
-		* @param a {String} first value to compare
-		* @param b {String} second value to compare
-		* @return {Boolean} true if a < b
-		*/
-		__myComparator : function (a, b) {
-			return a.toLowerCase().localeCompare(b.toLowerCase());
-		},
-
-		/**
 		* Loads actions.json from server and refreshes the action menu
 		*/
 		__loadSettings : function() {
@@ -707,39 +672,12 @@ qx.Class.define("desk.Actions",
 			}
 
 			this.debug("Updating settings");
-			this.__actionMenu = new qx.ui.menu.Menu();
-
-			var actions = settings.actions;
-
-			var libs = {};
-			Object.keys(actions).forEach(function (name) {
-				var action = actions[name];
-				if (!libs[action.lib]) {
-					libs[action.lib] = [];
-				}
-				libs[action.lib].push(name);
-			}, this);
-
-			Object.keys(libs).sort(this.__myComparator).forEach(function (lib) {
-				var menu = new qx.ui.menu.Menu();
-				var menubutton = new qx.ui.menu.Button(lib, null, null, menu);
-				libs[lib].sort(this.__myComparator).forEach(function (name) {
-					var button = new qx.ui.menu.Button(name);
-					var description = actions[name].description;
-					if (description) {
-						button.setBlockToolTip(false);
-						button.setToolTipText(description);
-					}
-					button.addListener("execute", this.__launch, this);
-					menu.add(button);
-				}, this);
-				this.__actionMenu.add(menubutton);
-			}, this);
-
 			settings.init = settings.init || [];
 
 			console.log("Desk launched, baseURL : " + desk.FileSystem.getBaseURL());
 			console.log("Settings : ", settings);
+
+			this.fireEvent('update');
 
 			if (this.__settings) {
 				this.debug("Init files already loaded");
