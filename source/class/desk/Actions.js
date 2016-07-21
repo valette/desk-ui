@@ -276,27 +276,21 @@ qx.Class.define("desk.Actions",
 			var devMenu = new qx.ui.menu.Menu();
 			menu.add(new qx.ui.menu.Button("dev", null, null, devMenu));
 
-			var APIButton = new qx.ui.menu.Button("API documentation");
-			APIButton.addListener('execute', function () {
-				var win = window.open(desk.FileSystem.getFileURL('ui/api'), '_blank');
-				win.focus();
-			});
-			devMenu.add(APIButton);
+			var links = {
+				'API documentation' : desk.FileSystem.getFileURL('ui/api'),
+				'Debug mode' : desk.FileSystem.getFileURL('ui/source'),
+				'Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
+				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
+			}
 
-			var debugButton = new qx.ui.menu.Button("Debug mode");
-			debugButton.addListener('execute', function () {
-				var win = window.open(desk.FileSystem.getFileURL('ui/source'), '_blank');
-				win.focus();
+			Object.keys( links ).forEach( function (key) {
+				var button = new qx.ui.menu.Button(key);
+				button.addListener( 'execute', function () {
+					var win = window.open(links[ key ], '_blank' );
+					win.focus();
+				});
+				devMenu.add(button);
 			});
-			devMenu.add(debugButton);
-
-			var changelogButton = new qx.ui.menu.Button("Changelog");
-			changelogButton.addListener('execute', function () {
-				var win = window.open('https://github.com/valette/desk-ui/commits/master', '_blank');
-				win.focus();
-			});
-			devMenu.add(changelogButton);
-
 
 			['make', 'qooxdoo'].forEach(function (action) {
 				var button = new qx.ui.menu.Button(action);
