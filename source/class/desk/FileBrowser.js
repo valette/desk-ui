@@ -327,11 +327,13 @@ qx.Class.define("desk.FileBrowser",
 			var dataDirs = settings.dataDirs;
 			var permissions = settings.permissions;
 			var dirs = Object.keys(dataDirs);
-			dirs.sort();
+			dirs.sort(this.__caseInsensitiveSort);
+			var hiddenDirs = [];
 			dirs.forEach(function (dir) {
 				if ((dir === "cache") || (dir === "application") ||
 					((permissions === 0) && (dir ==="actions")) ||
 					dataDirs[dir].hidden) {
+					hiddenDirs.push(dir);
 					return;
 				}
 
@@ -349,6 +351,27 @@ qx.Class.define("desk.FileBrowser",
 				menu.add(openButton);
 				button.setContextMenu(menu);
 			}, this);
+
+
+			var menu = new qx.ui.menu.Menu();
+			var button = new qx.ui.form.MenuButton( '...', null, menu);
+			container.add(button);
+			hiddenDirs.forEach(function (dir) {
+				var button = new qx.ui.menu.Button(dir);
+				button.addListener("click", function () {
+					this.updateRoot(dir);
+				}, this);
+				menu.add(button, {flex : 1});
+				var menu2 = new qx.ui.menu.Menu();
+				var openButton = new qx.ui.menu.Button('open in new window');
+				openButton.addListener('execute', function (e) {
+					var browser = new desk.FileBrowser(dir, true);
+					browser.getWindow().center();
+				});
+				menu2.add(openButton);
+				button.setContextMenu(menu2);
+			}, this);
+
 			return container;
 		},
 
@@ -666,10 +689,6 @@ qx.Class.define("desk.FileBrowser",
 
 		__updateActions : function () {
 			this.__files.addListenerOnce( "contextmenu", function (e) {
-				function myComparator (a, b) {
-					return a.toLowerCase().localeCompare(b.toLowerCase());
-				}
-
 				var actionMenu = new qx.ui.menu.Menu();
 				this.__actionButton.setMenu( actionMenu );
 
@@ -684,10 +703,10 @@ qx.Class.define("desk.FileBrowser",
 					libs[ action.lib ].push( name );
 				}, this);
 
-				Object.keys( libs ).sort( myComparator ).forEach( function ( lib ) {
+				Object.keys( libs ).sort( this.__caseInsensitiveSort ).forEach( function ( lib ) {
 					var menu = new qx.ui.menu.Menu();
 					var menubutton = new qx.ui.menu.Button( lib, null, null, menu );
-					libs[ lib ].sort( myComparator ).forEach( function ( name ) {
+					libs[ lib ].sort( this.__caseInsensitiveSort ).forEach( function ( name ) {
 						var button = new qx.ui.menu.Button( name );
 						var description = actions[ name ].description;
 						if ( description ) {
@@ -847,6 +866,16 @@ qx.Class.define("desk.FileBrowser",
 		* @return {Boolean} returns true if a < b
 		*/
 		__caseInsensitiveSort : function (a, b) {
+			return a.toLowerCase().localeCompare(b.toLowerCase());
+		},
+
+		/**
+		* sorting function to
+		* @param a {String} first element to compare
+		* @param b {String} second element to compare
+		* @return {Boolean} returns true if a < b
+		*/
+		__caseInsensitiveSort2 : function (a, b) {
 			return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 		},
 
@@ -859,7 +888,7 @@ qx.Class.define("desk.FileBrowser",
 			var children = node.getChildren();
 			desk.FileSystem.readDir(directory, function (err, files) {
 				children.removeAll();
-				files.sort(this.__caseInsensitiveSort)
+				files.sort(this.__caseInsensitiveSort2)
 				files.forEach(function (file) {
 					file.fullName = directory + "/" + file.name;
 					if (file.isDirectory) {
