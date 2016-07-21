@@ -281,7 +281,7 @@ qx.Class.define("desk.Actions",
 				'Debug mode' : desk.FileSystem.getFileURL('ui/source'),
 				'Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
 				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
-			}
+			};
 
 			Object.keys( links ).forEach( function (key) {
 				var button = new qx.ui.menu.Button(key);
