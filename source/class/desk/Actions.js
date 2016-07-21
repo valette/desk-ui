@@ -280,7 +280,8 @@ qx.Class.define("desk.Actions",
 				'API documentation' : desk.FileSystem.getFileURL('ui/api'),
 				'Debug mode' : desk.FileSystem.getFileURL('ui/source'),
 				'Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
-				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
+				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser',
+				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master'
 			};
 
 			Object.keys( links ).forEach( function (key) {
