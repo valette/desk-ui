@@ -232,6 +232,14 @@ qx.Class.define("desk.Actions",
 		},
 
 		/**
+		* returns the web socket
+		* @return {Object} the socket
+		*/
+		getSocket : function () {
+			return this.__socket;
+		},
+
+		/**
 		* Creates the action menu
 		*/
 		__createActionsMenu : function () {
@@ -258,6 +266,14 @@ qx.Class.define("desk.Actions",
 				});
 				filesMenu.add(button);
 			});
+
+			var terminalButton = new qx.ui.menu.Button("Terminal");
+			terminalButton.setBlockToolTip(false);
+			terminalButton.setToolTipText("Open a new terminal window");
+			terminalButton.addListener( 'execute', function () {
+				new desk.Terminal( {standalone : true} );
+			});
+			menu.add(terminalButton);
 
 			var forceButton = new qx.ui.menu.CheckBox("Disable cache");
 			forceButton.setBlockToolTip(false);

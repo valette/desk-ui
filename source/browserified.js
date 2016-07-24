@@ -19,6 +19,9 @@ THREE     =	require('three');
 
 jsSHA     = require("jssha");
 
+Terminal = require('xterm');
+require ('../node_modules/xterm/src/xterm.css');
+
 if (typeof importScripts == 'function') {
 	// we are in a worker
 	return;
