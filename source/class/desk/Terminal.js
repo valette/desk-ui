@@ -22,8 +22,8 @@ qx.Class.define("desk.Terminal",
 			var win = this.__window = new qx.ui.window.Window();
 			win.set({
 				layout : new qx.ui.layout.HBox(),
-				width : 630,
-				height : 380,
+				width : 685,
+				height : 390,
 				contentPadding : 0,
 				caption : 'Terminal'
 			});
@@ -89,17 +89,14 @@ qx.Class.define("desk.Terminal",
 			var socket = this.__getSocket( '/xterm' );
 
 			if ( socket.connected ) {
-				socket.emit('newTerminal', {name : '' + this.__rand});
 				this.__init();
 			} else {
-				socket.once( 'connect', function () {
-					socket.emit('newTerminal', {name : '' + this.__rand});
-					this.__init();
-				}.bind( this ));
+				socket.once( 'connect', this.__init.bind( this ));
 			}
 		},
 
 		__init : function () {
+			this.__getSocket( '/xterm' ).emit('newTerminal', {name : '' + this.__rand});
 			this.__socket = this.__getSocket('/xterm' + this.__rand);
 			this.__container = document.getElementById('' + this.__rand);
 			this.__term = new Terminal( { cursorBlink : true } );
@@ -123,8 +120,8 @@ qx.Class.define("desk.Terminal",
 		__resize : function () {
 			this.__container.children[0].focus();
 			var size = this.__html.getInnerSize();
-			var nCols = Math.floor( size.width / 7.84 );
-			var nRows = Math.floor( size.height / 14 );
+			var nCols = Math.floor( size.width / 8.5 );
+			var nRows = Math.floor( size.height / 15 );
 			if ( ( this.__nCols == nCols ) && ( this.__nRows === nRows) ) {
 				return;
 			}
@@ -134,8 +131,8 @@ qx.Class.define("desk.Terminal",
 			this.__term.resize( nCols, nRows );
 			this.__term.children.forEach(function (child) {
 				var style = child.style;
-				style.fontSize = "13px";
-				style.lineHeight = "14px";
+				style.fontSize = "14px";
+				style.lineHeight = "15px";
 			});
 			this.__socket.emit("resize", {nCols : nCols, nRows : nRows});
 		},
