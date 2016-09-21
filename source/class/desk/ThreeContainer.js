@@ -369,13 +369,13 @@ qx.Class.define("desk.ThreeContainer",
 				return;
 			}
 
-			var bbdl = bbox.size().length();
+			var bbdl = bbox.getSize().length();
 
 			var camera = this.__camera;
 			var controls = this.__controls;
 
 			if (this.__boudingBoxDiagonalLength === 0) {
-				var center = bbox.center();
+				var center = bbox.getCenter();
 				this.__boudingBoxDiagonalLength = bbdl;
 				camera.position.copy(center);
 				camera.position.z += bbdl;
