@@ -2,13 +2,13 @@
   "name": "desk-ui",
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
-  "license" : "CECILL-B",
-  "version": "0.9.0",
+  "license": "CECILL-B",
+  "version": "0.10.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/valette/desk-ui.git"
   },
-  "main" : "build/index.html",
+  "main": "build/index.html",
   "dependencies": {
     "fs-extra": ">0.0.0",
     "shelljs": ">0.0.0"
@@ -31,27 +31,29 @@
     "numeric": ">0.0.0",
     "operative": ">0.0.0",
     "pretty-data": ">0.0.0",
-    "qooxdoo" : "git://github.com/qooxdoo/qooxdoo",
+    "qooxdoo": "git://github.com/qooxdoo/qooxdoo",
     "random-js": ">0.0.0",
     "socket.io-client": ">0.0.0",
-    "three" : ">0.0.0",
+    "three": ">0.0.0",
     "uploadmgr": ">0.0.0",
-    "vinyl-source-stream" : ">0.0.0",
+    "vinyl-source-stream": ">0.0.0",
     "webworkify": ">0.0.0",
-    "xterm" : ">0.0.0"
+    "xterm": ">0.0.0"
   },
   "engines": {
     "node": "*"
   },
   "browserify": {
-    "transform": ["browserify-css"]
+    "transform": [
+      "browserify-css"
+    ]
   },
-  "scripts" : {
+  "scripts": {
     "browserify": "node source/build.js",
     "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
     "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
-    "build" : "npm run clean && npm run browserify && npm run qooxdoo",
-    "buildAddons" : "node source/buildAddons.js",
-    "updateAll" : "rm -rf node_modules && git pull && npm install && npm run build"
+    "build": "npm run clean && npm run browserify && npm run qooxdoo",
+    "buildAddons": "node source/buildAddons.js",
+    "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }
 }
