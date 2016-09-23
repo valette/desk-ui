@@ -60,6 +60,14 @@ qx.Class.define("desk.VolumeSlice",
 			this.__LUTFactor = opts.LUTFactor;
 		}
 
+		if (opts.contrast) {
+			this.__contrast = opts.contrast;
+		}
+
+		if (opts.brightness !== undefined) {
+			this.__brightness = opts.brightness;
+		}
+
 		this.__file = file;
 
 		var image = this.__image = new Image();

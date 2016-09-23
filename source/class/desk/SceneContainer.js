@@ -582,8 +582,8 @@ qx.Class.define("desk.SceneContainer",
 			var group = new THREE.Group();
 			this.addMesh(group, _.extend({branch : true, label : file}, opts));
 			async.eachSeries(opts.orientations || [0, 1, 2], function (orientation, callback) {
-				var slice = new desk.VolumeSlice(file, orientation,
-					{sliceWith : opts.sliceWith}, function (err) {
+				var slice = new desk.VolumeSlice(file, orientation, opts,
+					function (err) {
 					if (err) {
 						callback(err);
 						return;
