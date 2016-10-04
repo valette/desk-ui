@@ -749,7 +749,7 @@ qx.Class.define("desk.SceneContainer",
 		__onMouseWheel : function (event) {
 			if (event.getTarget() != this.getCanvas()) return;
 			var slices = [];
-			this.getScene().traverse(function (mesh) {
+			this.getScene().traverseVisible(function (mesh) {
 				if (mesh.userData && mesh.userData.viewerProperties
 					&& mesh.userData.viewerProperties.volumeSlice) {
 					slices.push(mesh);
