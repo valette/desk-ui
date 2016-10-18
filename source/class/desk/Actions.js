@@ -9,6 +9,7 @@
  * @ignore (async.*)
  * @ignore (jsSHA)
  * @ignore (prettyData.json)
+ * @ignore (desk_startup_script)
  * @lint ignoreDeprecated (alert)
  * @lint ignoreDeprecated (confirm)
  * @require(desk.LogContainer)
@@ -26,7 +27,7 @@ qx.Class.define("desk.Actions",
 	construct : function() {
 		this.base(arguments);
 
-		if (qx.bom.Cookie.get("homeURL")) {
+		if ( (typeof desk_startup_script !== "string") && qx.bom.Cookie.get("homeURL") ) {
 			// support for node.js
 			this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
 			this.__engine = "node";
