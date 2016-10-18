@@ -405,20 +405,33 @@ qx.Class.define("desk.Actions",
 			button.setBlockToolTip(false);
 			button.setToolTipText("To change your password");
 			button.addListener('execute', function () {
-				var password = prompt('Enter new password (more than 4 letters)');
-				var req = new qx.io.request.Xhr(desk.FileSystem.getBaseURL() + 'password');
-				req.setMethod('POST');
-				req.setRequestData({password : password});
-				req.addListener('success', function(e) {
-					var status = JSON.parse(req.getResponseText());
-					if (status.error) {
-						alert ('Error : ' + status.error);
+				var win = new qx.ui.window.Window();
+				win.setLayout(new qx.ui.layout.VBox());
+				var pass = new qx.ui.form.PasswordField();
+				win.add( new qx.ui.basic.Label( "Enter new password:" ) );
+				win.add(pass, {flex : 1});
+				pass.addListenerOnce( 'appear', pass.focus, pass );
+				win.add( new qx.ui.basic.Label( "Retype password:" ) );
+				var pass2 = new qx.ui.form.PasswordField();
+				win.add(pass2, {flex : 1});
+				var button = new qx.ui.form.Button( "Save password" );
+				button.addListener( 'execute', function () {
+					if ( pass.getValue().length && ( pass.getValue() === pass2.getValue() ) ){
+						this.__socket.emit( 'password', pass.getValue() );
+						win.close();
 					} else {
-						alert (status.status);
+						alert( 'Password not typed correctly twice! Please retry' );
 					}
-					req.dispose();
-				}, this);
-				req.send();
+				}, this );
+				win.add( button, { flex : 1 });
+				win.open();
+				win.center();
+				win.addListener( 'close', function () {
+					button.destroy();
+					pass.destroy();
+					pass2.destroy();
+					win.destroy();
+				});
 			}, this);
 			return button;
 		},
