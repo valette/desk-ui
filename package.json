@@ -35,7 +35,7 @@
     "random-js": ">0.0.0",
     "socket.io-client": ">0.0.0",
     "three": ">0.0.0",
-    "uploadmgr": ">0.0.0",
+    "uploadmgr": "https://github.com/johnspackman/UploadMgr",
     "vinyl-source-stream": ">0.0.0",
     "webworkify": ">0.0.0",
     "xterm": ">0.0.0"
