@@ -338,13 +338,18 @@ qx.Class.define("desk.FileBrowser",
 				}
 
 				var button = new qx.ui.form.Button(dir);
-				button.addListener("click", function () {
-					this.updateRoot(dir);
+				button.addListener("click", function ( e ) {
+					if ( e.isMiddlePressed() ) {
+						var browser = new desk.FileBrowser(dir, true);
+						browser.getWindow().center();
+					} else {
+						this.updateRoot(dir);
+					}
 				}, this);
 				container.add(button, {flex : 1});
 				var menu = new qx.ui.menu.Menu();
 				var openButton = new qx.ui.menu.Button('open in new window');
-				openButton.addListener('execute', function (e) {
+				openButton.addListener('execute', function () {
 					var browser = new desk.FileBrowser(dir, true);
 					browser.getWindow().center();
 				});
@@ -358,8 +363,13 @@ qx.Class.define("desk.FileBrowser",
 			container.add(button);
 			hiddenDirs.forEach(function (dir) {
 				var button = new qx.ui.menu.Button(dir);
-				button.addListener("click", function () {
-					this.updateRoot(dir);
+				button.addListener("click", function ( e ) {
+					if ( e.isMiddlePressed() ) {
+						var browser = new desk.FileBrowser(dir, true);
+						browser.getWindow().center();
+					} else {
+						this.updateRoot(dir);
+					}
 				}, this);
 				menu.add(button, {flex : 1});
 				var menu2 = new qx.ui.menu.Menu();
