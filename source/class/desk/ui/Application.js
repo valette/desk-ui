@@ -20,6 +20,9 @@ qx.Class.define("desk.ui.Application",
 
 	members :
 	{
+		hackToIncludeClasses : function () {
+			new qx.ui.list.List();
+		},
 
 		main : function() {
 			// Call super class
