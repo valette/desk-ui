@@ -80,6 +80,18 @@ qx.Class.define("desk.TextEditor",
 			window.open();
 			window.center();
         }
+
+		this.setDroppable( true );
+		this.addListener( "drop", function( e ) {
+			if ( !e.supportsType ("fileBrowser" ) ) {
+				return;
+			}
+			this.__text
+				.getAce()
+				.getSession()
+				.insert( this.__text.getAce().getCursorPosition(),
+					e.getData( "fileBrowser" ).getSelectedFiles()[ 0 ] );
+		}, this );
 	},
 
 	destruct : function(file) {
