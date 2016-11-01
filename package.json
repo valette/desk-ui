@@ -16,6 +16,7 @@
   "devDependencies": {
     "async": ">0.0.0",
     "brace": ">0.0.0",
+    "bluebird": ">0.0.0",
     "browserify": ">0.0.0",
     "browserify-css": ">0.0.0",
     "c3": ">0.0.0",

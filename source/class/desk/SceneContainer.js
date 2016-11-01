@@ -592,7 +592,9 @@ qx.Class.define("desk.SceneContainer",
 					this.attachVolumeSlice(slice, _.extend({parent : group}, opts));
 					callback();
 				}.bind(this));
-			}.bind(this), (callback || function () {}).bind(context));
+			}.bind(this), function () {
+				(callback || function () {}).call( context, null, group );
+			});
 			return group;
 		},
 
