@@ -130,33 +130,33 @@ qx.Class.define("desk.ui.Application",
 		},
 
 		__promisifyAll : function () {
-						"use strict";
-			/* global async */
 
 			var toPromisify = [
-			"desk.Actions.execute",
-			"desk.FileSystem.executeScript",
-			"desk.FileSystem.exists",
-			"desk.FileSystem.includeScripts",
-			"desk.FileSystem.mkdirp",
-			"desk.FileSystem.readDir",
-			"desk.FileSystem.readFile",
-			"desk.FileSystem.readURL",
-			"desk.FileSystem.writeFile",
-			"desk.FileSystem.writeCachedFile",
-			"desk.FileSystem.writeJSON"
+				"desk.Actions.execute",
+				"desk.Actions.killAction",
+				"desk.FileSystem.executeScript",
+				"desk.FileSystem.exists",
+				"desk.FileSystem.includeScripts",
+				"desk.FileSystem.mkdirp",
+				"desk.FileSystem.readDir",
+				"desk.FileSystem.readFile",
+				"desk.FileSystem.readURL",
+				"desk.FileSystem.traverse",
+				"desk.FileSystem.writeFile",
+				"desk.FileSystem.writeCachedFile",
+				"desk.FileSystem.writeJSON"
 			];
 
 			var membersToPromisify = [
-			"desk.MPRContainer.addVolume",
-			"desk.SceneContainer.addVolume",
-			"desk.SceneContainer.loadURL",
-			"desk.SliceView.addVolume",
-			"desk.MPRContainer.addVolume"
+				"desk.MPRContainer.addVolume",
+				"desk.SceneContainer.addVolume",
+				"desk.SceneContainer.loadURL",
+				"desk.SliceView.addVolume",
+				"desk.MPRContainer.addVolume"
 			];
 
 			var membersToPromisify2 = [
-			"desk.SceneContainer.addFile",
+				"desk.SceneContainer.addFile",
 			];
 
 			this.promisify( toPromisify );
