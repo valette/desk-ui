@@ -1277,7 +1277,10 @@ qx.Class.define("desk.SceneContainer",
 			animate.addListener('execute', function () {
 				var nodes = this.__meshes.getSelectedNodes();
 				if (!this.__animator) {
-					this.__animator = new desk.Animator(this.render.bind(this), {standalone : true});
+					this.__animator = new desk.Animator(this.render.bind(this), {
+						standalone : true,
+						snapshotCallback : this.snapshot.bind( this )
+					});
 					this.__animator.addListener('close', function () {
 						this.__animator = null;
 					}, this);
