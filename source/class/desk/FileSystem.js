@@ -3,8 +3,7 @@
  * @lint ignoreDeprecated(alert)
  * @ignore (_.*)
  * @ignore (require)
- * @ignore (async.eachSeries)
- * @ignore (async.waterfall)
+ * @ignore (async.*)
  * @ignore (jsSHA);
  */
 qx.Class.define("desk.FileSystem", 
@@ -304,29 +303,29 @@ qx.Class.define("desk.FileSystem",
 				asynchronous = false;
 			}
 
-			var crawler = async.queue(function (directory, callback) {
-				desk.FileSystem.readDir(directory, function (err, files) {
-					if (err) {
-						console.warn("error while traversing directory " + directory);
-						console.warn(err);
-						
-					} else {
-						files.forEach(function (file) {
-							var fullFile = directory + "/" + file.name;
-							if (file.isDirectory) {
-								crawler.push(fullFile);
-								if (asynchronous) {
-									callback();
-								}
-							} else {
-								iterator(fullFile, callback)
-							}
-						});
-					}
-					if (!asynchronous) {
+			var crawler = async.queue( function ( directory, callback ) {
+				desk.FileSystem.readDir(directory, function ( err, files ) {
+					if ( err ) {
+						console.warn( "error while traversing directory " + directory );
+						console.warn( err );
 						callback();
+						return;
 					}
-				});
+					async.each( files, function ( file, cb ) {
+						var fullFile = directory + "/" + file.name;
+						if ( file.isDirectory ) {
+							crawler.push( fullFile );
+							cb();
+							return;
+						}
+						if ( asynchronous ) {
+							iterator( fullFile, cb );
+						} else {
+							iterator( fullFile );
+							cb();
+						}
+					}, callback );
+				} );
 			}, 4);
 
 			crawler.push(directory);
