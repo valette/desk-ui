@@ -213,6 +213,23 @@ qx.Class.define("desk.ThreeContainer",
 			}, this);
 		},
 
+		rotateView : function ( thetaX, thetaY, thetaZ ) {
+			var controls = this.getControls();
+			var backup = controls.enabled;
+			controls.enabled = true;
+			controls.mouseDown( 0, 0, 0 );
+			controls.mouseMove( thetaX * controls.width / controls.rotateSpeed,
+				thetaY * controls.height / controls.rotateSpeed );
+			controls.mouseUp( );
+			controls.mouseDown( 3, controls.width, 0 );
+			controls.mouseMove( controls.width, controls.width * Math.sin( thetaZ ) );
+			controls.mouseUp( );
+			controls.enabled = backup;
+			this.getCamera().rotateZ( thetaZ );
+			controls.update( );
+			this.render();
+		},
+
 		/**
 		* Renders the scene
 		* @param immediate {Boolean} triggers immediate rendering (without requestAnimationFrame)
