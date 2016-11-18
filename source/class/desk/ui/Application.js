@@ -166,6 +166,9 @@ qx.Class.define("desk.ui.Application",
 			this.promisify( membersToPromisify, { members : true } );
 			this.promisify( membersToPromisify2, { members : true, tweakCallback : true } );
 
+			desk.SceneContainer.prototype.snapshotAsync = Promise.promisify ( function ( opts, callback ) {
+				this.snapshot( Object.assign( {}, opts, { callback : callback } ) );
+			} );
 
 			async.mapLimitAsync = function ( arr, limit, iterator ) {
 				return new Promise ( function ( resolve, reject ) {
