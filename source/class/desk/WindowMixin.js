@@ -34,6 +34,19 @@ qx.Mixin.define("desk.WindowMixin",
 			return (this.__window);
 		},
 
+		/**
+		 * Overlays the window content to fill the whole screen.
+		 */
+		fillScreen : function () {
+			var container = this.getChildrenContainer();
+			container.set ( {
+				width : window.innerWidth,
+				height : window.innerHeight,
+				backgroundColor : "white",
+				zIndex : 500000
+			} );
+			qx.core.Init.getApplication().getRoot().add( container );
+		},
 
 		/**
 		 * closes the window
