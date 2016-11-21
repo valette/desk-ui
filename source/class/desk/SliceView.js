@@ -298,7 +298,12 @@ qx.Class.define("desk.SliceView",
 				mesh.material.uniforms.texture.value.dispose();
 				mesh.material.dispose();
 				mesh.geometry.dispose();
-				this.removeBinding(slice.getUserData("binding"));
+				var binding = slice.getUserData("binding");
+				if ( binding ) {
+					this.removeBinding( binding );
+				} else {
+					this.removeListenerById( slice.getUserData( "__sliceViewListener" ) );
+				}
 				this.render();
 				slice.dispose();
 				this.__slices = _.without(this.__slices, slice);
@@ -629,37 +634,64 @@ qx.Class.define("desk.SliceView",
 		// listeners Ids to get rid of when changing drawing canvas
 		__drawingListeners : null,
 
+		__updateVolumeSlicePosition : function ( volumeSlice ) {
+			var index = volumeSlice.getZIndex();
+			var position = this.__origin[ index ] + this.getSlice() * this.__spacing[ index ];
+			volumeSlice.setPosition( position );
+		},
+
 		/**
 		 * adds a slice to the scene
 		 * @param slice {desk.VolumeSlice} the slice to add
 		 * @param callback {Function} callback when done
 		 * @param context {Object} optional callback context
 		 */
-		__addSlice : function (slice, callback, context) {
-			var geometry = new THREE.PlaneBufferGeometry(1, 1);
+		__addSlice : function ( slice, callback, context ) {
+			var geometry = new THREE.PlaneBufferGeometry( 1, 1 );
 			var coords = slice.get2DCornersCoordinates();
 			var vertices = geometry.attributes.position;
-			for (var i = 0; i < 4; i++) {
-				vertices.setXYZ(i, coords[2 * i], coords[2 * i + 1], 0);
+			for ( var i = 0; i < 4; i++ ) {
+				vertices.setXYZ( i, coords[ 2 * i ], coords[ 2 * i + 1 ], 0 );
 			}
 
-			slice.setUserData("binding", this.bind("slice", slice, "slice"));
-			slice.bind("slice", this, "slice");
+			// detect if slice has same resolution.
+			var index = desk.VolumeSlice.indices.z[ this.__orientation ];
+			if ( ( this.__spacing[ index ] !== slice.getSpacing()[ index ] )
+				|| ( this.__origin[ index ] !== slice.getOrigin()[ index ] )
+				|| ( this.__slider.getMaximum() !== slice.getNumberOfSlices() - 1 ) ) {
+				this.__updateVolumeSlicePosition( slice );
+				slice.setUserData( "__sliceViewListener", this.addListener( 'changeSlice',
+					function () {
+						this.__updateVolumeSlicePosition( slice );
+					} ) );
+				slice.addListener( 'changePosition', function () {
+					var position = slice.getPosition();
+					var index = slice.getZIndex();
+					var slice = Math.round( ( position - this.__origin[ index ] ) 
+						/ this.__spacing[ index ] );
+					slice = Math.max( 0, Math.min( slice, this.__slider.getMaximum() ) );
+					this.setSlice( slice );
+				}, this );
+			} else {
+				slice.setSlice( this.getSlice() );
+				slice.setUserData( "binding", this.bind( "slice", slice, "slice" ) );
+				slice.bind( "slice", this, "slice" );
+			}
 
 			var material = slice.getMaterial();
-			var mesh = new THREE.Mesh(geometry, material);
+			var mesh = new THREE.Mesh( geometry, material );
 			mesh.renderOrder = this.__slices.length;
-			slice.setUserData("mesh", mesh);
+			slice.setUserData( "mesh", mesh );
 			geometry.computeFaceNormals();
 			geometry.computeVertexNormals();
 			geometry.computeBoundingSphere();
 
-			slice.addListenerOnce('changeImage',function () {
-				this.getScene().add(mesh);
-				callback.call(context);
-			}, this);
+			slice.addListenerOnce( 'changeImage', function () {
+				this.getScene().add( mesh );
+				callback.call( context );
+			}, this );
 
-			slice.addListener('changeImage', function () {
+			slice.addListener( 'changeImage', function () {
 				this.render();
 			}, this);
 		},
@@ -681,7 +713,7 @@ qx.Class.define("desk.SliceView",
 		 * Inits all objects from given slice
 		 * @param slice {desk.VolumeSlice} first slice
 		 */
-		__initFromVolume : function (slice) {
+		__initFromVolume : function ( slice ) {
 			this.__initDrawingDone = false;
 			this.__slider.setMaximum(slice.getNumberOfSlices() - 1);
 			this.__slider.setVisibility(slice.getNumberOfSlices() === 1 ? "hidden" : "visible");
@@ -723,29 +755,28 @@ qx.Class.define("desk.SliceView",
 		 * @return {desk.VolumeSlice} : displayed volume
 		 */
 		addVolume : function (file, parameters, callback, context) {
-			if (typeof parameters === "function") {
+			if ( typeof parameters === "function" ) {
 				callback = parameters;
 				context = callback;
 				parameters = {};
 			}
 			callback = callback || function () {};
 
-			var firstSlice = this.__slices.every(function (slice) {
-				return slice.getUserData('toDelete') === true;
-			});
+			var isFirstSlice = this.__slices.every( function ( slice ) {
+				return slice.getUserData( 'toDelete' ) === true;
+			} );
 
 			var slice = new desk.VolumeSlice(file,
 				this.__orientation, parameters, function () {
-					if (slice.getUserData('toDelete')) {
-						this.__slices = _.without(this.__slices, slice);
+					if ( slice.getUserData( 'toDelete' ) ) {
+						this.__slices = _.without( this.__slices, slice );
 						slice.dispose();
 						return;
 					}
-					if (firstSlice) {this.__initFromVolume(slice);}
-					slice.setSlice(this.getSlice());
-					this.__addSlice(slice, callback, context);
-			}, this);
-			this.__slices.push(slice);
+					if ( isFirstSlice ) { this.__initFromVolume( slice ); }
+					this.__addSlice( slice, callback, context );
+			}, this );
+			this.__slices.push( slice );
 			return slice;
 		},
 

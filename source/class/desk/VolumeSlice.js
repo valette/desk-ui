@@ -101,6 +101,7 @@ qx.Class.define("desk.VolumeSlice",
 
 		this.addListener("changeImageFormat", this.update, this);
 		this.addListener("changeSlice", this.__updateImage, this);
+		this.addListener("changePosition", this.__onChangePosition, this);
 
 		if (opts.colors) {
 			this.setLookupTables(opts.colors);
@@ -114,6 +115,11 @@ qx.Class.define("desk.VolumeSlice",
 		 * current slice index
 		 */
 		slice : { init : -1, check: "Number", event : "changeSlice"},
+
+		/**
+		 * current position in object coordinates
+		 */
+		position : { init : 1e30, check: "Number", event : "changePosition"},
 
 		/**
 		 * current orientation
@@ -721,8 +727,10 @@ qx.Class.define("desk.VolumeSlice",
 		 * @param slice {Integer} optional slice index, current slice is used if not provided
 		 * @return {Array} array of coordinates
 		 */
-		getCornersCoordinates : function (slice) {
+		getCornersCoordinates : function ( slice ) {
+			var custom = true;
 			if (slice === undefined) {
+				custom = false;
 				slice = this.getSlice();
 			}
 
@@ -742,8 +750,12 @@ qx.Class.define("desk.VolumeSlice",
 				coords[3 * i + yi] =  this.__origin[yi] +
 					this.__extent[2 * yi + (i > 1 ? 1 : 0)] * this.__spacing[yi];
 
-				coords[3 * i + zi] =  this.__origin[zi] +
-					(slice + this.__extent[2 * zi]) * this.__spacing[zi];
+				if ( custom ) {
+					coords[3 * i + zi] =  this.__origin[zi] +
+						(slice + this.__extent[2 * zi]) * this.__spacing[zi];
+				} else {
+					coords[3 * i + zi] =  this.getPosition();
+				}
 			}
 
 			return coords;
@@ -897,6 +909,22 @@ qx.Class.define("desk.VolumeSlice",
 
 		__lastHandle : null,
 
+		__isChangePositionInProgress : false,
+
+		/**
+		 * changes the image url, sets timeouts
+		 */
+		__onChangePosition : function () {
+			var zi = this.getZIndex();
+			var slice = Math.round( ( this.getPosition() -  this.__origin[ zi ] ) 
+				/ this.__spacing[ zi ] );
+
+			slice = Math.max( 0, Math.min( slice, this.getNumberOfSlices() - 1 ) );
+			this.__isChangePositionInProgress = true;
+			this.setSlice( slice );
+			this.__isChangePositionInProgress = false;
+		},
+
 		/**
 		 * changes the image url, sets timeouts
 		 */
@@ -906,11 +934,17 @@ qx.Class.define("desk.VolumeSlice",
 			this.__texture.needsUpdate = false;
 			this.__texture.version = this.__texture.lastVersion;
 
+			var slice = this.getSlice();
+
+			if ( !this.__isChangePositionInProgress ) {
+				var zi = this.getZIndex();
+				this.setPosition( slice * this.__spacing[ zi ] + this.__origin[ zi ] );
+			}
+
 			if (!this.__opts.ooc) {
 				this.__image.src = this.getSliceURL(this.getSlice()) + "?nocache=" + this.__timestamp;
 				return;
 			}
-			var slice = this.getSlice();
 
 			var handle = desk.Actions.execute({
 					action : "VolumeOOCSlice",

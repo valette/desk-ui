@@ -521,7 +521,9 @@ qx.Class.define("desk.SceneContainer",
 			var geometry = new THREE.PlaneBufferGeometry( 1, 1);
 			var material = volumeSlice.getMaterial();
 			var mesh = new THREE.Mesh(geometry,material);
-			var listenerId = volumeSlice.addListener('changeImage', function () {
+			var listenerId = volumeSlice.addListener( 'changeImage', update, this );
+			var listener2Id = volumeSlice.addListener( 'changePosition', update, this );
+			function update () {
 				var coords = volumeSlice.getCornersCoordinates();
 				var vertices = geometry.attributes.position;
 				for (var i = 0; i < 4 * 3; i++) {
@@ -537,7 +539,7 @@ qx.Class.define("desk.SceneContainer",
 				});
 				vertices2.needsUpdate = true;
 				this.render();
-			}, this);
+			}
 
 			var lineMaterial = new THREE.LineBasicMaterial({linewidth: 3,
 				color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()]});
@@ -555,6 +557,7 @@ qx.Class.define("desk.SceneContainer",
 
 			mesh.addEventListener("removed", function () {
 				volumeSlice.removeListenerById(listenerId);
+				volumeSlice.removeListenerById(listener2Id);
 				lineGeometry.dispose();
 				lineMaterial.dispose();
 			});
