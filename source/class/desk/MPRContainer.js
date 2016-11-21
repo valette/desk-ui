@@ -100,7 +100,12 @@ qx.Class.define("desk.MPRContainer",
 		/**
 		* Defines the views layout "123", "321", etc... default : "123"
 		*/
-		viewsLayout : { init : "123", check: "String", event : "changeViewsLayout", apply : "__applyViewsLayout"}
+		viewsLayout : { init : "123", check: "String", event : "changeViewsLayout", apply : "__applyViewsLayout"},
+
+		/**
+		* An optional custom container displayed in place of the volumes list
+		*/
+		customContainer : { init : null, event : "customContainer", apply : "__applyViewsLayout"}
 	},
 
 	members :
@@ -332,9 +337,10 @@ qx.Class.define("desk.MPRContainer",
 				this.__gridContainer.add (viewer, coords);
 			}.bind(this));
 
-            if (this.__standalone) {
-				this.__gridContainer.add(this.__scroll, this.__gridCoords.volList);
-            }
+			if ( this.__standalone ) {
+				this.__gridContainer.add( this.getCustomContainer() || this.__scroll,
+					this.__gridCoords.volList);
+			}
 		},
 
 		__orientationContainer : null,
