@@ -38,7 +38,7 @@ qx.Mixin.define("desk.WindowMixin",
 		 * Overlays the window content to fill the whole screen.
 		 */
 		fillScreen : function () {
-			var container = this.getChildrenContainer();
+			var container = this.__window.getChildrenContainer();
 			container.set ( {
 				width : window.innerWidth,
 				height : window.innerHeight,
