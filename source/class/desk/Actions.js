@@ -364,6 +364,12 @@ qx.Class.define("desk.Actions",
 				desk.FileSystem.getFileURL = getFileURL;
 				start.setVisibility("excluded");
 				stop.setVisibility("visible");
+
+				// hack to include init scripts
+				var initDir = 'code/init';
+				desk.FileSystem.exists(initDir, function ( err, exists ) {
+					if ( exists ) desk.FileSystem.readDir(initDir, function () {});
+				} );
 			}, this);
 			menu.add(start);
 
@@ -719,10 +725,6 @@ qx.Class.define("desk.Actions",
 			var initDir = 'code/init';
 			async.waterfall([
 				function (cb) {
-					if (!this.__engine) {
-						cb(1);
-						return;
-					}
 					desk.FileSystem.exists(initDir, cb);
 				}.bind(this),
 				function (exists, cb) {
@@ -787,8 +789,45 @@ qx.Class.define("desk.Actions",
 			desk.FileSystem.readFile(this.__savedActionsFile, function (err, res) {
 				content = JSON.parse(res) ;
 				if (err) content = {files : {} ,actions : {}};
-				log.log("Actions to copy : ");
 				var actions = content.actions;
+				var files = content.files;
+
+				var usedCachedDirs = {};
+				Object.keys( files ).forEach( function ( hash ) {
+					var file = files[ hash ];
+					if ( file.slice( 0, 6 ) === 'cache/' ) {
+						var dir = desk.FileSystem.getFileDirectory( file )
+							.split('/')
+							.filter( function ( f ) { return f.length } )
+							.join('/')
+							+ "/";
+
+						usedCachedDirs[ dir ] = true;
+					}
+				} );
+
+				var nUnused = 0;
+				Object.keys( actions ).forEach( function ( hash ) {
+					var dir = actions[ hash ].outputDirectory;
+					if (!dir) {
+						return;
+					}
+					dir = dir.split('/')
+						.filter( function ( f ) { return f.length } )
+						.join('/')
+						+ "/";
+					if ( !usedCachedDirs[ dir ] ) {
+						delete actions[ hash ];
+						nUnused++;
+					}
+				} );
+
+				if (nUnused ) {
+					log.log( nUnused + ' actions were discarded as they were not used.' );
+				}
+
+				log.log("Actions to copy : ");
+
 				Object.keys(actions).forEach(function (hash) {
 					log.log(actions[hash].outputDirectory, "blue");
 				});
@@ -796,7 +835,6 @@ qx.Class.define("desk.Actions",
 					log.log("none");
 				}
 				log.log("Files to copy : ");
-				var files = content.files;
 				Object.keys(files).forEach(function (hash) {
 					log.log(files[hash]);
 				});
