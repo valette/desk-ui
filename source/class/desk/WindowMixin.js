@@ -40,12 +40,11 @@ qx.Mixin.define("desk.WindowMixin",
 		fillScreen : function () {
 			var container = this.__window.getChildrenContainer();
 			container.set ( {
-				width : window.innerWidth,
-				height : window.innerHeight,
 				backgroundColor : "white",
 				zIndex : 500000
 			} );
-			qx.core.Init.getApplication().getRoot().add( container );
+			qx.core.Init.getApplication().getRoot().add( container,
+				{ width : '100%', height : '100%' } );
 		},
 
 		/**
