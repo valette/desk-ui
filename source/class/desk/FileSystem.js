@@ -1,10 +1,11 @@
 /**
  * Singleton helper class for file system operations : path->URL conversion, session management etc...
- * @lint ignoreDeprecated(alert)
- * @ignore (_.*)
- * @ignore (require)
- * @ignore (async.*)
- * @ignore (jsSHA);
+ * @lint ignoreDeprecated( alert )
+ * @ignore ( _.* )
+ * @ignore ( async.* )
+ * @ignore ( desk_startup_script )
+ * @ignore ( jsSHA )
+ * @ignore ( require )
  */
 qx.Class.define("desk.FileSystem", 
 {
@@ -16,7 +17,7 @@ qx.Class.define("desk.FileSystem",
 		try {
 			this.__baseURL = 'file://' + require('desk-base').getRootDir();
 		} catch (e) {
-			this.__baseURL = qx.bom.Cookie.get("homeURL") || window.location.href;
+			this.__baseURL = ( typeof desk_startup_script === "string" ) ? window.location.href : qx.bom.Cookie.get("homeURL");
 		}
 	},
 
