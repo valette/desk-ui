@@ -461,7 +461,7 @@ qx.Class.define("desk.VolumeSlice",
 						callback("Error while slicing volume : " + err);
 						return;
 					}
-					this.openXMLURL(desk.FileSystem.getFileURL(response.outputDirectory) + "volume.xml",
+					this.openXMLURL( desk.FileSystem.getFileURL( response.outputDirectory + "volume.xml" ),
 						callback, context);
 			}, this);
 		},
