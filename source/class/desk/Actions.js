@@ -27,49 +27,51 @@ qx.Class.define("desk.Actions",
 	construct : function() {
 		this.base(arguments);
 
-		if ( (typeof desk_startup_script !== "string") && qx.bom.Cookie.get("homeURL") ) {
-			// support for node.js
-			this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
-			this.__engine = "node";
-			this.__socket.on("action finished", this.__onActionEnd.bind(this));
-			console.log("powered by node.js");
-			setTimeout( function () {
-				// add already running actions
-				desk.Actions.execute( { manage : 'list'}, function (err, res) {
-					var actions = res.ongoingActions
-					Object.keys(actions).forEach( function ( handle ) {
-						desk.Actions.getInstance().__addActionToList( actions[ handle ] );
-						desk.Actions.getInstance().__runingActions[ handle ] = actions[ handle ];
-					});
-				}.bind(this));
-			}, 1000);
-		} else try {
-			// support for electron.js / nw.js
-			this.__socket = require('desk-base');
-			this.__setEmitLog = this.__socket.setEmitLog;
-			this.__socket.setLogToConsole(false);
-			this.__engine = "electron/nw";
-			this.__execute = function (params) {
-				this.__socket.execute(params, this.__onActionEnd.bind(this));
-			};
-			this.__loadSettings = function () {
-				setTimeout(function() {
-					this.__setSettings(this.__socket.getSettings());
-				}.bind(this), 10);
-			};
-			if (typeof window.nw === 'undefined') {
-				this.__engine = "electron";
-				console.log("powered by electron.js");
-				var ipcRenderer = require('electron').ipcRenderer
-				window.prompt = function(title, val) {
-					return ipcRenderer.sendSync('prompt', {title : title, val : val});
+		if ( typeof desk_startup_script !== "string" ) {
+			if ( qx.bom.Cookie.get("homeURL" ) ) {
+				// support for node.js
+				this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
+				this.__engine = "node";
+				this.__socket.on("action finished", this.__onActionEnd.bind(this));
+				console.log("powered by node.js");
+				setTimeout( function () {
+					// add already running actions
+					desk.Actions.execute( { manage : 'list'}, function (err, res) {
+						var actions = res.ongoingActions
+						Object.keys(actions).forEach( function ( handle ) {
+							desk.Actions.getInstance().__addActionToList( actions[ handle ] );
+							desk.Actions.getInstance().__runingActions[ handle ] = actions[ handle ];
+						});
+					}.bind(this));
+				}, 1000);
+			} else try {
+				// support for electron.js / nw.js
+				this.__socket = require('desk-base');
+				this.__setEmitLog = this.__socket.setEmitLog;
+				this.__socket.setLogToConsole(false);
+				this.__engine = "electron/nw";
+				this.__execute = function (params) {
+					this.__socket.execute(params, this.__onActionEnd.bind(this));
+				};
+				this.__loadSettings = function () {
+					setTimeout(function() {
+						this.__setSettings(this.__socket.getSettings());
+					}.bind(this), 10);
+				};
+				if (typeof window.nw === 'undefined') {
+					this.__engine = "electron";
+					console.log("powered by electron.js");
+					var ipcRenderer = require('electron').ipcRenderer
+					window.prompt = function(title, val) {
+						return ipcRenderer.sendSync('prompt', {title : title, val : val});
+					}
+				} else {
+					console.log("powered by nw.js");
+					this.__engine = "nw";
 				}
-			} else {
-				console.log("powered by nw.js");
-				this.__engine = "nw";
-			}
-			this.__loadSettings();
-		} catch (e) {}
+				this.__loadSettings();
+			} catch (e) {}
+		}
 
 		if (!this.__engine) {
 			desk.FileSystem.readFile(this.__savedActionsFile,
