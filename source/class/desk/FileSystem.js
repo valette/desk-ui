@@ -17,7 +17,15 @@ qx.Class.define("desk.FileSystem",
 		try {
 			this.__baseURL = 'file://' + require('desk-base').getRootDir();
 		} catch (e) {
-			this.__baseURL = ( typeof desk_startup_script === "string" ) ? window.location.href : qx.bom.Cookie.get("homeURL");
+			var href = window.location.href;
+			var extension = href.split( '/' ).pop().split( '?' )[ 0 ].split('.' ).pop();
+			if ( extension === 'html' ) {
+				href = href.split( '/' );
+				href.pop();
+				href = href.join( '/' ) + '/';
+			}
+
+			this.__baseURL = ( typeof desk_startup_script === "string" ) ? href : qx.bom.Cookie.get("homeURL");
 		}
 	},
 
