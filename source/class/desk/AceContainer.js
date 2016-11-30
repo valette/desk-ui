@@ -96,7 +96,14 @@ qx.Class.define("desk.AceContainer", {
 		* Sets the given code to the editor.
 		* @param code {String} The new code.
 		*/
-		setCode : function(code) {
+		setCode : function( code ) {
+		    if ( !this.__ace || !this.__ace.getSession ) {
+		        // wait if the container is not ready
+		        setTimeout( function ( ) {
+		            this.setCode( code );
+		        }.bind( this ), 10 );
+		        return;
+		    }
 			this.__ace.getSession().setValue(code);
 
 			// move cursor to start to prevent scrolling to the bottom
