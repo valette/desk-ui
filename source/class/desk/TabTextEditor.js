@@ -1,6 +1,7 @@
 /**
  * A text editor that can also execute javascript code
- * @lint ignoreDeprecated (alert)
+ * @lint ignoreDeprecated ( alert )
+ * @lint ignoreDeprecated ( confirm )
  */
 qx.Class.define("desk.TabTextEditor",
 {
@@ -13,7 +14,7 @@ qx.Class.define("desk.TabTextEditor",
 	* @param file {String} the file to edit
 	*/
 	construct : function() {
-	    this.base(arguments);
+	    this.base( arguments );
 	},
 
 	statics : {
@@ -22,12 +23,17 @@ qx.Class.define("desk.TabTextEditor",
 		* Creates a new text editor
 		* @param file {String} the file to edit
 		*/
-		open : function(file) {
-			var win = desk.TabTextEditor.getInstance().__window;
+		open : function( file, options ) {
+		    options = options || {};
+		    var self = desk.TabTextEditor.getInstance();
+			var win = self.__window;
 			if (!win) {
-				win = desk.TabTextEditor.getInstance().__window = new qx.ui.window.Window();
+
+				win = self.__window = new qx.ui.window.Window();
+
 				win.set( { layout : new qx.ui.layout.VBox(),
 					height : 700, width : 700, showMinimize : false } );
+
 				win.addListener( 'close', function () {
 					var instance = desk.TabTextEditor.getInstance();
 					instance.__window.getChildren()[0].getChildren().forEach( function (e) {
@@ -36,10 +42,13 @@ qx.Class.define("desk.TabTextEditor",
 					instance.__window.destroy();
 					instance.__window = 0;
 				});
+
 				win.setCaption( "Desk Text Editor" );
 				win.add( new desk.TabView(), { flex : 1 } );
+				self.__addLocalStorage();
 				win.open();
 				win.center();
+
 			}
 
 			var found = false;
@@ -53,17 +62,90 @@ qx.Class.define("desk.TabTextEditor",
 			win.getLayoutParent().getWindowManager().bringToFront(win); 
 			if (found) return;
 
-			var editor = new desk.TextEditor(file, {standalone : false});
-			var element = win.getChildren()[0].addElement(file,editor);
+			var editor = new desk.TextEditor( file, Object.assign( {
+                }, options, { standalone : false } ) );
+
+			var element = win.getChildren()[ 0 ].addElement( file, editor );
 			element.getButton().execute();
-			element.setShowCloseButton(true);
+			element.setShowCloseButton( true );
 			element.show();
-			element.addListener('close', editor.destroy, editor);
+			element.addListener( 'close', editor.destroy, editor );
 		}
 
 	},
 
 	members : {
-        __window : null
+        __window : null,
+
+        __addLocalStorage : function () {
+            var prefix = 'desk.TextEditor.';
+            var files = Object.keys( localStorage )
+                .filter( function ( key ) {
+                    return key.indexOf( prefix ) === 0;
+                })
+                .map( function ( key ) {
+                    return key.slice( prefix.length );
+                } )
+                .sort();
+
+            var container = new qx.ui.container.Composite( new qx.ui.layout.VBox() );
+            var list = new qx.ui.form.List();
+            list.setSelectionMode( 'multi' );
+
+            files.forEach( function ( file ) {
+
+                var item = new qx.ui.form.ListItem( file );
+                list.add( item );
+
+            });
+
+            list.addListener( 'dblclick', function () {
+
+                desk.TabTextEditor.open( list.getSelection()[ 0 ].getLabel(),
+                    { localStorage : true } );
+
+            } );
+
+            container.add( list, { flex : 1 } );
+            var container2 = new qx.ui.container.Composite( new qx.ui.layout.HBox() );
+            container.add( container2 );
+
+            var button = new qx.ui.form.Button( '+' );
+            button.addListener( 'execute', function () {
+                var file = prompt( 'Enter the name of file to create :');
+                if ( !file ) return;
+
+                var key = 'desk.TextEditor.' + file;
+                if ( localStorage[ key ] ) {
+                    alert( 'Error : name already exists' );
+                    return;
+                }
+
+                list.add( new qx.ui.form.ListItem( file ) );
+                localStorage[ key ] = "\n\n";
+
+            } );
+            container2.add( button, { flex : 2 } );
+            var button2 = new qx.ui.form.Button( '-' );
+            button2.addListener( 'execute', function () {
+                var selection = list.getSelection();
+                if ( !selection.length ) return;
+
+                var confirmed = confirm( 'You are about to delete the files :\n'
+                    + selection.map( function( item ) {
+                            return item.getLabel();
+                        } ).join( '\n' ) );
+
+                if ( !confirmed ) return;
+
+                selection.forEach( function ( item ) {
+                    localStorage.removeItem( 'desk.TextEditor.' + item.getLabel() );
+                    list.remove( item );
+                } );
+            } );
+            container2.add( button2, { flex : 1 } );
+            this.__window.getChildren()[ 0 ].addElement( 'localStorage', container );
+        }
+
 	}
 });

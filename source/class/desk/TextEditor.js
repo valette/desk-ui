@@ -1,6 +1,6 @@
 /**
  * A simple text editor that can also execute javascript code
- * @lint ignoreDeprecated (alert)
+ * @lint ignoreDeprecated ( alert )
  */
 qx.Class.define("desk.TextEditor", 
 {
@@ -15,6 +15,9 @@ qx.Class.define("desk.TextEditor",
 	    options = options || {};
 		this.base(arguments);
 		this.setLayout(new qx.ui.layout.VBox());
+        if ( typeof options.localStorage !== 'undefined' ) {
+            this.setLocalStorage( options.localStorage );
+        }
 
 		this.__reload = new qx.ui.form.Button("Reload");
 		this.__reload.addListener("execute", function(e) {
@@ -100,6 +103,13 @@ qx.Class.define("desk.TextEditor",
 		this.__text.dispose();
 	},
 
+	properties : {
+		/**
+		 * determines wether we are using the server file fystem or localStorage
+		 */
+		localStorage : { init : false, check: "Boolean"}
+	},
+
 	statics : {
 		codeInTextEditor : null
 	},
@@ -154,10 +164,22 @@ qx.Class.define("desk.TextEditor",
 		* Saves content to file
 		*/
 		save : function () {
-            this.__save.setEnabled(false);
-            desk.FileSystem.writeFile(this.__file, this.__text.getCode(), function () {
-                this.__save.setEnabled(true);
+
+            if ( this.isLocalStorage() ) {
+
+                localStorage[ 'desk.TextEditor.' + this.__file.split( '/').join( '.' ) ] = 
+                    this.__text.getCode();
+
                 console.log('file saved');
+                return;
+            }
+
+            this.__save.setEnabled(false);
+            desk.FileSystem.writeFile(this.__file, this.__text.getCode(), function ( err ) {
+                this.__save.setEnabled(true);
+                if ( !err ) {
+                    console.log('file saved');
+                } else throw( err );
             }, this);
         },
 
@@ -167,6 +189,7 @@ qx.Class.define("desk.TextEditor",
 		* @param file {String} the file to edit
 		*/
 		openFile : function (file) {
+
 			this.__execute.setVisibility('excluded');
 			this.__fold.setVisibility('visible');
 			switch (desk.FileSystem.getFileExtension(file)) {
@@ -193,6 +216,14 @@ qx.Class.define("desk.TextEditor",
 			}
 
 			this.__file = file;
+
+            if ( this.isLocalStorage() ) {
+
+				this.__text.setCode( localStorage[ 'desk.TextEditor.'
+				    + this.__file.split( '/').join( '.' ) ] );
+                return;
+            }
+
 			this.__reload.setEnabled(false);
 			desk.FileSystem.readFile(file, function (error, result) {
 				this.__text.setCode(result);
