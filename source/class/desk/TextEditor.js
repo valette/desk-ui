@@ -62,6 +62,11 @@ qx.Class.define("desk.TextEditor",
 		container.add(this.__execute, {flex : 1});
 		container.add(this.__reload, {flex : 1});
 		container.add(this.__fold);
+
+        var download = new qx.ui.form.Button( 'download' );
+        download.addListener( 'execute', this.__download, this );
+		container.add( download );
+
 		container.add(save, {flex : 1});
         container.add(spinner);
 		this.add(container);
@@ -159,6 +164,19 @@ qx.Class.define("desk.TextEditor",
 				alert('Error while parsing your code, please check syntax');
 			}
 		},
+
+        /**
+		* triggers browser download for this file
+		*/
+        __download : function () {
+            var link = document.createElement("a");
+            link.download = this.__file.split( '/' ).pop();
+            link.href= 'data:text/plain;charset=utf-8,' + encodeURIComponent( this.__text.getCode() );
+            document.body.appendChild( link );
+            link.style.display = 'none';
+            link.click();
+            console.log(link);
+        },
 
         /**
 		* Saves content to file

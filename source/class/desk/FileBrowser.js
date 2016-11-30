@@ -530,8 +530,10 @@ qx.Class.define("desk.FileBrowser",
 				var link = document.createElement("a");
 				link.download = desk.FileSystem.getFileName(node.getFullName());
 				link.href = desk.FileSystem.getFileURL(node.getFullName());
+                document.body.appendChild( link );
+                link.style.display = 'none';
 				link.click();
-			} else {
+            } else {
 				alert("Cannot download a directory!");
 			}
 		},
