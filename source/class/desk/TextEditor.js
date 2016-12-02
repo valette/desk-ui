@@ -67,7 +67,12 @@ qx.Class.define("desk.TextEditor",
         download.addListener( 'execute', this.__download, this );
 		container.add( download );
 
-		container.add(save, {flex : 1});
+        if ( this.isLocalStorage() || desk.Actions.getInstance().getSettings().permissions ) {
+
+            container.add(save, { flex : 1 } );
+
+        }
+
         container.add(spinner);
 		this.add(container);
 
