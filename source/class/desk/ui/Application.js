@@ -155,7 +155,8 @@ qx.Class.define("desk.ui.Application",
 				"desk.SceneContainer.addVolume",
 				"desk.SceneContainer.loadURL",
 				"desk.SliceView.addVolume",
-				"desk.MPRContainer.addVolume"
+				"desk.MPRContainer.addVolume",
+				"desk.ThreeContainer.render"
 			];
 
 			var membersToPromisify2 = [
