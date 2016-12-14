@@ -117,6 +117,8 @@ qx.Class.define("desk.FileBrowser",
 					case "stl":
 						image = "desk/tris.png";
 						break;
+					case "gz" :
+						if ( model.getName().split( "." ).slice( -2 ).join( "." ) !== "nii.gz" ) break;
 					case "mhd":
 					case "jpg":
 					case "png":
@@ -476,6 +478,8 @@ qx.Class.define("desk.FileBrowser",
 					}
 				});
 				break;
+			case "gz" :
+				if ( file.split( "." ).slice( -2 ).join( "." ) !== "nii.gz" ) break;
 			case "png":
 			case "jpg":
 			case "bmp":
@@ -484,12 +488,6 @@ qx.Class.define("desk.FileBrowser",
 			case "hdr":
 				new desk.VolumeViewer(file);
 				break;
-			case "gz":
-				var suffix = ".nii.gz";
-				if (file.indexOf(suffix, file.length - suffix.length) !== -1) {
-					new desk.VolumeViewer(file);
-				}
-				break;					
 			case "vol": 
 				if (desk.Actions.getInstance().getAction("vol_slice") != null) {
 					new desk.VolumeViewer(file);
