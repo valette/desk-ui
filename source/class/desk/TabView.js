@@ -46,7 +46,8 @@ qx.Class.define("desk.TabView",
 
 			} );
 
-			children[ ( children.length + index - e.getWheelDelta() ) % children.length ]
+			var delta = e.getWheelDelta() > 0 ? 1 : -1;
+			children[ ( children.length + index + delta ) % children.length ]
 				.getButton()
 				.execute();
 
