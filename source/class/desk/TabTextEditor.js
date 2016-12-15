@@ -36,15 +36,20 @@ qx.Class.define("desk.TabTextEditor",
 
 				win.addListener( 'close', function () {
 					var instance = desk.TabTextEditor.getInstance();
-					instance.__window.getChildren()[0].getChildren().forEach( function (e) {
+					instance.__tabView.getChildren().forEach( function (e) {
 						e.destroy();
 					});
 					instance.__window.destroy();
 					instance.__window = 0;
+					instance.__pane = 0;
+					instance.__fileBrowser = 0;
+					instance.__dummyContainer = 0;
 				});
 
 				win.setCaption( "Desk Text Editor" );
-				win.add( new desk.TabView(), { flex : 1 } );
+
+				self.__tabView = new desk.TabView();
+				win.add( self.__tabView, { flex : 1 } );
 				self.__addLocalStorage();
 				win.open();
 				win.center();
@@ -52,7 +57,7 @@ qx.Class.define("desk.TabTextEditor",
 			}
 
 			var found = false;
-			win.getChildren()[0].getChildren().forEach(function (e) {
+			self.__tabView.getChildren().forEach(function (e) {
 				if (e.getLabel() === file) {
 					found = true;
 					e.getButton().execute();
@@ -65,17 +70,62 @@ qx.Class.define("desk.TabTextEditor",
 			var editor = new desk.TextEditor( file, Object.assign( {
                 }, options, { standalone : false } ) );
 
-			var element = win.getChildren()[ 0 ].addElement( file, editor );
+			var element = self.__tabView.addElement( file, editor );
 			element.getButton().execute();
 			element.setShowCloseButton( true );
 			element.show();
 			element.addListener( 'close', editor.destroy, editor );
+
+			win.addListener( 'maximize', self.__onMaximize, self );
+			win.addListener( 'restore', self.__onRestore, self );
 		}
 
 	},
 
 	members : {
+
         __window : null,
+        __pane : null,
+        __fileBrowser : null,
+        __dummyContainer : null,
+
+        __onRestore : function () {
+
+            this.__window.add( this.__tabView, { flex : 1} );
+            this.__pane.setVisibility( "excluded" );
+			this.__window.getLayoutParent().getWindowManager().bringToFront( this.__window ); 
+
+        },
+
+        __onMaximize : function () {
+
+            if ( !this.__pane ) {
+
+                this.__pane = new qx.ui.splitpane.Pane("horizontal");
+                this.__window.add( this.__pane, { flex : 1 } );
+
+                this.__window.addListener( 'changeZIndex', function () {
+
+                    if ( this.__pane.getVisibility() !== "visible" ) return;
+
+                    this.__window.setZIndex( -10000 );
+
+                }, this);
+
+                this.__fileBrowser = new desk.FileBrowser( '', true );
+                this.__fileBrowser.getWindow().minimize();
+                this.__pane.add( this.__fileBrowser.getLayoutParent(), 0 );
+                this.__dummyContainer = new qx.ui.container.Composite(
+                    new qx.ui.layout.VBox() );
+                this.__pane.add( this.__dummyContainer, 1 );
+
+            }
+
+            this.__window.setZIndex( -10000 );
+            this.__dummyContainer.add( this.__tabView, { flex : 1 } );
+            this.__pane.setVisibility( "visible" );
+
+        },
 
         __addLocalStorage : function () {
             var prefix = 'desk.TextEditor.';
@@ -144,7 +194,7 @@ qx.Class.define("desk.TabTextEditor",
                 } );
             } );
             container2.add( button2, { flex : 1 } );
-            this.__window.getChildren()[ 0 ].addElement( 'localStorage', container );
+            this.__tabView.addElement( 'localStorage', container );
         }
 
 	}
