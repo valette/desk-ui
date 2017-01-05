@@ -10,6 +10,7 @@ qx.Class.define("desk.Terminal",
 
 	/**
 	* Constructor
+	* @param options {Object} options
 	*/
 	construct : function ( options ) {
 		options = options || {};
@@ -18,7 +19,7 @@ qx.Class.define("desk.Terminal",
 
 		this.__rand = Math.floor( 100000000 * Math.random());
 
-		if (options.standalone) {
+		if ( options.standalone ) {
 			var win = this.__window = new qx.ui.window.Window();
 			win.set({
 				layout : new qx.ui.layout.HBox(),
@@ -137,7 +138,7 @@ qx.Class.define("desk.Terminal",
 			this.__socket.emit("resize", {nCols : nCols, nRows : nRows});
 		},
 
-		__add : function (el) {
+		__add : function ( el ) {
 			var element = this.__tabview.addElement('terminal', el);
 			element.setShowCloseButton(true);
 			element.fireEvent('resize');

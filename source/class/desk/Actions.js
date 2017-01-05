@@ -182,8 +182,8 @@ qx.Class.define("desk.Actions",
 		* @param callback {Function} callback when the action has been killed
 		* @param context {Object} optional context for the callback
 		*/
-		killAction : function (action, callback, context) {
-			desk.Actions.getInstance().killAction(action, callback, context);
+		killAction : function ( handle, callback, context ) {
+			desk.Actions.getInstance().killAction( handle, callback, context );
 		},
 
 		/**
@@ -226,11 +226,19 @@ qx.Class.define("desk.Actions",
 		__settingsButton : null,
 		__engine : false,
 
+		/**
+		* sets emit log on/off
+		* @param value {Boolean} value
+		*/
 		__setEmitLog : function (value) {
 			this.__socket.emit('setEmitLog', value);
 		},
 
-		__execute : function (params) {
+		/**
+		* executes an action
+		* @param params {Object} action to execute
+		*/
+		__execute : function ( params ) {
 			this.__socket.emit('action', params);
 		},
 
@@ -691,8 +699,9 @@ qx.Class.define("desk.Actions",
 
 		/**
 		* refreshes the actions
+		* @param settings {Object} new settings
 		*/
-		__setSettings : function(settings) {
+		__setSettings : function( settings ) {
 			if (this.__serverRandomValue && (this.__serverRandomValue != settings.randomValue)) {
 				console.warn("Server has restarted");
 			}

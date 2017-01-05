@@ -35,6 +35,7 @@ qx.Class.define("desk.TabView",
 
 		/**
 		 * Handles mouse wheel to switch tab
+		 * @param e {Object} mouse event
 		*/
 		__onMouseWheel : function ( e ) {
 

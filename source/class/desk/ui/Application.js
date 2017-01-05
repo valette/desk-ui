@@ -24,6 +24,10 @@ qx.Class.define("desk.ui.Application",
 
 	members :
 	{
+		/**************************************************************
+		 * hack to include qx.ui.list.List in the build
+		 **************************************************************/
+
 		hackToIncludeClasses : function () {
 			new qx.ui.list.List();
 		},
@@ -93,6 +97,11 @@ qx.Class.define("desk.ui.Application",
 			}
 		},
 
+		/**************************************************************
+		 * adds promise-based API
+		 * @param functions {Array} array of functions to promisify
+		 * @param opts {Object} options
+		 **************************************************************/
 		promisify : function ( functions, opts ) {
 			opts = opts || {};
 			functions.forEach( function ( func ) {
@@ -132,6 +141,10 @@ qx.Class.define("desk.ui.Application",
 			} );
 		},
 
+		/**************************************************************
+		 * adds promise-based API : for each function taking a callback as 
+		 * argument, create a function returning a promise
+		 **************************************************************/
 		__promisifyAll : function () {
 
 			var toPromisify = [
