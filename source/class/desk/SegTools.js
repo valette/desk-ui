@@ -1271,7 +1271,7 @@ qx.Class.define("desk.SegTools",
 					this.__loadColors();
 					return;
 				}
-				response = (new DOMParser()).parseFromString(response, "text/xml")
+				response = (new DOMParser()).parseFromString(response, "text/xml");
 				["seed", "correction"].forEach(function (tag, index) {
 					var slices = response.getElementsByTagName(tag);
 
