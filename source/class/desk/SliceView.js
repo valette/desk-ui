@@ -634,6 +634,10 @@ qx.Class.define("desk.SliceView",
 		// listeners Ids to get rid of when changing drawing canvas
 		__drawingListeners : null,
 
+		/**
+		 * changes slice position
+		 * @param volumeSlice {desk.VolumeSlice} the slice to update
+		 */
 		__updateVolumeSlicePosition : function ( volumeSlice ) {
 			var index = volumeSlice.getZIndex();
 			var position = this.__origin[ index ] + this.getSlice() * this.__spacing[ index ];

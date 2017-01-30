@@ -10,8 +10,9 @@ qx.Class.define("desk.TextEditor",
 	* Creates a new text editor
 	*
 	* @param file {String} the file to edit
+	* @param options {Object} options
 	*/
-	construct : function(file, options) {
+	construct : function( file, options ) {
 	    options = options || {};
 		this.base(arguments);
 		this.setLayout(new qx.ui.layout.VBox());

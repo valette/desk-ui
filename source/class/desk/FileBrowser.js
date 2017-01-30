@@ -699,6 +699,9 @@ qx.Class.define("desk.FileBrowser",
 			});
 		},
 
+		/**
+		* updates action list
+		*/
 		__updateActions : function () {
 			this.__files.addListenerOnce( "contextmenu", function (e) {
 				var actionMenu = new qx.ui.menu.Menu();

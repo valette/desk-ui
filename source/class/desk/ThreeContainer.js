@@ -13,7 +13,8 @@ qx.Class.define("desk.ThreeContainer",
 	include : desk.LinkMixin,
 
 	/**
-	 * Constructor
+	* Constructor
+	* @param opts {Object} options
 	*/
 	construct : function( opts ) {
 		if (typeof opts === "function") opts = {};
@@ -213,6 +214,12 @@ qx.Class.define("desk.ThreeContainer",
 			}, this);
 		},
 
+		/**
+		 * rotates current view
+		 * @param thetaX {Number} : angle on the X axis
+		 * @param thetaY {Number} : angle on the Y axis
+		 * @param thetaZ {Number} : angle on the Z axis
+		 */
 		rotateView : function ( thetaX, thetaY, thetaZ ) {
 			var controls = this.getControls();
 			var backup = controls.enabled;

@@ -10,8 +10,6 @@ qx.Class.define("desk.TabTextEditor",
 
 	/**
 	* Creates a new text editor
-	*
-	* @param file {String} the file to edit
 	*/
 	construct : function() {
 	    this.base( arguments );
@@ -22,6 +20,7 @@ qx.Class.define("desk.TabTextEditor",
 		/**
 		* Creates a new text editor
 		* @param file {String} the file to edit
+		* @param options {Object} options
 		*/
 		open : function( file, options ) {
 		    options = options || {};
@@ -89,6 +88,9 @@ qx.Class.define("desk.TabTextEditor",
         __fileBrowser : null,
         __dummyContainer : null,
 
+		/**
+		* launched when restoring non-full screen cojnfig
+		*/
         __onRestore : function () {
 
             this.__window.add( this.__tabView, { flex : 1} );
@@ -97,6 +99,9 @@ qx.Class.define("desk.TabTextEditor",
 
         },
 
+		/**
+		* launched when the window is maximized
+		*/
         __onMaximize : function () {
 
             if ( !this.__pane ) {
@@ -127,6 +132,9 @@ qx.Class.define("desk.TabTextEditor",
 
         },
 
+		/**
+		* adds localStorage handling
+		*/
         __addLocalStorage : function () {
             var prefix = 'desk.TextEditor.';
             var files = Object.keys( localStorage )
