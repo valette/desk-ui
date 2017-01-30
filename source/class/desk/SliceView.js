@@ -671,7 +671,7 @@ qx.Class.define("desk.SliceView",
 				slice.addListener( 'changePosition', function () {
 					var position = slice.getPosition();
 					var index = slice.getZIndex();
-					var sliceNumber = Math.round( ( position - this.__origin[ index ] );
+					var sliceNumber = Math.round( ( position - this.__origin[ index ] )
 						/ this.__spacing[ index ] );
 					sliceNumber = Math.max( 0, Math.min( sliceNumber, this.__slider.getMaximum() ) );
 					this.setSlice( sliceNumber );
