@@ -16,8 +16,9 @@ qx.Class.define("desk.SegTools",
 	 * @param options {Object} options, like {segmentationMethod : 0}
 	 */
 	construct : function(master, file, options) {
-		this.base(arguments);
-		this.setAlwaysOnTop(true)
+
+		this.base( arguments );
+		this.setAlwaysOnTop( true )
 		options = options || {};
 
 		this.__segmentationMethod = options.segmentationMethod || 0;
@@ -25,93 +26,122 @@ qx.Class.define("desk.SegTools",
 		this.__master = master;
 		this.__file = file;
 
-		this.__labelUnfocusedBorder = new qx.ui.decoration.Decorator().
-			set ({width : 2, style : "solid", color : "black"});
-		this.__labelFocusedBorder = new qx.ui.decoration.Decorator().
-			set ({width : 3, style : "solid", color : "red"});
+		this.__labelUnfocusedBorder = new qx.ui.decoration.Decorator()
+			.set ( { width : 2, style : "solid", color : "black" } );
 
-		this.set({
+		this.__labelFocusedBorder = new qx.ui.decoration.Decorator()
+			.set ( { width : 3, style : "solid", color : "red" } );
+
+		this.set( {
+
 			layout : new qx.ui.layout.VBox(),
 			showMinimize: false,
 			showMaximize: false,
 			allowMaximize: false,
 			showClose: true,
 			movable : true,
-			resizable : [false, false, false, false]
-		});
+			resizable : [ false, false, false, false ]
 
+		} );
 
 		this.__buildActionsContainers();
 
 		var listenersIds = [];
-		master.getViewers().forEach(function (viewer) {
-			listenersIds[viewer] = viewer.addListener("changeSlice", function ( event ) {
+
+		master.getViewers().forEach( function ( viewer ) {
+
+			listenersIds[ viewer ] = viewer.addListener( "changeSlice", function ( event ) {
+
 				this.__saveCurrentSeeds();
 				this.__reloadSeedImage( viewer );
-			}, this);
-		}, this);
 
-		this.addListener("close", function (e) {
-			master.getViewers().forEach(function (viewer) {
-				viewer.removeListenerById(listenersIds[viewer]);
-				viewer.setPaintMode(false);
-				viewer.setEraseMode(false);
+			}, this );
+
+		}, this );
+
+		this.addListener( "close", function ( e ) {
+
+			master.getViewers().forEach( function ( viewer ) {
+
+				viewer.removeListenerById( listenersIds[ viewer ] );
+				viewer.setPaintMode( false );
+				viewer.setEraseMode( false );
 				var canvas = viewer.getDrawingCanvas();
-				if (canvas.isDisposed()) return;
-				canvas.getContext2d().clearRect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
-				viewer.fireEvent("changeDrawing");
-			});
-		});
+				if ( canvas.isDisposed() ) return;
+				canvas.getContext2d().clearRect( 0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight() );
+				viewer.fireEvent( "changeDrawing" );
+
+			} );
+
+		} );
+
 		this.__labels = [];
 		this.open();
         this.center();
+
 	},
 
 	statics : {
-		defaultColors : ['<colors>',
-		'<color red="255" green="0" blue="0" name="object1" label="1"/>',
-		'<color red="0" green="255" blue="0" name="object2" label="2"/>',
-		'<color red="0" green="0" blue="255" name="object3" label="3"/>',
-		'<adjacencies>',
-		'<adjacency label1="1" label2="2"/>',
-		'<adjacency label1="2" label2="3"/>',
-		'<adjacency label1="3" label2="1"/>',
-		'</adjacencies>',
-		'</colors>'].join('\n'),
+
+		defaultColors : [
+			'<colors>',
+			'<color red="255" green="0" blue="0" name="object1" label="1"/>',
+			'<color red="0" green="255" blue="0" name="object2" label="2"/>',
+			'<color red="0" green="0" blue="255" name="object3" label="3"/>',
+			'<adjacencies>',
+			'<adjacency label1="1" label2="2"/>',
+			'<adjacency label1="2" label2="3"/>',
+			'<adjacency label1="3" label2="1"/>',
+			'</adjacencies>',
+			'</colors>'
+		].join('\n'),
+
 		defaultColorsFile : null,
-		filePrefixes : ["seed","correction"]
+		filePrefixes : [ "seed", "correction" ]
+
 	},
 
 	events : {
+
 		/** Fired whenever segmentation is complete */
 		"gotSegmentedVolume" : "qx.event.type.Event",
 
 		/** Fired whenever meshing is complete */
 		"meshingUpdated" : "qx.event.type.Data"
+
 	},
 
 	properties : {
+
 		/** contains the directory where all the data is stored*/
-		sessionDirectory : { init : null, event : "changeSessionDirectory"},
+		sessionDirectory : { init : null, event : "changeSessionDirectory" },
 
 		/** defines current seeds drawing type (0 : seeds, 1 : corrections*/
-		seedsType : { init : 0, check: "Number", event : "changeSeedsType"}
+		seedsType : { init : 0, check: "Number", event : "changeSeedsType" }
+
 	},
 
 	members : {
+
 		__segmentationMethod : 0,
+
 		__master : null,
 		__file : null,
 		__paintContainer : null,
 		__bottomContainer : null,
 		__colorsContainer : null,
 
-		__startButton : null,
+		__segmentationButton : null,
+		__segmentationAction : null,
+		__segmentationToken : null,
 
-// Tableau contenant les couleurs des seeds
+		__meshingButton : null,
+		__meshingAction : null,
+
+		// array containing seed colors
          __labels : null,
 
-// type arrays containing seeds colors (for speed processing)
+		// type arrays containing seeds colors (for speed processing)
          __labelColorsRed : null,
          __labelColorsGreen : null,
          __labelColorsBlue : null,
@@ -130,15 +160,19 @@ qx.Class.define("desk.SegTools",
 		 * @return {desk.MeshViewer} the mesh viewer
 		 */
 		getMeshViewer : function() {
+
 			return this.__meshViewer;
+
 		},
 
 		/**
 		 * Reloads the seed image for a given viewer
 		 * @param sliceView {desk.SliceView} the viewer to update
 		 */
-		__reloadSeedImage : function (sliceView) {
-			if (!this.getSessionDirectory()) {return;}
+		__reloadSeedImage : function ( sliceView ) {
+
+			if ( !this.getSessionDirectory() ) return;
+
 			var canvas = sliceView.getDrawingCanvas();
 			var context = canvas.getContext2d();
 			context.clearRect(0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight());
@@ -146,24 +180,33 @@ qx.Class.define("desk.SegTools",
 			var seedsList = sliceView.getUserData("seeds")[seedsType];
 			var sliceId = sliceView.getSlice();
 
-			var seed = _.find(seedsList.getChildren(), function (seed) {
-				return seed.getUserData("slice") === sliceId;
-			});
+			var seed = _.find( seedsList.getChildren(), function ( seed ) {
 
-			if (seed) {
+				return seed.getUserData( "slice" ) === sliceId;
+
+			} );
+
+			if ( seed ) {
 				var imageLoader = new Image();
-				seedsList.setSelection([seed]);
+				seedsList.setSelection( [ seed ] );
+
 				imageLoader.onload = function() {
-					context.drawImage(imageLoader, 0, 0);
-					sliceView.fireEvent("changeDrawing");
+
+					context.drawImage( imageLoader, 0, 0 );
+					sliceView.fireEvent( "changeDrawing" );
 					imageLoader.onload = 0;
+
 				}
+
 				imageLoader.src = desk.FileSystem.getFileURL(this.getSessionDirectory()) + "/" +
 					this.__getSeedFileName (sliceView, sliceId, seedsType) +
 					"?nocache=" + Math.random();
+
 			} else {
+
 				seedsList.resetSelection();
-				sliceView.fireEvent("changeDrawing");
+				sliceView.fireEvent( "changeDrawing" );
+
 			}
 		},
 
@@ -171,6 +214,7 @@ qx.Class.define("desk.SegTools",
 		 * Creates the actions containers (segmentation, meshing etc...)
 		 */
 		__buildActionsContainers : function() {
+
 			var spacing = 5;
 			this.__paintContainer = new qx.ui.container.Composite(
 				new qx.ui.layout.HBox(spacing));
@@ -182,447 +226,356 @@ qx.Class.define("desk.SegTools",
             this.__penSize = new qx.ui.form.Spinner().set({
 				minimum: 1, maximum: 100, value: 1});
 
-            this.__penSize.addListener("changeValue", function(event) {
-				this.__master.getViewers().forEach(function (viewer) {
-					viewer.setPaintWidth(event.getData());
-				});
-			}, this);
-            this.__penSize.setValue(5);
+            this.__penSize.addListener( "changeValue", function( event ) {
+
+				this.__master.getViewers().forEach(function ( viewer ) {
+
+					viewer.setPaintWidth( event.getData() );
+
+				} );
+
+			}, this );
+
+            this.__penSize.setValue( 5 );
 			
-			var penLabel = new qx.ui.basic.Label("Brush : ");
-			this.__paintContainer.add(penLabel);
-			this.__paintContainer.add(this.__penSize);
+			var penLabel = new qx.ui.basic.Label( "Brush : " );
+			this.__paintContainer.add( penLabel );
+			this.__paintContainer.add( this.__penSize );
 			
 			////Create eraser on/off button
-            this.__eraserButton = new qx.ui.form.ToggleButton("Eraser");
-			this.__eraserButton.addListener("changeValue", function(e) {
-				this.__master.getViewers().forEach(function (viewer) {
-					viewer.setEraseMode(e.getData());
-				});
-			}, this);
-			this.__paintContainer.add(this.__eraserButton);
+            this.__eraserButton = new qx.ui.form.ToggleButton( "Eraser" );
+
+			this.__eraserButton.addListener( "changeValue", function( e ) {
+
+				this.__master.getViewers().forEach( function ( viewer ) {
+
+					viewer.setEraseMode( e.getData() );
+
+				} );
+
+			}, this );
+
+			this.__paintContainer.add( this.__eraserButton );
 
 			////Create labels zone
-			var paintPage = new qx.ui.tabview.Page("paint").set({
-				layout : new qx.ui.layout.VBox(spacing)});
-			paintPage.add(this.__paintContainer);
+			var paintPage = new qx.ui.tabview.Page("paint").set( {
+
+				layout : new qx.ui.layout.VBox(spacing) 
+
+			});
+
+			paintPage.add( this.__paintContainer );
 
 			this.__colorsContainer = new qx.ui.container.Composite(
-				new qx.ui.layout.Grid(1,1)).set({droppable : true});
-			this.__colorsContainer.addListener("drop", function(e) {
-				if (e.supportsType("fileBrowser")) {
-					this.__loadColors(e.getData("fileBrowser").getSelectedFiles()[0]);
+				new qx.ui.layout.Grid(1,1)).set( { droppable : true } );
+
+			this.__colorsContainer.addListener( "drop", function( e ) {
+
+				if (e.supportsType( "fileBrowser" )) {
+
+					this.__loadColors(e.getData( "fileBrowser" ).getSelectedFiles()[ 0 ]);
+
 				}
-			}, this);
-			paintPage.add(this.__colorsContainer);
+
+			}, this );
+
+			paintPage.add( this.__colorsContainer );
 
 			var tabView = this.__tabView = new desk.TabView();;
-            tabView.add(paintPage);
-			tabView.setVisibility("excluded");
+            tabView.add( paintPage );
+			tabView.setVisibility( "excluded" );
 
-			switch (this.__segmentationMethod) {
+			switch ( this.__segmentationMethod ) {
+
 				case 3:
+
 					this.__buildActionsCVT();
-					this.setCaption("Segmentation tool (CVT + region growing)");
+					this.setCaption( "Segmentation tool (CVT + region growing)" );
 					this.__sessionType = "gcSegmentation";
 					break;
+
 				case 2:
+
 					this.__buildActionsEdit();
-					this.setCaption("Edition Tool");
+					this.setCaption( "Edition Tool" );
 					this.__sessionType = "edit";
 					break;
+
 				case 1:
+
 					this.__buildActions();
-					this.setCaption("Segmentation tool (Region Growing)");
+					this.setCaption( "Segmentation tool (Region Growing)" );
 					this.__sessionType = "gcSegmentation";
 					break;
+
 				case 0:
 				default:
+
 					this.__buildActionsGC();
-					this.setCaption("Segmentation tool (Graph Cuts)");
+					this.setCaption( "Segmentation tool (Graph Cuts)" );
 					this.__sessionType = "gcSegmentation";
+
 			}
 
-			this.add(this.__getSessionsWidget());
-			this.add(tabView, {flex : 1});
+			this.__addButtonsAndLogic();
+			this.add( this.__getSessionsWidget() );
+			this.add( tabView, { flex : 1 } );
 
-			this.__master.getViewers().forEach (function (viewer) {
-				this.__addSeedsLists (viewer);
-			}, this);
-			
+			this.__master.getViewers().forEach (function ( viewer ) {
+
+				this.__addSeedsLists ( viewer );
+
+			}, this );
+
 			var opacityLabel = new qx.ui.basic.Label("Opacity :");
 			this.__paintContainer.add(opacityLabel);
-			
-            var opacitySlider = new qx.ui.form.Slider().set({value : 100});
-			opacitySlider.addListener("changeValue", function(event) {
-				this.__master.getViewers().forEach(function (viewer) {
-					viewer.setPaintOpacity(event.getData() / 100);
-				});
+
+            var opacitySlider = new qx.ui.form.Slider().set( { value : 100 } );
+
+			opacitySlider.addListener("changeValue", function( event ) {
+
+				this.__master.getViewers().forEach(function ( viewer ) {
+
+					viewer.setPaintOpacity( event.getData() / 100 );
+
+				} );
+
 			}, this);
 
-            this.__paintContainer.add(opacitySlider, {flex : 1});
+            this.__paintContainer.add( opacitySlider, { flex : 1 } );
 
-			paintPage.add(this.__bottomContainer);
-			paintPage.addAt(this.__getSeedsTypeSelectBox(), 0);
+			paintPage.add( this.__bottomContainer );
+			paintPage.addAt( this.__getSeedsTypeSelectBox(), 0 );
 		},
 
 		/**
 		 * Creates the actions when in edit mode
 		 */
 		__buildActionsEdit : function () {
-			var applySeedsAction = new desk.Action("applyseeds");
-			applySeedsAction.setParameters({"input_volume" : this.__file}, true);
-			this.__tabView.addElement('edit', applySeedsAction.getTabView());
 
-			var meshing = new desk.Action("extract_meshes");
-			this.__tabView.addElement('meshing', meshing.getTabView());
+			this.__segmentationAction = new desk.Action( "applyseeds" );
+			this.__segmentationAction.setParameters( { "input_volume" : this.__file }, true );
+			this.__tabView.addElement( 'edit', this.__segmentationAction.getTabView() );
 
-			this.addListener("changeSessionDirectory", function (e) {
+			this.addListener( "changeSessionDirectory", function ( e ) {
+
 				var directory = e.getData();
-				if (segmentationToken != null) {
-					this.__master.removeVolume(segmentationToken);
-				}
-				applySeedsAction.setOutputDirectory(directory + "/edit");
-				meshing.setOutputDirectory(directory + "/meshes");
-				applySeedsAction.setParameters({
+
+				this.__segmentationAction.setOutputDirectory( directory + "/edit" );
+				this.__segmentationAction.setParameters( {
+
 					"input_volume" : this.__file,
 					"seeds" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-				meshing.setParameters({
-					"input_volume" : applySeedsAction.getOutputDirectory() + "/output.mhd",
-					"colors" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-			}, this);
 
-			this.__startButton = new qx.ui.form.Button("Apply");
-			this.__startButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				this.__segmentationInProgress = true;
-				this.__saveCurrentSeeds(function() {
-					applySeedsAction.executeAction();
-				});
-			}, this);
-			this.__bottomContainer.add(this.__startButton);
+				}, true );
 
-			var meshingButton = new qx.ui.form.Button("extract meshes");
-			this.__extractMeshesButton = meshingButton;
-			meshingButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				meshingButton.setEnabled(false);
-				this.__saveCurrentSeeds(function() {
-					meshing.executeAction();
-				});
-			}, this);
-			this.__bottomContainer.add(meshingButton);
+			}, this );
 
-			var segmentationToken = null;
-			applySeedsAction.addListener("actionUpdated", function () {
-				this.__startButton.setEnabled(true);
-				if (!segmentationToken) {
-					segmentationToken = this.__master.addVolume(applySeedsAction.getOutputDirectory()+"output.mhd",
-						{opacity : 0.5, format : 0,
-						colors : [this.__labelColorsRed, this.__labelColorsGreen, this.__labelColorsBlue]});
-				} else {
-					this.__master.updateVolume(segmentationToken);
-				}
-
-				this.fireEvent("gotSegmentedVolume");
-			}, this);
-
-			this.__master.addListener("removeVolume", function (e) {
-				if (e.getData() == segmentationToken) {
-					segmentationToken = null;
-				}
-			});
-
-			meshing.addListener("actionUpdated", function () {
-				meshingButton.setEnabled(true);
-				this.__startButton.setEnabled(true);
-				if (!this.__meshViewer) {
-					this.__meshViewer = new desk.MeshViewer(this.getSessionDirectory() +
-						"/meshes/meshes.xml");
-					this.__meshViewer.getWindow().addListener("close", function () {
-						this.__meshViewer = null;
-					}, this)
-				} else {
-					this.__meshViewer.update();
-				}
-
-				this.fireDataEvent("meshingUpdated", this.__meshViewer);
-			}, this);
 		},
 
 		/**
 		 * Creates the actions
 		 */
 		__buildActions : function () {
-			var segmentation = new desk.Action("multiseg");
-			segmentation.setParameters({"input_volume" : this.__file}, true);
-			this.__tabView.addElement('segmentation', segmentation.getTabView());
 
-			var meshing = new desk.Action("extract_meshes");
-			this.__tabView.addElement('meshing', meshing.getTabView());
+			this.__segmentationAction = new desk.Action( "multiseg" );
+			this.__segmentationAction.setParameters( { "input_volume" : this.__file }, true );
+			this.__tabView.addElement( 'segmentation', this.__segmentationAction.getTabView() );
 
-			this.addListener("changeSessionDirectory", function (e) {
+			this.addListener( "changeSessionDirectory", function ( e ) {
+
 				var directory = e.getData();
-				if (segmentationToken != null) {
-					this.__master.removeVolume(segmentationToken);
-				}
-				segmentation.setOutputDirectory(directory + "/segmentation");
-				meshing.setOutputDirectory(directory + "/meshes");
-				segmentation.setParameters({
+
+				this.__segmentationAction.setOutputDirectory( directory + "/segmentation" );
+				this.__segmentationAction.setParameters( {
+
 					"input_volume" : this.__file,
 					"seeds" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-				meshing.setParameters({
-					"input_volume" : segmentation.getOutputDirectory() + "/output.mhd",
-					"colors" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-			}, this);
 
-			this.__startButton = new qx.ui.form.Button("Start segmentation");
-			this.__startButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				this.__segmentationInProgress = true;
-				this.__saveCurrentSeeds(function() {
-					segmentation.executeAction();
-				});
-			}, this);
-			this.__bottomContainer.add(this.__startButton);
+				}, true );
 
-			var meshingButton = new qx.ui.form.Button("extract meshes");
-			this.__extractMeshesButton = meshingButton;
-			meshingButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				meshingButton.setEnabled(false);
-				this.__saveCurrentSeeds(function() {
-					meshing.executeAction();
-				});
-			}, this);
-			this.__bottomContainer.add(meshingButton);
+			}, this );
 
-			var segmentationToken = null;
-			segmentation.addListener("actionUpdated", function () {
-				this.__startButton.setEnabled(true);
-				if (!segmentationToken) {
-					segmentationToken = this.__master.addVolume(segmentation.getOutputDirectory()+"output.mhd",
-						{opacity : 0.5, format : 0,
-						colors : [this.__labelColorsRed, this.__labelColorsGreen, this.__labelColorsBlue]});
-				} else {
-					this.__master.updateVolume(segmentationToken);
-				}
-
-				this.fireEvent("gotSegmentedVolume");
-			}, this);
-
-			this.__master.addListener("removeVolume", function (e) {
-				if (e.getData() == segmentationToken) {
-					segmentationToken = null;
-				}
-			});
-
-			meshing.addListener("actionUpdated", function () {
-				meshingButton.setEnabled(true);
-				this.__startButton.setEnabled(true);
-				if (!this.__meshViewer) {
-					this.__meshViewer = new desk.MeshViewer(this.getSessionDirectory() +
-						"/meshes/meshes.xml");
-					this.__meshViewer.getWindow().addListener("close", function () {
-						this.__meshViewer = null;
-					}, this)
-				} else {
-					this.__meshViewer.update();
-				}
-
-				this.fireDataEvent("meshingUpdated", this.__meshViewer);
-			}, this);
 		},
 
 		/**
 		 * Creates the actions when in CVTSegmentation mode
 		 */
-		__buildActionsCVT : function() {	
+		__buildActionsCVT : function() {
+
 			var clustering = new desk.Action("cvtseg2");
-			clustering.setParameters({"input_volume" : this.__file}, true);
+			clustering.setParameters( { "input_volume" : this.__file }, true );
 			this.__tabView.addElement('clustering', clustering.getTabView());
 
-			var segmentation = new desk.Action("multiseg");
-			segmentation.connect("clustering", clustering,
-				"clustering-index.mhd");
-			this.__tabView.addElement('segmentation', segmentation.getTabView());
+			this.__segmentationAction = new desk.Action("multiseg");
+			this.__segmentationAction.connect("clustering", clustering, "clustering-index.mhd");
+			this.__tabView.addElement('segmentation', this.__segmentationAction.getTabView());
 
-			var meshing = new desk.Action("extract_meshes");
-			this.__tabView.addElement('meshing', meshing.getTabView());
+			this.addListener( "changeSessionDirectory", function ( e ) {
 
-			this.addListener("changeSessionDirectory", function (e) {
-				var directory=e.getData();
-				if (segmentationToken != null) {
-					this.__master.removeVolume(segmentationToken);
-				}
+				var directory = e.getData();
+
 				clustering.setOutputDirectory(directory + "/clustering");
-				segmentation.setOutputDirectory(directory+ "/segmentation");
-				meshing.setOutputDirectory(directory + "/meshes");
-				segmentation.setParameters({
+				this.__segmentationAction.setOutputDirectory(directory+ "/segmentation");
+
+				this.__segmentationAction.setParameters( {
+
 					"input_volume" : this.__file,
 					"seeds" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-				clustering.setParameters({"input_volume" : this.__file}, true);
-				meshing.setParameters({
-					"input_volume" : this.getSessionDirectory() + "/segmentation/output.mhd",
-					"colors" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-			}, this);
 
-			this.__startButton = new qx.ui.form.Button("Start segmentation");
-			this.__startButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				this.__segmentationInProgress = true;
-				this.__saveCurrentSeeds(function() {
-					segmentation.executeAction();});
-			}, this);
-			this.__bottomContainer.add(this.__startButton);
+				}, true );
 
-			var meshingButton = new qx.ui.form.Button("extract meshes");
-			this.__extractMeshesButton = meshingButton;
-			meshingButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				meshingButton.setEnabled(false);
-				meshing.executeAction();
-			}, this);
-			this.__bottomContainer.add(meshingButton);
+				clustering.setParameters( { "input_volume" : this.__file }, true );
 
-			var segmentationToken = null;
-			segmentation.addListener("actionUpdated", function () {
-				this.__startButton.setEnabled(true);
-				if (!segmentationToken) {
-					segmentationToken = this.__master.addVolume(segmentation.getOutputDirectory()+"output.mhd",
-						{opacity : 0.5, format : 0,
-						colors : [this.__labelColorsRed, this.__labelColorsGreen, this.__labelColorsBlue]});
-				} else {
-					this.__master.updateVolume(segmentationToken);
-				}
-
-				this.fireEvent("gotSegmentedVolume");
-			}, this);
-
-			this.__master.addListener("removeVolume", function (e) {
-				if (e.getData() == segmentationToken) {
-					segmentationToken = null;
-				}
-			});
-
-			meshing.addListener("actionUpdated", function () {
-				meshingButton.setEnabled(true);
-				this.__startButton.setEnabled(true);
-				if (!this.__meshViewer) {
-					this.__meshViewer = new desk.MeshViewer(this.getSessionDirectory() +
-						"/meshes/meshes.xml");
-					this.__meshViewer.getWindow().addListener("close", function () {
-						this.__meshViewer = null;
-					}, this)
-				} else {
-					this.__meshViewer.update();
-				}
-
-				this.fireDataEvent("meshingUpdated", this.__meshViewer);
-			}, this);
+			}, this );
 
 		},
 
 		/**
 		 * Creates the actions when in GCSegmentation mode
 		 */
-		__buildActionsGC : function() {	
-			var clustering = new desk.Action("cvtseg2");
-			clustering.setParameters({"input_volume" : this.__file}, true);
-			this.__tabView.addElement('clustering', clustering.getTabView());
+		__buildActionsGC : function() {
 
-			var segmentation = new desk.Action("cvtgcmultiseg");
-			segmentation.connect("clustering", clustering,
-				"clustering-index.mhd");
-			this.__tabView.addElement('segmentation', segmentation.getTabView());
+			var clustering = new desk.Action( "cvtseg2" );
+			clustering.setParameters( { "input_volume" : this.__file }, true );
+			this.__tabView.addElement( 'clustering', clustering.getTabView() );
 
-			var medianFilteringAction = new desk.Action("volume_median_filtering");
-			medianFilteringAction.connect("input_volume", 
-				segmentation, "seg-cvtgcmultiseg.mhd");
-			this.__tabView.addElement('cleaning', medianFilteringAction.getTabView());
+			var segmentationAction = new desk.Action( "cvtgcmultiseg" );
+			segmentationAction.connect( "clustering", clustering, "clustering-index.mhd" );
+			this.__tabView.addElement('segmentation', segmentationAction.getTabView() );
 
-			var meshing = new desk.Action("extract_meshes");
-			this.__tabView.addElement('meshing', meshing.getTabView());
+			var medianFilteringAction = new desk.Action( "volume_median_filtering" );
+			medianFilteringAction.connect( "input_volume", segmentationAction, "seg-cvtgcmultiseg.mhd" );
+			this.__tabView.addElement( 'cleaning', medianFilteringAction.getTabView() );
+			this.__segmentationAction = medianFilteringAction;
 
-			this.addListener("changeSessionDirectory", function (e) {
-				var directory=e.getData();
-				medianFilteringAction.setOutputDirectory(directory + "/filtering");
-				if (segmentationToken != null) {
-					this.__master.removeVolume(segmentationToken);
-				}
-				clustering.setOutputDirectory(directory + "clustering");
-				segmentation.setOutputDirectory(directory + "/segmentation");
-				meshing.setOutputDirectory(directory + "/meshing");
-				segmentation.setParameters({
+			this.addListener( "changeSessionDirectory", function ( e ) {
+
+				var directory = e.getData();
+				medianFilteringAction.setOutputDirectory( directory + "/filtering" );
+
+				clustering.setOutputDirectory( directory + "/clustering" );
+				segmentationAction.setOutputDirectory( directory + "/segmentation" );
+
+				segmentationAction.setParameters( {
+
 					"input_volume" : this.__file,
 					"seeds" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-				clustering.setParameters({"input_volume" : this.__file}, true);
-				meshing.setParameters({
-					"input_volume" : this.getSessionDirectory() + "/filtering/output.mhd",
-					"colors" : this.getSessionDirectory() + "/seeds.xml"
-				}, true);
-			}, this);
 
-			this.__startButton = new qx.ui.form.Button("Start segmentation");
-			this.__startButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				this.__segmentationInProgress = true;
-				this.__saveCurrentSeeds(function() {
-							medianFilteringAction.executeAction();});
-			}, this);
-			this.__bottomContainer.add(this.__startButton);
+				}, true );
 
-			var meshingButton = new qx.ui.form.Button("extract meshes");
-			this.__extractMeshesButton = meshingButton;
-			meshingButton.addListener("execute", function () {
-				this.__startButton.setEnabled(false);
-				meshingButton.setEnabled(false);
-				meshing.executeAction();
-			}, this);
-			this.__bottomContainer.add(meshingButton);
+				clustering.setParameters( { "input_volume" : this.__file }, true );
 
-			var segmentationToken = null;
-			medianFilteringAction.addListener("actionUpdated", function () {
-				this.__startButton.setEnabled(true);
-				if (!segmentationToken) {
-					segmentationToken = this.__master.addVolume(medianFilteringAction.getOutputDirectory()+"output.mhd",
-								{opacity : 0.5, format : 0,
-								colors : [this.__labelColorsRed, this.__labelColorsGreen, this.__labelColorsBlue]});
-				} else {
-					this.__master.updateVolume(segmentationToken);
+			}, this );
+
+		},
+
+		__addButtonsAndLogic : function () {
+
+			this.addListener( "changeSessionDirectory", function ( e ) {
+
+				var directory = e.getData();
+
+				if ( this.__segmentationToken ) {
+
+					this.__master.removeVolume( this.__segmentationToken );
+
 				}
+
+				this.__meshingAction.setOutputDirectory( directory + "/meshes" );
+				this.__meshingAction.setParameters( {
+
+					"input_volume" : this.__segmentationAction.getOutputDirectory() + "/output.mhd",
+					"colors" : this.getSessionDirectory() + "/seeds.xml"
+
+				}, true );
+
+
+			} );
+
+			this.__segmentationButton = new qx.ui.form.Button( "Start" );
+			this.__segmentationButton.addListener("execute", function () {
+
+				this.__segmentationButton.setEnabled( false );
+				this.__segmentationInProgress = true;
+
+				this.__saveCurrentSeeds( function() {
+
+					this.__segmentationAction.executeAction();
+
+				} );
+
+			}, this );
+
+			this.__bottomContainer.add(this.__segmentationButton, { flex : 1 } );
+
+			this.__segmentationAction.addListener( "actionUpdated", function () {
+
+				this.__segmentationButton.setEnabled( true );
+
+				if ( this.__segmentationToken ) {
+
+					this.__master.removeVolume( this.__segmentationToken );
+
+				}
+
+				this.__segmentationToken = this.__master.addVolume( this.__segmentationAction.getOutputDirectory() + "output.mhd", 
+					{
+
+					opacity : 0.5,
+					format : 0,
+					colors : [ this.__labelColorsRed, this.__labelColorsGreen, this.__labelColorsBlue ]
+
+					}
+				);
 
 				this.fireEvent("gotSegmentedVolume");
+
 			}, this);
 
-			this.__master.addListener("removeVolume", function (e) {
-				if (e.getData() == segmentationToken) {
-					segmentationToken = null;
-				}
-			});
+			this.__meshingAction = new desk.Action( "extract_meshes" );
+			this.__tabView.addElement( 'meshing', this.__meshingAction.getTabView() );
 
-			meshing.addListener("actionUpdated", function () {
-				meshingButton.setEnabled(true);
-				this.__startButton.setEnabled(true);
-				if (!this.__meshViewer) {
-					this.__meshViewer = new desk.MeshViewer(this.getSessionDirectory() +
-						"/meshes/meshes.xml");
-					this.__meshViewer.getWindow().addListener("close", function () {
+			this.__meshingButton = new qx.ui.form.Button( "extract meshes" );
+			this.__bottomContainer.add( this.__meshingButton, { flex : 1 } );
+
+			this.__meshingButton.addListener("execute", function () {
+
+				this.__segmentationButton.setEnabled( false );
+				this.__meshingButton.setEnabled( false );
+
+				this.__saveCurrentSeeds( function () {
+
+					this.__meshingAction.executeAction();
+
+				} );
+
+			}, this );
+
+			this.__meshingAction.addListener( "actionUpdated", function () {
+
+				this.__meshingButton.setEnabled( true );
+				this.__segmentationButton.setEnabled( true );
+
+				if ( !this.__meshViewer ) {
+
+					this.__meshViewer = new desk.MeshViewer( this.getSessionDirectory() + "/meshes/meshes.xml" );
+
+					this.__meshViewer.getWindow().addListener( "close", function () {
+
 						this.__meshViewer = null;
-					}, this)
+
+					}, this );
+
 				} else {
+
 					this.__meshViewer.update();
+
 				}
 
-				this.fireDataEvent("meshingUpdated", this.__meshViewer);
-			}, this);
+				this.fireDataEvent( "meshingUpdated", this.__meshViewer );
+
+			}, this );
 
 		},
 
@@ -649,18 +602,23 @@ qx.Class.define("desk.SegTools",
 		 * Generates lookup tables
 		 */
 		__buildLookupTables : function () {
-			var red = new Uint8Array (256);
-			var green = new Uint8Array (256);
-			var blue = new Uint8Array (256);
+			var colors = this.__labels;
+			var size = 0;
+			for (i = 0; i < colors.length; i++) {
+				size = Math.max( size, parseFloat( colors[ i ].label ) );
+			}
+
+			var red = new Uint8Array ( size);
+			var green = new Uint8Array ( size );
+			var blue = new Uint8Array ( size );
 			this.__labelColorsRed = red;
 			this.__labelColorsGreen = green;
 			this.__labelColorsBlue = blue;
-			for (var i = 0; i < 256; i++) {
+			for (var i = 0; i < size; i++) {
 				red[i] = 0;
 				green[i] = 0;
 				blue[i] = 0;
 			}
-			var colors = this.__labels;
 
 			// build compact lookuptables for seeds processing
 			var cRed = new Uint8Array (colors.length);
@@ -671,7 +629,7 @@ qx.Class.define("desk.SegTools",
 			this.__compactLabelsBlue = cBlue;
 
 			for (i = 0; i < colors.length; i++) {
-				var label = colors[i].label;
+				var label = parseFloat( colors[i].label ) - 1;
 				red[label] = colors[i].red;
 				green[label] = colors[i].green;
 				blue[label] = colors[i].blue;
@@ -1519,15 +1477,23 @@ qx.Class.define("desk.SegTools",
 		 * Saves the seeds
 		 * @param callback {Function} callback when done
 		 */
-		__saveCurrentSeeds : function(callback) {
+		__saveCurrentSeeds : function( callback ) {
+
 			callback = callback || function () {};
-			if (this.getSessionDirectory() === null) return;
+
+			if ( this.getSessionDirectory() === null ) return;
+
 			var modified = false;
-			async.each(this.__master.getViewers(), (function (viewer, callback) {
+
+			async.each( this.__master.getViewers(), ( function (viewer, callback) {
+
 				if (viewer.isDrawingCanvasModified()) {
+
 					var base64Img = this.__getNewSeedsImage (viewer);
 					var sliceId = viewer.getUserData( "previousSlice" );
+
 					if (base64Img != false) {
+
 						modified = true;
 						// save image
 						var seedsType = this.getSeedsType();
@@ -1535,36 +1501,53 @@ qx.Class.define("desk.SegTools",
 						this.__addNewSeedItemToList (viewer, sliceId, seedsType);
 
 						desk.Actions.execute({
+
 							action : "write_binary",
 							file_name : this.__getSeedFileName (viewer, sliceId, seedsType),
 							base64data : base64Img,
 							output_directory : this.getSessionDirectory()
+
 						}, callback);
+
 					} else {
+
 						callback();
+
 					}
 				} else {
+
 					callback();
+
 				}
 				
 				viewer.setUserData("previousSlice", viewer.getSlice());
 				viewer.setDrawingCanvasNotModified();
+
 			}).bind(this),
 			
 			(function () {
+
 				if (modified) {
-					this.__saveSeedsXML(callback);
+
+					this.__saveSeedsXML( callback );
+
 				} else {
-					callback();
+
+					callback.call( this );
+
 				}
-			}).bind(this));
+
+			} ).bind( this ) );
+
 		},
 
 		/**
 		 * Saves the seeds in an xml file
 		 * @param callback {Function} callback when done
 		 */
-		__saveSeedsXML : function(callback) {
+		__saveSeedsXML : function( callback ) {
+			callback = callback || function () {};
+
                // XML writer with attributes and smart attribute quote escaping
 			/*
 				Format a dictionary of attributes into a string suitable
@@ -1684,7 +1667,7 @@ qx.Class.define("desk.SegTools",
 				file_name : "seeds.xml",
 				base64data : qx.util.Base64.encode(seeds, true),
 				output_directory : this.getSessionDirectory()},
-			callback);
+			callback, this);
 		},
 
 		/**
@@ -1881,16 +1864,34 @@ qx.Class.define("desk.SegTools",
 		 * Creates the window ued to reorder labels
 		 */
 		__createReorderingWindow : function () {
+
 			var currentListItem;
 
 			var win = new qx.ui.window.Window();
-			win.set({layout : new qx.ui.layout.VBox(), width : 400,
-				showMinimize: false, showMaximize: false, 
-				allowMaximize: false, showClose: true, resizable: false,
-				movable : true, caption : "reorder labels"});
 
-			var list = new qx.ui.form.List().set({draggable : true,
-				droppable : true, selectionMode : "multi"});
+			win.set( {
+
+				layout : new qx.ui.layout.VBox(),
+				width : 400,
+				showMinimize: false,
+				showMaximize: false, 
+				allowMaximize: false,
+				showClose: true,
+				resizable: false,
+				movable : true,
+				caption : "reorder labels",
+				alwaysOnTop : true
+
+			});
+
+			var list = new qx.ui.form.List().set( {
+
+				draggable : true,
+				droppable : true,
+				selectionMode : "multi"
+
+			} );
+
 			win.add(list);
 
 			this.__labels.forEach(function (label) {

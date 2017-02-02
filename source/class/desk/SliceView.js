@@ -298,12 +298,7 @@ qx.Class.define("desk.SliceView",
 				mesh.material.uniforms.texture.value.dispose();
 				mesh.material.dispose();
 				mesh.geometry.dispose();
-				var binding = slice.getUserData("binding");
-				if ( binding ) {
-					this.removeBinding( binding );
-				} else {
-					this.removeListenerById( slice.getUserData( "__sliceViewListener" ) );
-				}
+				this.removeListenerById( slice.getUserData( "__sliceViewListener" ) );
 				this.render();
 				slice.dispose();
 				this.__slices = _.without(this.__slices, slice);
@@ -639,9 +634,13 @@ qx.Class.define("desk.SliceView",
 		 * @param volumeSlice {desk.VolumeSlice} the slice to update
 		 */
 		__updateVolumeSlicePosition : function ( volumeSlice ) {
+
+			if ( !this.__origin ) return; // race condition here : first slice might not be ready (to fix...)
+
 			var index = volumeSlice.getZIndex();
 			var position = this.__origin[ index ] + this.getSlice() * this.__spacing[ index ];
 			volumeSlice.setPosition( position );
+
 		},
 
 		/**
@@ -654,33 +653,33 @@ qx.Class.define("desk.SliceView",
 			var geometry = new THREE.PlaneBufferGeometry( 1, 1 );
 			var coords = slice.get2DCornersCoordinates();
 			var vertices = geometry.attributes.position;
+
 			for ( var i = 0; i < 4; i++ ) {
+
 				vertices.setXYZ( i, coords[ 2 * i ], coords[ 2 * i + 1 ], 0 );
+
 			}
 
-			// detect if slice has same resolution.
-			var index = desk.VolumeSlice.indices.z[ this.__orientation ];
-			if ( ( this.__spacing[ index ] !== slice.getSpacing()[ index ] )
-				|| ( this.__origin[ index ] !== slice.getOrigin()[ index ] )
-				|| ( this.__slider.getMaximum() !== slice.getNumberOfSlices() - 1 ) ) {
+			this.__updateVolumeSlicePosition( slice );
+
+			var listener = this.addListener( 'changeSlice', function () {
+
 				this.__updateVolumeSlicePosition( slice );
-				slice.setUserData( "__sliceViewListener", this.addListener( 'changeSlice',
-					function () {
-						this.__updateVolumeSlicePosition( slice );
-					} ) );
-				slice.addListener( 'changePosition', function () {
-					var position = slice.getPosition();
-					var index = slice.getZIndex();
-					var sliceNumber = Math.round( ( position - this.__origin[ index ] )
-						/ this.__spacing[ index ] );
-					sliceNumber = Math.max( 0, Math.min( sliceNumber, this.__slider.getMaximum() ) );
-					this.setSlice( sliceNumber );
-				}, this );
-			} else {
-				slice.setSlice( this.getSlice() );
-				slice.setUserData( "binding", this.bind( "slice", slice, "slice" ) );
-				slice.bind( "slice", this, "slice" );
-			}
+
+			} );
+
+			slice.setUserData( "__sliceViewListener", listener );
+
+			slice.addListener( 'changePosition', function () {
+
+				var position = slice.getPosition();
+				var index = slice.getZIndex();
+				var sliceNumber = Math.round( ( position - this.__origin[ index ] )
+					/ this.__spacing[ index ] );
+				sliceNumber = Math.max( 0, Math.min( sliceNumber, this.__slider.getMaximum() ) );
+				this.setSlice( sliceNumber );
+
+			}, this );
 
 			var material = slice.getMaterial();
 			var mesh = new THREE.Mesh( geometry, material );
@@ -691,13 +690,18 @@ qx.Class.define("desk.SliceView",
 			geometry.computeBoundingSphere();
 
 			slice.addListenerOnce( 'changeImage', function () {
+
 				this.getScene().add( mesh );
 				callback.call( context );
+
 			}, this );
 
 			slice.addListener( 'changeImage', function () {
+
 				this.render();
+
 			}, this);
+
 		},
 
 		__initDrawingDone : false,
