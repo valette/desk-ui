@@ -21,10 +21,6 @@
     "browserify-css": ">0.0.0",
     "c3": ">0.0.0",
     "d3": "3.5.17",
-    "gulp": ">0.0.0",
-    "gulp-uglify": ">0.0.0",
-    "gulp-streamify": ">0.0.0",
-    "gulp-rename": ">0.0.0",
     "heap": ">0.0.0",
     "jssha": ">0.0.0",
     "kdt": ">0.0.0",
@@ -37,7 +33,7 @@
     "socket.io-client": ">0.0.0",
     "three": ">0.0.0",
     "uploadmgr": "https://github.com/johnspackman/UploadMgr",
-    "vinyl-source-stream": ">0.0.0",
+    "uglify-js": ">0.0.0",
     "webworkify": ">0.0.0",
     "xterm": ">0.0.0"
   },
@@ -50,10 +46,11 @@
     ]
   },
   "scripts": {
-    "browserify": "node source/build.js",
+    "browserify": "browserify source/browserified.js -r async -r heap -r lodash -r operative -r ./source/desk-client.js:desk-client > source/script/bundle.js",
+    "uglify" : "uglifyjs source/script/bundle.js --mangle -b beautify=false,ascii-only=true -o build/script/bundle.js",
     "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
     "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
-    "build": "npm run clean && npm run browserify && npm run qooxdoo",
+    "build": "npm run clean && npm run qooxdoo && npm run browserify && npm run uglify",
     "buildAddons": "node source/buildAddons.js",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }
