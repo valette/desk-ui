@@ -577,6 +577,7 @@ qx.Class.define("desk.MPRContainer",
 			// drag and drop support
 			volume.setDraggable(true);
 			volume.addListener("dragstart", function(e) {
+				desk.DragFix.getInstance().focus();
 				e.addAction("alias");
 				e.addType("volumeSlices");
 				e.addType("VolumeViewer");
@@ -1151,6 +1152,7 @@ qx.Class.define("desk.MPRContainer",
 			var label = new qx.ui.basic.Label("Link").set({draggable : true,
 				decorator : "main", toolTipText : "click and drag to an other window to link"});
 			label.addListener("dragstart", function(e) {
+				desk.DragFix.getInstance().focus();
 				e.addAction("alias");
 				e.addType("volView");
 				});

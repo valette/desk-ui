@@ -27,6 +27,7 @@ qx.Class.define("desk.FileField",
 		* @param e {qx.event.type.Drag} drag event
 		*/
 		__onDragStart : function (e) {
+			desk.DragFix.getInstance().focus();
 			e.addAction("copy");
 			e.addType("file");
 		},
