@@ -760,6 +760,57 @@ qx.Class.define("desk.MPRContainer",
 			return volume;
 		},
 
+		/**
+		 * returns the brightness for a given volume
+		 * @param volume { qx.ui.container.Composite } volume to get brightness from
+		 * @return {Number} brightness
+		 */
+		getBrightness : function ( volume ) {
+
+			return volume.getUserData( 'slices' )[0].getBrightness();
+
+		},
+
+		/**
+		 * sets brightness for a given volume
+		 * @param volume { qx.ui.container.Composite } to modify
+		 * @param brightness {Number} brightness
+		 */
+		setBrightness : function ( volume, brightness ) {
+
+			volume.getUserData( 'slices' ).forEach( function ( volumeSlice ) {
+
+				volumeSlice.setBrightness( brightness );
+
+			} );
+
+		},
+
+		/**
+		 * returns the contrast for a given volume
+		 * @param volume { qx.ui.container.Composite } volume to get contrast from
+		 * @return {Number} contrast
+		 */
+		getContrast : function ( volume ) {
+
+			return volume.getUserData( 'slices' )[0].getContrast();
+
+		},
+
+		/**
+		 * sets brightness for a given volume
+		 * @param volume { qx.ui.container.Composite } to modify
+		 * @param contrast {Number} contrast
+		 */
+		setContrast : function ( volume, contrast ) {
+
+			volume.getUserData( 'slices' ).forEach( function ( volumeSlice ) {
+
+				volumeSlice.setContrast( contrast );
+
+			} );
+
+		},
 
 		/**
 		 * creates a context menu

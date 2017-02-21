@@ -493,6 +493,25 @@ qx.Class.define("desk.VolumeSlice",
 		},
 
 		/**
+		 * sets brightness all generated materials
+		 * @param brightness {Number} brightness
+		 */
+		setBrightness : function ( brightness ) {
+			this.__setBrightnessAndContrast(brightness, this.getContrast() );
+			this.fireEvent("changeImage");
+		},
+
+		/**
+		 * sets contrast for all generated materials
+		 * @param contrast {Number} contrast
+		 */
+		setContrast : function ( contrast ) {
+			this.__setBrightnessAndContrast( this.getBrightness(), contrast);
+			this.fireEvent("changeImage");
+		},
+
+
+		/**
 		 * sets brightness and contrast for all generated materials
 		 * @param brightness {Number} brightness
 		 * @param contrast {Number} contrast
