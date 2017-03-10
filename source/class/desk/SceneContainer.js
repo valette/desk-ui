@@ -451,11 +451,24 @@ qx.Class.define("desk.SceneContainer",
 				opts = {};
 			}
 			opts = opts || {};
-			callback = callback || function () {};
+			callback = callback || function ( err, res ) {};
+
+			if ( callback.length === 1 ) {
+				console.warn( "Please change the callback to a error-first node-style callback : change function (mesh) to function ( err, mesh )" );
+				console.warn( new Error().stack );
+
+				var oldCallback = callback;
+				callback = function ( err, mesh ) {
+
+					oldCallback.call( context, mesh );
+
+				}
+
+			}
 
             opts.file = file;
 
-			function after (mesh) {callback.call(context, mesh);}
+			function after (mesh) {callback.call(context, null, mesh);}
 
 			switch (desk.FileSystem.getFileExtension(file)) {
 				case "ply":

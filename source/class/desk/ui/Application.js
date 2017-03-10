@@ -125,18 +125,6 @@ qx.Class.define("desk.ui.Application",
 					throw( 'bad function name : ' + func);
 				}
 
-				if ( opts.tweakCallback ) {
-					origin = function ( file, opts, callback ) {
-						if ( typeof opts === 'function' ) {
-							callback = opts;
-							opts ={};
-						}
-						this[name]( file, opts, function ( res ) {
-							callback ( null, res );
-						} );
-					};
-				}
-
 				root[ name + "Async" ] = Promise.promisify( origin );
 			} );
 		},
@@ -165,6 +153,7 @@ qx.Class.define("desk.ui.Application",
 
 			var membersToPromisify = [
 				"desk.MPRContainer.addVolume",
+				"desk.SceneContainer.addFile",
 				"desk.SceneContainer.addVolume",
 				"desk.SceneContainer.loadURL",
 				"desk.SliceView.addVolume",
@@ -172,13 +161,8 @@ qx.Class.define("desk.ui.Application",
 				"desk.ThreeContainer.render"
 			];
 
-			var membersToPromisify2 = [
-				"desk.SceneContainer.addFile",
-			];
-
 			this.promisify( toPromisify );
 			this.promisify( membersToPromisify, { members : true } );
-			this.promisify( membersToPromisify2, { members : true, tweakCallback : true } );
 
 			desk.SceneContainer.prototype.snapshotAsync = Promise.promisify ( function ( opts, callback ) {
 				this.snapshot( Object.assign( {}, opts, { callback : callback } ) );
