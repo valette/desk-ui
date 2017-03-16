@@ -21,6 +21,16 @@ qx.Class.define("desk.ThreeContainer",
 		opts = opts || {};
 		this.base(arguments);
 		this.setLayout(new qx.ui.layout.Canvas());
+		this.__initialCameraFront = new THREE.Vector3().set( 0, 0, -1 );
+		this.__initialCameraUp =  new THREE.Vector3().set( 0, 1, 0 );
+
+		if ( opts.cameraFront ) {
+			Array.isArray( opts.cameraFront ) ? this.__initialCameraFront.fromArray( opts.cameraFront ) : this.__initialCameraFront.copy( opts.cameraFront )
+		}
+
+		if ( opts.cameraUp ) {
+			Array.isArray( opts.cameraUp ) ? this.__initialCameraUp.fromArray( opts.cameraUp ) : this.__initialCameraUp.copy( opts.cameraUp )
+		}
 
 		var threeCanvas = this.__threeCanvas = this.__garbageContainer.getChildren()[0] || new qx.ui.embed.Canvas();
 		threeCanvas.set({syncDimension : true, zIndex : 0});
@@ -158,6 +168,10 @@ qx.Class.define("desk.ThreeContainer",
 	},
 
 	members : {
+
+		__initialCameraFront : null,
+		__initialCameraUp : null,
+
 		/**
 		 * removes membersin the object
 		 * @param object {Object} object to clean
@@ -408,8 +422,9 @@ qx.Class.define("desk.ThreeContainer",
 				var center = bbox.getCenter();
 				this.__boudingBoxDiagonalLength = bbdl;
 				camera.position.copy(center);
-				camera.position.z += bbdl;
-				camera.up.set(0,1,0);
+				camera.position.sub(
+					this.__initialCameraFront.clone().multiplyScalar( bbdl ) );
+				camera.up.copy( this.__initialCameraUp );
 				controls.target.copy(center);
 			} else {
 				var ratio = bbdl / this.__boudingBoxDiagonalLength;
