@@ -331,14 +331,27 @@ qx.Class.define("desk.Actions",
 			var button = this.__settingsButton = new qx.ui.form.MenuButton(null, "icon/16/categories/system.png", menu);
 			button.setToolTipText("Files/Configuration");
 
-			if (!this.__engine) return;
+			if ( !this.__engine ) return;
 
-			this.__socket.on("loadavg", function (loadavg) {
-				var load = Math.max(0, Math.min(100, Math.round(100 * loadavg[0])));
-				var color = Math.floor(2.55 * (100 - load));
-				loadWidget.setBackgroundColor('rgb(255,'  + color + ', ' + color + ')');
-				loadWidget.setLabel("CPU Load  : " + load + "%");
-			});
+			setInterval( function( ){
+
+				desk.Actions.execute({
+
+					action : 'cpuLoad',
+					stdout  : true,
+					silent : true
+
+				}, function ( err, res ) {
+
+					var loadavg = JSON.parse( res.stdout )[ 0 ];
+					var load = Math.max( 0, Math.min( 100, Math.round( 100 * loadavg ) ) );
+					var color = Math.floor( 2.55 * ( 100 - load ));
+					loadWidget.setBackgroundColor( 'rgb(255,'  + color + ', ' + color + ')');
+					loadWidget.setLabel( "CPU Load  : " + load + "%" );
+
+				} );
+
+			}, 5000);
 
 			qx.core.Init.getApplication().getRoot().add(button, {top : 0, right : 0});
 		},
