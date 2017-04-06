@@ -5,9 +5,9 @@ DESK  is a remote desktop, originally for visualization and processing of medica
 
 #### HTML front-end for remote desktop ####
 
-The aim of the project is to create a remote desktop for visualization and processing of medical images. Only works under linux or Mac OS, but patches are welcome!
+The aim of the project is to create an HTML desktop for visualization and processing, initially designed for 3D data and medical images. Only works under linux or Mac OS, but patches are welcome!
 
-This repository contains the User Interface source code, mostly based on Qooxdoo and three.js. Different backends are available, depending on your needs : 
+This repository only contains the User Interface source code, mostly based on Qooxdoo and three.js. This code does not work without a backend and should not be installed alone. Instead, end-users should install either : 
 * [desk for a web server hosting](https://github.com/valette/desk)
 * [desk-electron for local use](https://github.com/valette/desk-electron)
 * [desk-nw also for local use](https://github.com/valette/desk-nw)
