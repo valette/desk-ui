@@ -393,28 +393,13 @@ qx.Class.define("desk.ThreeContainer",
 		* Sets the camera to view all objects in the scene
 		*/
 		viewAll : function () {
-			var bbox = new THREE.Box3();
-
-			this.__scene.traverseVisible(function(child){
-				var geometry = child.geometry;
-				if (geometry) {
-					if (!geometry.boundingBox) {
-						geometry.computeBoundingBox();
-					}
-					bbox.union(geometry.boundingBox.clone().translate(child.position));
-				} else {
-					if (child.boundingBox) {
-						bbox.union(child.boundingBox.clone().translate(child.position));
-					}
-				}
-			});
+			var bbox = new THREE.Box3().setFromObject( this.__scene );
 
 			if (bbox.isEmpty()) {
 				return;
 			}
 
 			var bbdl = bbox.getSize().length();
-
 			var camera = this.__camera;
 			var controls = this.__controls;
 
@@ -436,7 +421,7 @@ qx.Class.define("desk.ThreeContainer",
 
 			if (camera instanceof THREE.PerspectiveCamera) {
 				camera.near = bbdl / 1000;
-				camera.far = bbdl * 10;
+				camera.far = bbdl * 1000;
 				camera.zoom = 1;
 			} else {
 				camera.near = - bbdl * 10;
