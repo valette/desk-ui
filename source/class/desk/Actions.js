@@ -34,7 +34,7 @@ qx.Class.define("desk.Actions",
 				this.__engine = "node";
 				this.__socket.on("action finished", this.__onActionEnd.bind(this));
 				console.log("powered by node.js");
-				setTimeout( function () {
+				this.__socket.once( "connect", function () {
 					// add already running actions
 					desk.Actions.execute( { manage : 'list'}, function (err, res) {
 						var actions = res.ongoingActions
@@ -42,8 +42,8 @@ qx.Class.define("desk.Actions",
 							desk.Actions.getInstance().__addActionToList( actions[ handle ] );
 							desk.Actions.getInstance().__runingActions[ handle ] = actions[ handle ];
 						});
-					}.bind(this));
-				}, 1000);
+					} );
+				} );
 			} else try {
 				// support for electron.js / nw.js
 				this.__socket = require('desk-base');
@@ -693,7 +693,7 @@ qx.Class.define("desk.Actions",
 				menu.add(properties);
 				item.setContextMenu(menu);
 			}
-			item.setLabel(params.POST.action || params.POST.manage);
+			item.setLabel(params.POST.action || params.POST.manage || "");
 			item.set({decorator : "button-hover", opacity : 0.7});
 			params.item = item;
 			item.setUserData("params", params);
