@@ -687,10 +687,22 @@ qx.Class.define("desk.Actions",
 					console.log(item.getUserData("params"));
 				}, this);
 				
+				var tail = new qx.ui.menu.Button('Console output');
+				tail.addListener('execute', function () {
+					var handle = item.getUserData("params").POST.handle;
+					desk.Actions.execute( { manage : 'list'}, function (err, res) {
+						Object.keys(res.ongoingActions).forEach( function ( handle2 ) {
+							if ( handle !== handle2 ) return;
+							new desk.FileTail( res.ongoingActions[handle].RPC.outputDirectory + "action.log" );
+						});
+					} );
+				} );
+
 				var menu = new qx.ui.menu.Menu();
 				menu.add(kill);
 				menu.add(killAll);
 				menu.add(properties);
+				menu.add(tail);
 				item.setContextMenu(menu);
 			}
 			item.setLabel(params.POST.action || params.POST.manage || "");
