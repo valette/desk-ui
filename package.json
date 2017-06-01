@@ -23,6 +23,7 @@
     "d3": "3.5.17",
     "heap": ">0.0.0",
     "jssha": ">0.0.0",
+    "jstat": ">0.0.0",
     "kdt": ">0.0.0",
     "lodash": ">0.0.0",
     "numeric": ">0.0.0",
@@ -46,7 +47,7 @@
     ]
   },
   "scripts": {
-    "browserify": "browserify source/browserified.js -r async -r heap -r lodash -r operative -r ./source/desk-client.js:desk-client > source/script/bundle.js",
+    "browserify": "browserify source/browserified.js -r async -r heap -r jstat -r lodash -r operative -r ./source/desk-client.js:desk-client > source/script/bundle.js",
     "uglify" : "uglifyjs source/script/bundle.js --mangle -b beautify=false,ascii_only=true -o build/script/bundle.js",
     "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
     "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
