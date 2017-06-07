@@ -103,7 +103,7 @@ qx.Class.define("desk.Terminal",
 			this.__term = new Terminal( { cursorBlink : true } );
 			this.__attach( this.__term, this.__socket );
 			this.__term.on( 'keydown', this.__onKeyDownForSelectNext.bind(this));
-			this.__term.open( this.__container );
+			this.__term.open( this.__container, { focus : true } );
 			this.__term.on('paste', function (data, ev) {
 			this.__resize();
 			this.__term.write(data);
