@@ -26,6 +26,19 @@ a live demo is visible here: [https://desk.creatis.insa-lyon.fr/demo/](https://d
 
 more infos? Click here [http://www.creatis.insa-lyon.fr/site7/fr/desk](http://www.creatis.insa-lyon.fr/site7/fr/desk)
 
+### Dependencies ###
+To build desk-ui on your computer, you need:
+* git
+* node.js
+
+
+### How to build
+```
+git clone https://github.com/valette/desk-ui
+cd desk-ui
+npm install
+npm run build
+```
 
 ### License ###
 CeCILL-B (BSD-compatible), if you use this code for academic purposes, please cite this article:
