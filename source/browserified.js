@@ -1,7 +1,7 @@
 /**
  * Client dependencies injected via browserify
  */
-
+EventEmitter = require('events');
 async     = require('async');
 Promise   = require('bluebird');
 numeric   = require('numeric');
