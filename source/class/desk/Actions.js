@@ -601,7 +601,7 @@ qx.Class.define("desk.Actions",
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
-			if (res.error) {
+			if ( res.error && !res.killed ) {
 				var item = params.item;
 				if (!item) {
 					this.__addActionToList(params);
