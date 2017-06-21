@@ -33,6 +33,24 @@ qx.Class.define("desk.Actions",
 				this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
 				this.__engine = "node";
 				this.__socket.on("action finished", this.__onActionEnd.bind(this));
+				this.__socket.on("disconnect", function () {
+					console.warn( 'disconnected from server' );
+					this.__socket.once( 'connect', function () {
+						console.warn( 'connected' );
+						desk.Actions.execute( { manage : 'list'}, function (err, res) {
+							var actions = res.ongoingActions
+							this.__ongoingActions.getChildren().slice().map( function ( item ) {
+								var params = item.getUserData( 'params' );
+								var action = actions[ params.POST.handle ];
+								if ( !action ) {
+									params.callback = function () {};
+									this.__onActionEnd( { handle : params.POST.handle } );
+								}
+
+							}.bind( this ) );
+						}.bind( this ) );
+					}.bind( this ) );
+				}.bind( this ) );
 				console.log("powered by node.js");
 				this.__socket.once( "connect", function () {
 					// add already running actions
@@ -706,6 +724,10 @@ qx.Class.define("desk.Actions",
 				item.setContextMenu(menu);
 			}
 			item.setLabel(params.POST.action || params.POST.manage || "");
+			if ( params.POST.action && ( params.POST.action === "cpuLoad" ) ) {
+				item.setLabel( "Reconnecting to server ..." );
+				this.__socket.connect();
+			}
 			item.set({decorator : "button-hover", opacity : 0.7});
 			params.item = item;
 			item.setUserData("params", params);
