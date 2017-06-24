@@ -15,8 +15,8 @@
   },
   "devDependencies": {
     "async": ">0.0.0",
-    "brace": ">0.0.0",
     "bluebird": ">0.0.0",
+    "brace": ">0.0.0",
     "browserify": ">0.0.0",
     "browserify-css": ">0.0.0",
     "c3": ">0.0.0",
@@ -29,12 +29,12 @@
     "numeric": ">0.0.0",
     "operative": ">0.0.0",
     "pretty-data": ">0.0.0",
-    "qooxdoo": "git://github.com/qooxdoo/qooxdoo",
+    "qooxdoo": "git://github.com/qooxdoo/qooxdoo.git",
     "random-js": ">0.0.0",
     "socket.io-client": ">0.0.0",
     "three": ">0.0.0",
-    "uploadmgr": "https://github.com/johnspackman/UploadMgr",
     "uglify-js": ">0.0.0",
+    "uploadmgr": "git+https://github.com/johnspackman/UploadMgr.git",
     "webworkify": ">0.0.0",
     "xterm": ">0.0.0"
   },
@@ -51,7 +51,8 @@
     "uglify": "uglifyjs source/script/bundle.js --mangle -b beautify=false,ascii_only=true -o build/script/bundle.js",
     "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
     "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
-    "build": "npm run clean && npm run qooxdoo && npm run browserify && npm run uglify",
+    "build": "npm run clean && npm run qooxdoo && npm run bundle",
+    "bundle": "npm run browserify && npm run uglify",
     "buildAddons": "node source/buildAddons.js",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }

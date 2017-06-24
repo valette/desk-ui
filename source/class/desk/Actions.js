@@ -626,15 +626,8 @@ qx.Class.define("desk.Actions",
 					item = params.item;
 				}
 				item.setDecorator("tooltip-error");
-				console.log("Error : ");
-				console.log(res);
-				var toPrint;
-				if (typeof res.error === 'string') {
-					toPrint = prettyData.json('"' + res.error + '"');
-				} else {
-					toPrint = prettyData.json(res.error);
-				}
-				item.setToolTipText(toPrint.split('\n').join("<br>"));
+				console.warn("Error : ");
+				console.warn(res);
 			} else {
 				delete this.__runingActions[res.handle];
 				params.actionFinished = true;
