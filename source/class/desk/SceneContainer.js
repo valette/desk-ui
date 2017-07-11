@@ -144,7 +144,7 @@ qx.Class.define("desk.SceneContainer",
 		var concurrency = (navigator && 2 * navigator.hardwareConcurrency) || 4;
 		this.__queue = async.queue(this.__urlLoad.bind(this), concurrency);
 
-		this.__setData = _.throttle(this.__meshes.getDataModel().setData
+		this.__setData = _.debounce(this.__meshes.getDataModel().setData
 			.bind(this.__meshes.getDataModel()), 500);
 
 		if (file) {

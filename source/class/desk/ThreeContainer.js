@@ -4,6 +4,7 @@
  * @ignore(Detector.*)
  * @ignore(requestAnimationFrame)
  * @ignore(Blob)
+ * @ignore(_.debounce)
  * @ignore(Uint8Array)
  * @lint ignoreDeprecated (alert)
 */
@@ -65,7 +66,7 @@ qx.Class.define("desk.ThreeContainer",
 		this.__resizeThreeCanvas();
 		this.__setupFullscreen();
 
-		this.viewAll = _.throttle( this.viewAll, 20 );
+		this.viewAll = _.debounce( this.viewAll, 20 );
 	},
 
 	destruct : function(){
