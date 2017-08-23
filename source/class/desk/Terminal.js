@@ -24,7 +24,7 @@ qx.Class.define("desk.Terminal",
 			win.set({
 				layout : new qx.ui.layout.HBox(),
 				width : 685,
-				height : 390,
+				height : 456,
 				contentPadding : 0,
 				caption : 'Terminal'
 			});
@@ -122,7 +122,7 @@ qx.Class.define("desk.Terminal",
 			this.__container.children[0].focus();
 			var size = this.__html.getInnerSize();
 			var nCols = Math.floor( size.width / 8.5 );
-			var nRows = Math.floor( size.height / 15 );
+			var nRows = Math.floor( size.height / 21 );
 			if ( ( this.__nCols == nCols ) && ( this.__nRows === nRows) ) {
 				return;
 			}
