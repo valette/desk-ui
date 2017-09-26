@@ -194,7 +194,7 @@ qx.Class.define("desk.VolumeSlice",
 		FRAGMENTSHADERFLOAT : [
 			"// for float",
 		// just discard rawBytes if the type is not float, otherwise it might affect JPG results...
-			"rawBytes=rawBytes* (1.0 - imageType);",
+//			"rawBytes=rawBytes* (1.0 - imageType);",
 			"float Sign = 1.0 - step(128.0,rawBytes[3])*2.0 ;",
 			"float Exponent = 2.0 * mod(rawBytes[3],128.0) + step(128.0,rawBytes[2]) - 127.0;",
 			"float Mantissa = mod(rawBytes[2],128.0)*65536.0 + rawBytes[1]*256.0 +rawBytes[0]+ 8388608.0;",
@@ -220,8 +220,8 @@ qx.Class.define("desk.VolumeSlice",
 
 		FRAGMENTSHADERENDOOC : [
 			"//ooc",
-			"color = mix(color, rawData[0], imageType);",
-			"float correctedPixelValue = (color + brightness) * contrast;",
+			"float color = mix(value, rawBytes[0], imageType);",
+			"float correctedPixelValue = color * contrast + brightness;",
 			"vec4 correctedColor=vec4(correctedPixelValue);",
 			"correctedColor[3]=opacity;",
 			"float clampedValue=clamp(correctedPixelValue * lutRatio, 0.0, 1.0);",
