@@ -123,6 +123,7 @@ qx.Class.define("desk.FileBrowser",
 					case "jpg":
 					case "png":
 					case "hdr":
+					case "tif":
 						image = "desk/img.png";
 						break;
 					default:
@@ -487,6 +488,7 @@ qx.Class.define("desk.FileBrowser",
 			case "mhd":
 			case "nii":
 			case "hdr":
+			case "tif":
 				new desk.VolumeViewer(file);
 				break;
 			case "vol": 
