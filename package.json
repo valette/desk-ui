@@ -10,7 +10,7 @@
   },
   "main": "build/index.html",
   "dependencies": {
-    "fs-extra": ">0.0.0",
+    "fs-extra": "^4.0.2",
     "shelljs": ">0.0.0"
   },
   "devDependencies": {
@@ -19,7 +19,7 @@
     "brace": ">0.0.0",
     "browserify": ">0.0.0",
     "browserify-css": ">0.0.0",
-    "c3": "^0.4.14",
+    "c3": "^0.4.18",
     "d3": "3.5.17",
     "heap": ">0.0.0",
     "jssha": ">0.0.0",
@@ -34,7 +34,7 @@
     "socket.io-client": ">0.0.0",
     "three": ">0.0.0",
     "ttest": ">0.0.0",
-    "uglify-es": ">0.0.0",
+    "uglify-es": "^3.1.3",
     "uploadmgr": "git+https://github.com/johnspackman/UploadMgr.git",
     "webworkify": ">0.0.0",
     "xterm": ">0.0.0"
