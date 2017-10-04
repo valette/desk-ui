@@ -88,7 +88,9 @@ qx.Class.define("desk.Actions",
 					this.__engine = "nw";
 				}
 				this.__loadSettings();
-			} catch (e) {}
+			} catch (e) {
+				console.log(e);
+			}
 		}
 
 		if (!this.__engine) {
