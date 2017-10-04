@@ -322,11 +322,12 @@ qx.Class.define("desk.Actions",
 			menu.add(new qx.ui.menu.Button("dev", null, null, devMenu));
 
 			var links = {
-				'API documentation' : desk.FileSystem.getFileURL('ui/api'),
-				'Debug mode' : desk.FileSystem.getFileURL('ui/source'),
-				'Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
-				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser',
-				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master'
+				'THREE.js API' : 'https://threejs.org/docs/',
+				'desk-ui API' : desk.FileSystem.getFileURL('ui/api'),
+				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/source'),
+				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master',
+				'Qooxdoo Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
+				'Qooxdoo Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
 			};
 
 			Object.keys( links ).forEach( function (key) {
@@ -619,7 +620,7 @@ qx.Class.define("desk.Actions",
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
-			if ( res.error && !res.killed ) {
+			if ( res.error && !res.error.killed ) {
 				var item = params.item;
 				if (!item) {
 					this.__addActionToList(params);
