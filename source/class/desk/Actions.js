@@ -707,7 +707,7 @@ qx.Class.define("desk.Actions",
 					desk.Actions.execute( { manage : 'list'}, function (err, res) {
 						Object.keys(res.ongoingActions).forEach( function ( handle2 ) {
 							if ( handle !== handle2 ) return;
-							new desk.FileTail( res.ongoingActions[handle].RPC.outputDirectory + "action.log" );
+							new desk.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
 						});
 					} );
 				} );
