@@ -622,21 +622,23 @@ qx.Class.define("desk.Actions",
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
-			if ( res.error && !res.error.killed ) {
+			if ( params.POST.manage ) {
+
+				delete this.__runingActions[ res.handle ];
+
+			} else if ( res.error  ) {
+
+				console.log( "Error : ", res );
+				params.error = res.error;
 				var item = params.item;
-				if (!item) {
-					this.__addActionToList(params);
-					item = params.item;
-				}
-				item.setDecorator("tooltip-error");
-				console.warn("Error : ");
-				console.warn(res);
+				if ( item ) item.setDecorator("tooltip-error")
+
 			} else {
+
 				delete this.__runingActions[res.handle];
 				params.actionFinished = true;
-				if (params.item) {
-					this.__garbageContainer.add(params.item);
-				}
+				if (params.item) this.__garbageContainer.add(params.item);
+
 			}
 
 			if (params.callback) {
@@ -724,10 +726,18 @@ qx.Class.define("desk.Actions",
 				item.setLabel( "Reconnecting to server ..." );
 				this.__socket.connect();
 			}
-			item.set({decorator : "button-hover", opacity : 0.7});
+
+			item.set( {
+
+				opacity : 0.7,
+				decorator : params.error ? "tooltip-error" : "button-hover"
+
+			} );
+
 			params.item = item;
 			item.setUserData("params", params);
 			this.__ongoingActions.add(item);
+			return item;
 		},
 
 		/**
