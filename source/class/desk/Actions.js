@@ -642,7 +642,7 @@ qx.Class.define("desk.Actions",
 			}
 
 			if (params.callback) {
-				params.callback.call(params.context, res.error, res);
+				params.callback.call(params.context, res.killed || res.error, res);
 			}
 		},
 
