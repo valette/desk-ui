@@ -515,6 +515,7 @@ qx.Class.define("desk.FileBrowser",
 			if (!node.getChildren) {
 				new desk.VolumeViewer(node.getFullName(), {
 					ooc : true,
+					format : 0,
 					nbOrientations : 1
 					});
 			} else {

@@ -88,7 +88,9 @@ qx.Class.define("desk.Actions",
 					this.__engine = "nw";
 				}
 				this.__loadSettings();
-			} catch (e) {}
+			} catch (e) {
+				console.log(e);
+			}
 		}
 
 		if (!this.__engine) {
@@ -322,11 +324,12 @@ qx.Class.define("desk.Actions",
 			menu.add(new qx.ui.menu.Button("dev", null, null, devMenu));
 
 			var links = {
-				'API documentation' : desk.FileSystem.getFileURL('ui/api'),
-				'Debug mode' : desk.FileSystem.getFileURL('ui/source'),
-				'Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
-				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser',
-				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master'
+				'THREE.js API' : 'https://threejs.org/docs/',
+				'desk-ui API' : desk.FileSystem.getFileURL('ui/api'),
+				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/source'),
+				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master',
+				'Qooxdoo Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
+				'Qooxdoo Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
 			};
 
 			Object.keys( links ).forEach( function (key) {
@@ -619,25 +622,27 @@ qx.Class.define("desk.Actions",
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
-			if ( res.error && !res.killed ) {
+			if ( params.POST.manage ) {
+
+				delete this.__runingActions[ res.handle ];
+
+			} else if ( res.error  ) {
+
+				console.log( "Error : ", res );
+				params.error = res.error;
 				var item = params.item;
-				if (!item) {
-					this.__addActionToList(params);
-					item = params.item;
-				}
-				item.setDecorator("tooltip-error");
-				console.warn("Error : ");
-				console.warn(res);
+				if ( item ) item.setDecorator("tooltip-error")
+
 			} else {
+
 				delete this.__runingActions[res.handle];
 				params.actionFinished = true;
-				if (params.item) {
-					this.__garbageContainer.add(params.item);
-				}
+				if (params.item) this.__garbageContainer.add(params.item);
+
 			}
 
 			if (params.callback) {
-				params.callback.call(params.context, res.error, res);
+				params.callback.call(params.context, res.killed || res.error, res);
 			}
 		},
 
@@ -704,7 +709,7 @@ qx.Class.define("desk.Actions",
 					desk.Actions.execute( { manage : 'list'}, function (err, res) {
 						Object.keys(res.ongoingActions).forEach( function ( handle2 ) {
 							if ( handle !== handle2 ) return;
-							new desk.FileTail( res.ongoingActions[handle].RPC.outputDirectory + "action.log" );
+							new desk.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
 						});
 					} );
 				} );
@@ -721,10 +726,18 @@ qx.Class.define("desk.Actions",
 				item.setLabel( "Reconnecting to server ..." );
 				this.__socket.connect();
 			}
-			item.set({decorator : "button-hover", opacity : 0.7});
+
+			item.set( {
+
+				opacity : 0.7,
+				decorator : params.error ? "tooltip-error" : "button-hover"
+
+			} );
+
 			params.item = item;
 			item.setUserData("params", params);
 			this.__ongoingActions.add(item);
+			return item;
 		},
 
 		/**

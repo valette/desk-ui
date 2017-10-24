@@ -413,9 +413,9 @@ qx.Class.define("desk.Action",
 		__afterExecute : function (id, res) {
 			this.__update.setEnabled(true);
 			this.__update.setLabel("Update");
-			if ((this.__outputDir === null) ||
+			if ( !this.__action.voidAction  &&  ( ( this.__outputDir === null ) ||
 					(this.__outputDir.substring(0, 6) === "cache/") ||
-					(this.__outputDir.substring(0, 8) === "actions/")) {
+					(this.__outputDir.substring(0, 8) === "actions/") ) ) {
 				this.setOutputDirectory(res.outputDirectory);
 			}
 

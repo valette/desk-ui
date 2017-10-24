@@ -3,27 +3,27 @@
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
   "license": "CECILL-B",
-  "version": "0.13.0",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/valette/desk-ui.git"
   },
   "main": "build/index.html",
   "dependencies": {
-    "fs-extra": ">0.0.0",
+    "fs-extra": "^4.0.2",
     "shelljs": ">0.0.0"
   },
   "devDependencies": {
-    "async": "^2.5.0",
+    "async": ">0.0.0",
     "bluebird": ">0.0.0",
     "brace": ">0.0.0",
     "browserify": ">0.0.0",
     "browserify-css": ">0.0.0",
-    "c3": "^0.4.14",
+    "c3": "^0.4.18",
     "d3": "3.5.17",
     "heap": ">0.0.0",
     "jssha": ">0.0.0",
-    "jstat": "^1.6.3",
+    "jstat": ">0.0.0",
     "kdt": ">0.0.0",
     "lodash": ">0.0.0",
     "numeric": ">0.0.0",
@@ -34,7 +34,7 @@
     "socket.io-client": ">0.0.0",
     "three": ">0.0.0",
     "ttest": ">0.0.0",
-    "uglify-es": ">0.0.0",
+    "uglify-es": "^3.1.3",
     "uploadmgr": "git+https://github.com/johnspackman/UploadMgr.git",
     "webworkify": ">0.0.0",
     "xterm": ">0.0.0"
