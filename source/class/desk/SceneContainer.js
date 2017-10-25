@@ -434,8 +434,9 @@ qx.Class.define("desk.SceneContainer",
 				this.__readFile(path + xmlName, meshParameters,
 					function () {callback();});
 			}.bind(this), function () {
+				this.viewAllSync();
 				callback(object);
-			});
+			}.bind(this));
 		},
 
 		/**
