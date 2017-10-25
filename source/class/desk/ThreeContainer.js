@@ -66,7 +66,7 @@ qx.Class.define("desk.ThreeContainer",
 		this.__resizeThreeCanvas();
 		this.__setupFullscreen();
 
-//		this.viewAll = _.debounce( this.viewAll, 20 );
+		this.viewAll = _.debounce( this.viewAll, 20, { leading : true, trailing : false } );
 	},
 
 	destruct : function(){
@@ -390,6 +390,7 @@ qx.Class.define("desk.ThreeContainer",
 		resetView : function () {
 			this.__boudingBoxDiagonalLength = 0;
 			this.viewAll();
+			this.viewAll.flush();
 		},
 
 		/**

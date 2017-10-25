@@ -266,6 +266,7 @@ qx.Class.define("desk.SceneContainer",
 			if (opt.updateCamera !== false) {
 				this.viewAll();
 			}
+			this.render();
 		},
 
 		/**
