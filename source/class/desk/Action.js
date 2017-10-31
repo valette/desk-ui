@@ -366,7 +366,7 @@ qx.Class.define("desk.Action",
 
 						if (!started) {
 							started = true;
-							log.log("Starting", "yellow");
+							log.log("Starting\n", "yellow");
 						}
 						var color;
 						switch (message.type) {
@@ -385,9 +385,9 @@ qx.Class.define("desk.Action",
 
 			desk.Actions.execute(params, options, function (err, res) {
 				if (started) {
-					log.log("Finished", "yellow");
+					log.log("Finished\n", "yellow");
 				} else if ( log && (res.status === 'CACHED')) {
-					log.log("Replaying cached output : ", "green");
+					log.log("Replaying cached output :\n", "green");
 					desk.FileSystem.readFile(res.outputDirectory + "/action.log", function (err, stdout) {
 						stdout.split('/n').forEach(function (line) {
 							log.log(line, 'white');
@@ -397,7 +397,7 @@ qx.Class.define("desk.Action",
 								log.log(line, 'red');
 							});
 						});
-						log.log("Cache replay ended", "green");
+						log.log("Cache replay ended\n", "green");
 					});
 				}
 				this.__afterExecute(id, res);

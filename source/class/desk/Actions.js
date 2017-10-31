@@ -496,7 +496,8 @@ qx.Class.define("desk.Actions",
 			button.setToolTipText("To display server logs");
 			button.addListener('execute', function () {
 				function displayLog(data) {
-					log.log(data, 'yellow');
+					if ( typeof data === "object" ) data = JSON.stringify( data, null, "  " );
+					log.log( data + '\n', 'yellow');
 				}
 				var win = new qx.ui.window.Window('Server log').set(
 					{width : 600, height : 500, layout : new qx.ui.layout.HBox()});
@@ -526,7 +527,7 @@ qx.Class.define("desk.Actions",
 				var oldConsoleLog = console.log;
 				console.log = function (message) {
 					oldConsoleLog.apply(console, arguments);
-					log.log(message.toString());
+					log.log(message.toString() + '\n' );
 				};
 				var win = new qx.ui.window.Window('Console log').set(
 					{width : 600, height : 300, layout : new qx.ui.layout.HBox()});
