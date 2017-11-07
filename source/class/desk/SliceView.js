@@ -18,6 +18,7 @@ qx.Class.define("desk.SliceView",
 	 */
 	construct : function(orientation, options) {
 		this.base(arguments);
+		this.getCamera().far = 10000;
 		this.__slices = [];
 		this.__orientation = orientation || 0;
 		options = options || {};
