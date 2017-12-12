@@ -53,6 +53,17 @@ qx.Class.define("desk.AceContainer", {
 		 */
 		__onAppear : function() {
 			var editor = this.__ace = ace.edit(this.__editor.getContentElement().getDomElement());
+			editor.onPasteOld = editor.onPaste;
+			var focus = true;
+			editor.on( 'blur', function () { focus = false; } );
+			editor.on( 'focus', function () { focus = true; } );
+
+			editor.onPaste = function ( txt ) {
+
+				if ( focus ) editor.onPasteOld( txt ) ;
+
+			};
+
 			editor.$blockScrolling = Infinity;
 			this.__editor.addListener("resize", this.__onResize, this);
 
