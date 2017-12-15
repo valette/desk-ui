@@ -105,17 +105,16 @@ qx.Class.define("desk.Terminal",
 			this.__term.on( 'keydown', this.__onKeyDownForSelectNext.bind(this));
 			this.__term.open( this.__container, { focus : true } );
 			this.__term.on('paste', function (data, ev) {
-			this.__resize();
-			this.__term.write(data);
-		}.bind(this));
-
-		this.__resize();
-		this.addListener( 'appear', this.__resize, this );
-		this.addListener( 'resize', function () {
-			if ( this.__html.isVisible() ) {
 				this.__resize();
-			} 
-		}, this );
+				this.__term.write(data);
+			}.bind(this));
+
+			this.__resize();
+			setTimeout( this.__term.focus.bind( this.__term ), 1 );
+			this.addListener( 'appear', this.__resize, this );
+			this.addListener( 'resize', function () {
+				if ( this.__html.isVisible() ) this.__resize();
+			}, this );
 		},
 
 		__resize : function () {
