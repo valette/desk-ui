@@ -67,7 +67,7 @@ qx.Class.define("desk.ThreeContainer",
 		this.__setupFullscreen();
 
 		this.viewAllSync = this.viewAll;
-		this.viewAll = _.debounce( this.viewAll, 20, { leading : true, trailing : false } );
+		this.viewAll = _.debounce( this.viewAll, 20, { leading : true } );
 	},
 
 	destruct : function(){
@@ -239,6 +239,7 @@ qx.Class.define("desk.ThreeContainer",
 		 * @param thetaZ {Number} : angle on the Z axis
 		 */
 		rotateView : function ( thetaX, thetaY, thetaZ ) {
+			this.viewAll.flush();
 			var controls = this.getControls();
 			var backup = controls.enabled;
 			controls.enabled = true;
