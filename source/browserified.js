@@ -25,7 +25,7 @@ if (typeof importScripts == 'function') {
 	return;
 }
 
-Terminal = require('xterm');
+Terminal = require( 'xterm' ).Terminal;
 require ('../node_modules/xterm/src/xterm.css');
 
 function getCookie (name) {
