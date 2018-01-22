@@ -46,7 +46,7 @@ members : {
 	__onResize : function () {
 
 		var size = this.getInnerSize();
-		var nCols = Math.floor( size.width / 8.5 );
+		var nCols = Math.floor( ( size.width - 15 ) / 9 );
 		var nRows = Math.floor( size.height / 17 );
 		this.debug('resize : ', nCols, nRows);
 		this.__terminal.resize( nCols, nRows );
