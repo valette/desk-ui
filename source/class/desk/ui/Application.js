@@ -30,11 +30,15 @@ qx.Class.define("desk.ui.Application",
 
 		hackToIncludeClasses : function () {
 			new qx.ui.list.List();
+			new desk.IfeContainer();
 		},
 
 		main : function() {
+			console.log("init?");
+
 			// Call super class
 			this.base(arguments);
+
 
 			// Enable logging in debug variant
 			if (qx.core.Environment.get("qx.debug")) {
@@ -56,11 +60,11 @@ qx.Class.define("desk.ui.Application",
 			}
 
 			this.__promisifyAll();
-			var actions = desk.Actions.getInstance()
-			desk.Actions.init(afterActionsInitialized);
-
+			//var actions = desk.Actions.getInstance()
+			//desk.Actions.init(afterActionsInitialized);
+			afterActionsInitialized();
 			function afterActionsInitialized () {
-				actions.debug("actions initialized!");
+				//actions.debug("actions initialized!");
 				desk.auto = false;
 				// first try to automatically launch startup script if it exists
 				if (getParameter("noauto")) {
@@ -73,7 +77,7 @@ qx.Class.define("desk.ui.Application",
 					desk.FileSystem.executeScript(desk_startup_script);
 					return;
 				}
-				
+
 				var initScript = 'code/init.js';
 				desk.FileSystem.exists(initScript, function (err, exists) {
 					if (exists) {
@@ -92,8 +96,8 @@ qx.Class.define("desk.ui.Application",
 					desk.FileSystem.executeScript(startupScript);
 					return;
 				}
-				actions.buildUI();
-				new desk.FileBrowser(getParameter("rootDir"), {standalone : true});
+				//actions.buildUI();
+				//new desk.FileBrowser(getParameter("rootDir"), {standalone : true});
 			}
 		},
 
@@ -130,7 +134,7 @@ qx.Class.define("desk.ui.Application",
 		},
 
 		/**************************************************************
-		 * adds promise-based API : for each function taking a callback as 
+		 * adds promise-based API : for each function taking a callback as
 		 * argument, create a function returning a promise
 		 **************************************************************/
 		__promisifyAll : function () {

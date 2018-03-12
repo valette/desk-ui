@@ -4,8 +4,9 @@
 * @asset(desk/Contrast_Logo_petit.PNG)
 * @ignore (async.eachSeries)
 * @ignore (_.indexOf)
+* @ignore (WorkerSlicer)
 */
-qx.Class.define("desk.MPRContainer", 
+qx.Class.define("desk.MPRContainer",
 {
     extend : qx.ui.container.Composite,
 
@@ -248,7 +249,9 @@ qx.Class.define("desk.MPRContainer",
 				sliceView.addListener("changeCrossPosition", this.__onChangeCrossPosition, this);
 				sliceView.addListener("changeCameraZ", this.__onChangeCameraZ, this);
 				this.__setupMaximize(sliceView);
-				var button = new qx.ui.form.Button("+").set({opacity: 0.5});
+				var button = new qx.ui.form.Button(null, 'resource/ife/expand.png')
+                          .set({opacity: 0.75, padding: 2});
+
 				button.setUserData("sliceView", sliceView);
 				sliceView.setUserData("maximizeButton", button);
 				button.addListener("execute", this.__onMaximizeButtonClick, this);
@@ -275,11 +278,11 @@ qx.Class.define("desk.MPRContainer",
 		 * @param button {qx.ui.form.Button} button
 		 */
 		__toggleMaximize : function (button) {
-			if (button.getLabel() === "+") {
+			if (button.getIcon() === "resource/ife/expand.png") {
 				this.maximizeViewer(button.getUserData("sliceView").getOrientation());
 			} else {
 				this.resetMaximize();
-			}			
+			}
 		},
 
 		/**
@@ -409,7 +412,7 @@ qx.Class.define("desk.MPRContainer",
 
 			win.add (new qx.ui.basic.Label("Windows layout :"));
 			var planesContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox(5));
-			
+
 			this.__layoutSelectBoxes = [];
 			// Create selectBoxes
 			for (var i = 0; i < this.__nbUsedOrientations; i++) {
@@ -435,7 +438,7 @@ qx.Class.define("desk.MPRContainer",
 			win.add(this.__getChangeLayoutContainer(), {flex: 10});
 			win.add(new qx.ui.core.Spacer(5,15), {flex: 5});
 			win.add (new qx.ui.basic.Label("Orientations :"));
-			
+
 			var orientsButtonGroupHBox = new qx.ui.form.RadioButtonGroup();
 			orientsButtonGroupHBox.setLayout(new qx.ui.layout.HBox(10));
 			var slicesOrButton = new qx.ui.form.RadioButton("Volume Slices");
@@ -460,7 +463,7 @@ qx.Class.define("desk.MPRContainer",
 			orientsContainer.setLayout(new qx.ui.layout.HBox());
 			orientsContainer.add(this.__orientationButtonGroup);
 			win.add(orientsContainer);
-			
+
 			var gridContainer = new qx.ui.container.Composite();
 			var gridLayout = new qx.ui.layout.Grid();
 			for (i = 0; i < 2; i++) {
@@ -482,12 +485,12 @@ qx.Class.define("desk.MPRContainer",
 		 * @param orientation {Number} : viewer orientation to maximize
 		 */
 		 maximizeViewer : function (orientation) {
-			this.__maximizeButtons[orientation].setLabel("-");
+			this.__maximizeButtons[orientation].setIcon('resource/ife/reduce.png');
 			var sliceView = this.__viewers[orientation];
 			this.__gridContainer.setVisibility("excluded");
 			this.__fullscreenContainer.add(sliceView, {flex : 1});
 			this.__fullscreenContainer.setVisibility("visible");
-			this.fireDataEvent("switchFullScreen", true);		
+			this.fireDataEvent("switchFullScreen", true);
 		},
 
 		/**
@@ -496,11 +499,11 @@ qx.Class.define("desk.MPRContainer",
 		 resetMaximize : function () {
 			this.__fullscreenContainer.setVisibility("excluded");
 			for (var i = 0; i != this.__nbUsedOrientations; i++) {
-				this.__maximizeButtons[i].setLabel("+");
+				this.__maximizeButtons[i].setIcon('resource/ife/expand.png');
 			}
 			this.__gridContainer.setVisibility("visible");
 			this.__applyViewsLayout(this.getViewsLayout());
-			this.fireDataEvent("switchFullScreen", false);			
+			this.fireDataEvent("switchFullScreen", false);
 		},
 
 		/**
@@ -534,7 +537,7 @@ qx.Class.define("desk.MPRContainer",
         *   visible : true <br>
         * }
 		* </pre>
-        * @param callback {Function} : callback when loaded. First 
+        * @param callback {Function} : callback when loaded. First
         *  callback argument is the error, the second is the volume widget
         * @param context {Object} : optional callback context
         * @return {qx.ui.container.Composite}  volume item
@@ -546,13 +549,20 @@ qx.Class.define("desk.MPRContainer",
 				context = callback;
 			}
 			callback = callback || function () {};
-
-			if (desk.FileSystem.getFileExtension(file) === "json") {
+      var fileObject;
+			if (typeof file == "string" && desk.FileSystem.getFileExtension(file) === "json") {
 				desk.FileSystem.readFile(file, function (err, viewpoints) {
 					this.setViewPoints(JSON.parse(viewpoints).viewpoints);
 				}, this);
 				return null;
 			}
+      else if (file.constructor == File) {
+        console.log(file);
+
+        fileObject = file;
+        file = file.name;
+        console.log("FileObject loading !");
+      }
 
 			var volumeSlices = [];
 
@@ -621,25 +631,60 @@ qx.Class.define("desk.MPRContainer",
             label.setTextAlign("left");
 			labelcontainer.add(label, {flex : 1});
 
-			async.eachSeries(this.__viewers,
-				function (viewer, callback) {
-					volumeSlices[viewer.getOrientation()] = viewer.addVolume(
-							file, options, callback);
-				},
-				function (err) {
-					if (options.visible !== undefined) {
-						hideShowCheckbox.setValue(options.visible);
-					}
-//					scalarBounds = volumeSlice.getScalarBounds();
-//					updateWindowLevel();
-					volume.setUserData("loadingInProgress", false);
-					if (volume.getUserData("toDelete")) {
-						this.removeVolume(volume);
-					}
-					this.__reorderMeshes();
-					callback.call(context, err, volume);
-				}.bind(this)
-			);
+
+      if (options.workerSlicer) {
+        var worker;
+        
+        var slicerOpts = {
+          onprogress : function (text) {
+            //$('#progress').text(text);
+            //console.log(text);
+          },
+          onload : function (properties) {
+            console.log("Load finished !");
+            console.log("properties : ", properties);
+            addVolumeToViewers(worker);
+          },
+          local: fileObject.constructor == File,
+          noworker : options.noworker
+        };
+
+        worker = new WorkerSlicer(fileObject, slicerOpts);
+
+        // Change options.workerSlicer from "true" to reference to worker slicerWorker,
+        // allow to pass it to viewers
+        options.workerSlicer = worker;
+        volume.setUserData("workerSlicer", worker);
+
+      }
+      else {
+        addVolumeToViewers();
+      }
+
+
+      var addVolumeToViewers = function () {
+        async.eachSeries(this.__viewers,
+          function (viewer, callback) {
+            var tmp = volumeSlices[viewer.getOrientation()] = viewer.addVolume(
+                file, options, callback);
+            if (worker)
+              tmp.setWorker(worker);
+          },
+          function (err) {
+            if (options.visible !== undefined) {
+              hideShowCheckbox.setValue(options.visible);
+            }
+        //					scalarBounds = volumeSlice.getScalarBounds();
+        //					updateWindowLevel();
+            volume.setUserData("loadingInProgress", false);
+            if (volume.getUserData("toDelete")) {
+              this.removeVolume(volume);
+            }
+            this.__reorderMeshes();
+            callback.call(context, err, volume);
+          }.bind(this)
+        );
+      }.bind(this)
 
 			var settingsContainer = new qx.ui.container.Composite();
 			settingsContainer.setLayout(new qx.ui.layout.HBox());
@@ -684,7 +729,7 @@ qx.Class.define("desk.MPRContainer",
 			opacitySlider.addListener("changeValue", function(event) {
 				this.setVolumeOpacity(volume, event.getData() / 100);
 			},this);
-			
+
 			////Create brightness/contrast fixing
 			var brightnessButton = new qx.ui.form.Button(null, "desk/Contrast_Logo_petit.PNG");
 			brightnessButton.set({toolTipText : "Click and drag to change brightnes, right-click to reset brightness"});
@@ -735,7 +780,7 @@ qx.Class.define("desk.MPRContainer",
 			windowLevelContainer.add(windowLabel);
 			windowLevelContainer.add(levelLabel);
 
-			
+
 			function updateWindowLevel() {
 				var brightness = volumeSlices[0].getBrightness();
 				var contrast = volumeSlices[0].getContrast();
@@ -860,7 +905,7 @@ qx.Class.define("desk.MPRContainer",
 
 
 			if(this.__standalone) {
-				if (desk.Actions.getInstance().getSettings().permissions) {
+				if (desk.Actions.getInstance().getSettings() && desk.Actions.getInstance().getSettings().permissions) {
 					var segmentButton = new qx.ui.menu.Button("segment(GC)");
 					segmentButton.addListener("execute", function () {
 						new desk.SegTools(this, this.getVolumeFile(volumeListItem));
@@ -933,7 +978,7 @@ qx.Class.define("desk.MPRContainer",
 		},
 
 		/**
-		 * Returns an object containing all viewpoints informations : 
+		 * Returns an object containing all viewpoints informations :
 		 * slices, camera positions.
 		 * @return{Array} viewpoints for each viewer
 		 */
@@ -942,7 +987,7 @@ qx.Class.define("desk.MPRContainer",
 			this.__viewers.forEach(function (viewer, index) {
 				var volume = viewer.getFirstSlice();
 				var ZIindex = volume.getZIndex();
-				var position = volume.getOrigin()[ZIindex] + 
+				var position = volume.getOrigin()[ZIindex] +
 					viewer.getSlice() * volume.getSpacing()[ZIindex];
 				viewPoints[index] = {
 					position : position,
@@ -961,7 +1006,7 @@ qx.Class.define("desk.MPRContainer",
 				var volume = viewer.getFirstSlice();
 				var ZIindex = volume.getZIndex();
 				var viewPoint = viewPoints[index];
-				viewer.setSlice(Math.round((viewPoint.position - volume.getOrigin()[ZIindex]) / 
+				viewer.setSlice(Math.round((viewPoint.position - volume.getOrigin()[ZIindex]) /
 					volume.getSpacing()[ZIindex]));
 				viewer.getControls().setState(viewPoint.cameraState);
 				viewer.render();
@@ -1014,6 +1059,10 @@ qx.Class.define("desk.MPRContainer",
 				volume.setUserData("toDelete", true);
 			} else {
 				qx.util.DisposeUtil.destroyContainer(volume);
+
+        if (volume.getUserData("workerSlicer")) {
+          volume.getUserData("workerSlicer").destroy();
+        }
 			}
 		},
 
@@ -1056,7 +1105,7 @@ qx.Class.define("desk.MPRContainer",
 				gridLayout.setColumnFlex(i, 1);
 			}
 			gridContainer.setLayout(gridLayout);
-			
+
 			var viewGridCoor = this.__gridCoords;
 			for(i = 0; i < this.__nbUsedOrientations; i++) {
 				var labelsContainer = new qx.ui.container.Composite();
@@ -1177,7 +1226,7 @@ qx.Class.define("desk.MPRContainer",
 				if (file != null) {
 					button.setEnabled(false);
 					desk.FileSystem.writeFile(file,
-						JSON.stringify({viewpoints : this.getViewPoints()}), 
+						JSON.stringify({viewpoints : this.getViewPoints()}),
 						function () {
 							button.setEnabled(true);
 					});

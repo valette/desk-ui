@@ -98,19 +98,22 @@ qx.Class.define("desk.SceneContainer",
 		}, this);
 
 		var button = this.__optionsButton = new qx.ui.form.ToggleButton("+").set({opacity : 0.5, width : 30});
-		this.add (button, {left : 0, top : 0});
-		button.addListener("changeValue", function () {
-			leftContainer.setVisibility(button.getValue() ? "visible" : "excluded");
-			button.setLabel(button.getValue() ? "-" : "+");
-			var color = this.getRenderer().getClearColor();
-			var colors = this.__meshes.getDataRowRenderer()._colors;
-			colors.colNormal = "rgb(" + (255 * (1 - color.r)) + "," +
-				(255 * (1 - color.g)) + "," + (255 * (1 - color.b)) + ")";
-			colors.bgcolEven = colors.bgcolOdd = colors.horLine = "transparent";
-			colors.bgcolFocused = "rgba(249, 249, 249, 0.5)";
-			colors.bgcolFocusedSelected = "rgba(60, 100, 170, 0.5)";
-			colors.bgcolSelected = "rgba(51, 94, 168, 0.5)";
-		}, this);
+		console.warn(opts);
+		if (opts.noOpts === undefined || !opts.noOpts) {
+		  this.add (button, {left : 0, top : 0});
+		  button.addListener("changeValue", function () {
+			  leftContainer.setVisibility(button.getValue() ? "visible" : "excluded");
+			  button.setLabel(button.getValue() ? "-" : "+");
+			  var color = this.getRenderer().getClearColor();
+			  var colors = this.__meshes.getDataRowRenderer()._colors;
+			  colors.colNormal = "rgb(" + (255 * (1 - color.r)) + "," +
+				  (255 * (1 - color.g)) + "," + (255 * (1 - color.b)) + ")";
+			  colors.bgcolEven = colors.bgcolOdd = colors.horLine = "transparent";
+			  colors.bgcolFocused = "rgba(249, 249, 249, 0.5)";
+			  colors.bgcolFocusedSelected = "rgba(60, 100, 170, 0.5)";
+			  colors.bgcolSelected = "rgba(51, 94, 168, 0.5)";
+		  }, this);
+		}
 
 		var buttons = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 		buttons.add(this.__getDragLabel(), {flex : 1});
@@ -554,7 +557,7 @@ qx.Class.define("desk.SceneContainer",
 				this.render();
 			}
 
-			var lineMaterial = new THREE.LineBasicMaterial({linewidth: 3,
+			var lineMaterial = new THREE.LineBasicMaterial({linewidth: 5,
 				color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()]});
 
 			var lineGeometry = new THREE.BufferGeometry();

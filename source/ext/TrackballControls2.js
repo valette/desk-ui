@@ -84,9 +84,9 @@ THREE.TrackballControls2 = function ( object ) {
 			if (state.panStart !== undefined) _panStart.copy(state.panStart);
 			if (state.panEnd !== undefined) _panEnd.copy(state.panEnd);
 			if (state.eye) _eye.copy(state.eye);
-			if (state.objectUp) this.object.up.copy(state.objectUp);	
-			if (state.objectPosition) this.object.position.copy(state.objectPosition);	
-			if (state.target) this.target.copy(state.target);	
+			if (state.objectUp) this.object.up.copy(state.objectUp);
+			if (state.objectPosition) this.object.position.copy(state.objectPosition);
+			if (state.target) this.target.copy(state.target);
 		}
 		this.update();
 	};
@@ -97,10 +97,10 @@ THREE.TrackballControls2 = function ( object ) {
 		_zoomEnd = iRatio * state1.zoomEnd + ratio * state2.zoomEnd;
 		_panStart.copy(state1.panStart).lerp(state2.panStart, ratio);
 		_panEnd.copy(state1.panEnd).lerp(state2.panEnd, ratio);
-		_eye.copy(state1.eye).lerp(state2.eye, ratio).normalize();	
-		this.object.up.copy(state1.objectUp).lerp(state2.objectUp, ratio).normalize();	
-		this.object.position.copy(state1.objectPosition).lerp(state2.objectPosition, ratio);	
-		this.target.copy(state1.target).lerp(state2.target, ratio);	
+		_eye.copy(state1.eye).lerp(state2.eye, ratio).normalize();
+		this.object.up.copy(state1.objectUp).lerp(state2.objectUp, ratio).normalize();
+		this.object.position.copy(state1.objectPosition).lerp(state2.objectPosition, ratio);
+		this.target.copy(state1.target).lerp(state2.target, ratio);
 		this.update();
 	};
 
@@ -174,6 +174,14 @@ THREE.TrackballControls2 = function ( object ) {
 		}
 	};
 
+	this.zoomFactor = function (delta) {
+		//Hack for symetric zooming
+		if (delta<0) delta /= 1.6;
+
+		_zoomEnd = _zoomStart + delta;
+		this.update();
+	}
+
 	this.panCamera = function() {
 
 		var mouseChange = _panEnd.clone().sub( _panStart );
@@ -233,7 +241,7 @@ THREE.TrackballControls2 = function ( object ) {
 			this.rotateCamera();
 
 		}
-		
+
 		if ( !this.noZoom ) {
 
 			this.zoomCamera();

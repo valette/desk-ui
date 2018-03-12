@@ -15,7 +15,7 @@
  * 
  * @lint ignoreUndefined(simulator)
  */
-qx.Class.define("desk.ui.simulation.Simulation", {
+qx.Class.define("desk.ui.simulation.DemoSimulation", {
 
   extend : simulator.unit.TestCase,
   

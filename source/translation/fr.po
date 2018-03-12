@@ -1,0 +1,61 @@
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: you@your.org\n"
+"POT-Creation-Date: 2017-12-02 10:24+0100\n"
+"PO-Revision-Date: 2017-12-02 10:24+0100\n"
+"Last-Translator: you <you@your.org>\n"
+"Language-Team: Team <yourteam@your.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: desk/IfeContainer.js:98
+msgid "Ouvrir une IRM anatomique"
+msgstr ""
+
+#: desk/IfeContainer.js:105
+msgid "Ouvrir un calque fonctionnel"
+msgstr ""
+
+#: desk/IfeContainer.js:113
+msgid "Ouvrir un modèle 3D"
+msgstr ""
+
+#: desk/IfeContainer.js:118
+msgid "Tout fermer"
+msgstr ""
+
+#: desk/IfeContainer.js:166 desk/IfeContainer.js:268 desk/IfeContainer.js:426
+msgid "IRM anatomique"
+msgstr ""
+
+#: desk/IfeContainer.js:194 desk/IfeContainer.js:311
+msgid "IRM fonctionnelle"
+msgstr ""
+
+#: desk/IfeContainer.js:274 desk/IfeContainer.js:288
+msgid "Contraste"
+msgstr ""
+
+#: desk/IfeContainer.js:332 desk/IfeContainer.js:338
+msgid "Seuil"
+msgstr ""
+
+#: desk/IfeContainer.js:350
+msgid "Echelle de couleur : "
+msgstr ""
+
+#: desk/IfeContainer.js:376 desk/IfeContainer.js:378
+msgid "A propos"
+msgstr ""
+
+#~ msgid "Ouvrir un Func fonctionnel"
+#~ msgstr ""
+
+#~ msgid "Echelle de colorée utilisée : "
+#~ msgstr ""
+
+#~ msgid "A propos..."
+#~ msgstr ""

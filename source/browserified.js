@@ -17,6 +17,7 @@ THREE     =	require('three');
 			require('./ext/VTKLoader.js');
 			require('./ext/TrackballControls2.js');
 			require('./ext/CTMLoader.js');
+			require('./ext/STLLoader.js');
 
 jsSHA     = require("jssha");
 
