@@ -8,5 +8,8 @@
   },
   "engines": {
     "node": ">=4.0.0"
+  },
+  "dependencies": {
+    "concat-stream": "^1.6.2"
   }
 }

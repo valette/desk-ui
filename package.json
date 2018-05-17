@@ -1,6 +1,6 @@
 {
   "name": "EduAnat2",
-  "productName":"EduAnat2",
+  "productName": "EduAnat2",
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
   "license": "CECILL-B",
@@ -11,6 +11,7 @@
   },
   "main": "build/index.html",
   "dependencies": {
+    "concat-stream": "^1.6.2",
     "fs-extra": ">0.0.0",
     "shelljs": ">0.0.0"
   },

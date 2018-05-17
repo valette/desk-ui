@@ -107,27 +107,43 @@ qx.Class.define("desk.IfeContainer", {
             container.add(new qx.ui.core.Spacer(), {flex: 1});
 
             /* Button Open Anat */
-            var buttonOpenAnat = this.__buttonOpenAnat = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir une IRM anatomique"), 'resource/ife/open_A_small.png');
+            
+            var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une IRM anatomique"), 'resource/ife/open_A_small.png');
+            
             buttonOpenAnat.getChildControl("label").setAllowGrowX(true);
             buttonOpenAnat.getChildControl("label").setTextAlign("left");
             
-            buttonOpenAnat.addListener("focusin", function(evt) {
+            buttonOpenAnat.addListener("execute", this.addAnatFile.bind(this));
+
+/*
+            
+            var buttonOpenAnat2 = this.__buttonOpenAnat = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir une IRM anatomique"), 'resource/ife/open_A_small.png');        
+            
+            buttonOpenAnat2.addListener("focusin", function(evt) {
               window.setTimeout(function () {
                 buttonOpenAnat.setEnabled(false);
                 buttonOpenAnat.setEnabled(true);
               }, 1000);
             });
 
-            buttonOpenAnat.setAcceptUpload(".anat.nii.gz");
-            var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpenAnat, "/anat");
+            buttonOpenAnat2.setAcceptUpload(".anat.nii.gz");
+            var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpenAnat2, "/anat");
             uploader.setAutoUpload(false);
-            uploader.addListener("addFile", this.addAnatFile.bind(this));
+            uploader.addListener("addFile", function (e) {
+              console.log(e);
+              that.addAnatFile(e);
+            });
+            
+            container.add(buttonOpenAnat2);
+  */          
+            
+            
+            
+            
             container.add(buttonOpenAnat);
-
-            /* Button Open Func */
+        
+            /* Button Open Func
             var buttonOpenFunc = this.__buttonOpenFunc = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/open_F_small.png');
-            buttonOpenFunc.getChildControl("label").setAllowGrowX(true);
-            buttonOpenFunc.getChildControl("label").setTextAlign("left");
 
             buttonOpenFunc.addListener("focusin", function(evt) {
               window.setTimeout(function () {
@@ -140,11 +156,20 @@ qx.Class.define("desk.IfeContainer", {
             buttonOpenFunc.setEnabled(false);
             var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpenFunc, "/fonc");
             uploader.setAutoUpload(false);
-            uploader.addListener("addFile", this.addFuncFile.bind(this));
+            uploader.addListener("addFile", this.addFuncFile.bind(this)); */
+            var buttonOpenFunc = this.__buttonOpenFunc = new qx.ui.form.Button(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/open_F_small.png');
+            
+            
+            buttonOpenFunc.getChildControl("label").setAllowGrowX(true);
+            buttonOpenFunc.getChildControl("label").setTextAlign("left");
+
+            buttonOpenFunc.addListener("execute", this.addFuncFile.bind(this));
+
             container.add(buttonOpenFunc);
 
-            /* Button Open Mesh */
             var buttonOpen3Dmodel = this.__buttonOpen3Dmodel = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir un modèle 3D"), 'resource/ife/open_3D_small.png');
+            /* Button Open Mesh 
+
             buttonOpen3Dmodel.getChildControl("label").setAllowGrowX(true);
             buttonOpen3Dmodel.getChildControl("label").setTextAlign("left");
 
@@ -162,6 +187,8 @@ qx.Class.define("desk.IfeContainer", {
             uploader.addListener("addFile", this.addMeshFile.bind(this));
 
             container.add(buttonOpen3Dmodel);
+
+            */
 
             /* Button Close all */
             var buttonCloseAll = this.__buttonCloseAll = new qx.ui.form.Button(this.tr("Tout fermer"), 'resource/ife/close_small.png');
@@ -300,12 +327,29 @@ qx.Class.define("desk.IfeContainer", {
 
         addAnatFile: function(evt) {
 
+            const {dialog} = require('electron').remote;
+            var filesList = dialog.showOpenDialog({
+              filters : [
+                {name: 'Anat Nifti Image', extensions: ['anat.nii.gz']},
+                {name: 'Nifti Image', extensions: ['nii.gz']},
+                {name: 'All Files', extensions: ['*']}
+              
+              ],
+              properties: ['openFile']
+            });
+            
+            //var name = file.getBrowserObject().name;
+            var name = require("path").basename(filesList[0]);
+            
+            console.log(filesList);
+            if (filesList == null) return;
+
 
             var that = this;
-            var file = evt.getData();
+            //var file = evt.getData();
 
 
-            var name = file.getBrowserObject().name;
+
 
             if (name.substr(name.length -7) !== ".nii.gz") {
                 this.alert(this.tr("Ne sont acceptés que les fichiers Nifti compressés (.nii.gz)."));
@@ -318,7 +362,7 @@ qx.Class.define("desk.IfeContainer", {
                 that.__buttonOpenAnat.setEnabled(false);
             }, 1);
 
-            this.__MPR.addVolume(file.getBrowserObject(), {
+            this.__MPR.addVolume(filesList[0]/*file.getBrowserObject()*/, {
                 workerSlicer: true,
                 noworker: true
             }, function(err, volume) {
@@ -326,7 +370,7 @@ qx.Class.define("desk.IfeContainer", {
                 var volSlice = that.__MPR.getVolumeSlices(volume);
                 var meshes = that.__meshViewer.attachVolumeSlices(volSlice);
 
-                that.__IRMAnatName.setValue("<b>" + that.tr("IRM anatomique") + " : </b>" + file.getFilename());
+                that.__IRMAnatName.setValue("<b>" + that.tr("IRM anatomique") + " : </b>" + name);
                 that.__buttonOpenFunc.setEnabled(true);
                 that.__buttonOpen3Dmodel.setEnabled(true);
                 that.__buttonOpenAnat.setEnabled(true);
@@ -374,8 +418,9 @@ qx.Class.define("desk.IfeContainer", {
                 });
                 
                 
-                console.log("file path? : ", file.getBrowserObject());
-                var path = file.getBrowserObject().path;
+                //console.log("file path? : ", file.getBrowserObject());
+                //var path = file.getBrowserObject().path;
+                var path = filesList[0];
                 if (path) {
                     console.warn("On Electron ! Load Mesh !");
                     var meshPath;
@@ -409,14 +454,26 @@ qx.Class.define("desk.IfeContainer", {
         },
 
         addFuncFile: function(evt) {
-            var file = evt.getData();
-            var that = this;
-            var name = file.getBrowserObject().name;
-            if (name.substr(name.length -7) !== ".nii.gz") {
-                this.alert(this.tr("Ne sont acceptés que les fichiers Nifti compressés (.nii.gz)."));
-                return;
-            }
+            const {dialog} = require('electron').remote;
+            var filesList = dialog.showOpenDialog({
+              filters : [
+                {name: 'Anat Nifti Image', extensions: ['fonc.nii.gz']},
+                {name: 'Nifti Image', extensions: ['nii.gz']},
+                {name: 'All Files', extensions: ['*']}
+              
+              ],
+              properties: ['openFile']
+            });
+            
+            //var name = file.getBrowserObject().name;
+            var name = require("path").basename(filesList[0]);
+            
+            console.log(filesList);
+            if (filesList == null) return;
 
+
+            var that = this;
+            //var file = evt.getData();
 
 
             this.removeFunc();
@@ -426,7 +483,7 @@ qx.Class.define("desk.IfeContainer", {
                 that.__buttonOpenFunc.setEnabled(false);
             }, 1);
 
-            this.__MPR.addVolume(file.getBrowserObject(), {
+            this.__MPR.addVolume(filesList[0], {
                 workerSlicer: true,
                 noworker: true,
                 colors: that.__colors,
@@ -444,7 +501,7 @@ qx.Class.define("desk.IfeContainer", {
                 var prop = volume.getUserData("workerSlicer").properties;
                 that.__volumeFunc = volume;
                 that.__meshesFunc = that.__meshViewer.attachVolumeSlices(that.__MPR.getVolumeSlices(volume));
-                that.__IRMFuncName.setValue("<b>" + that.tr("IRM fonctionnelle") + " : </b>" + file.getFilename());
+                that.__IRMFuncName.setValue("<b>" + that.tr("IRM fonctionnelle") + " : </b>" + name);
                 that.__buttonOpenFunc.setEnabled(true);
                 that.__buttonOpen3Dmodel.setEnabled(true);
                 that.__buttonOpenAnat.setEnabled(true);

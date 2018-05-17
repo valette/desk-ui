@@ -12,8 +12,11 @@ electron.app.on('ready', () => {
 		icon: (debug ? 'source' : 'build')+'/icone_eduanat2.png',
 		experimentalFeatures : true,
 		experimentalCanvasFeatures : true,
-		title:'EduAnat2'
+		title:'EduAnat2',
+		show:false
 	});
+	
+	
 
 	var url = 'file://' + __dirname + '/'
 		+ (debug ? 'source' : 'build')
@@ -22,10 +25,16 @@ electron.app.on('ready', () => {
 	console.log(url);
 	
 	win.loadURL(url);
-	
+
 	if (debug) win.webContents.openDevTools();
 	
 	win.maximize();
+	
+	win.once('ready-to-show', () => {
+    win.show()
+  })
+	
+
 	
 	win.on('close', () => {
 		process.exit();

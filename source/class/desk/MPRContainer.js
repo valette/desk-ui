@@ -556,6 +556,9 @@ qx.Class.define("desk.MPRContainer",
 				}, this);
 				return null;
 			}
+			else if (typeof file == "string") {
+			  fileObject = file;
+			}
       else if (file.constructor == File) {
         console.log(file);
 
@@ -645,7 +648,7 @@ qx.Class.define("desk.MPRContainer",
             console.log("properties : ", properties);
             addVolumeToViewers(worker);
           },
-          local: fileObject.constructor == File,
+          local: fileObject.constructor == File || typeof fileObject == "string" ,
           noworker : options.noworker
         };
 

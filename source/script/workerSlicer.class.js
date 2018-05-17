@@ -67,19 +67,97 @@ var WorkerSlicer = function (volume, opts) {
     var that = this;
 
     loadScript(scriptFile, function () {
+    
+      
+      var pb = new qx.ui.indicator.ProgressBar();
+      this.getRoot().add(pb, { left : 20, top: 20});
+
+
 	    var progressFunc = function (frac, text) {
 	      var txt = text+" "+(frac*100).toFixed(1)+"%";
-	      //console.log("progress", txt);
+	      console.log("progress", txt);
+	      pb.setValue(frac*100);
+
 	    };
 
         that.slicer = new PapayaSlicer(progressFunc);
 
         if (opts.local) {
-            that.slicer.vol.readFiles([volume], function () {
-                that.properties = that.slicer.initProperties();
-                that.loaded = true;
-                opts.onload(that.properties);
-            });
+            console.log(volume);
+            if (typeof volume == "string") {
+              //fs = require("fs");
+              var fs = require('fs')
+              var concat = require('concat-stream')
+              
+              console.log("readfileSync : ", volume);
+              
+              
+              //var fileBuffer = fs.readFileSync(volume);
+              //console.log(fileBuffer.buffer);
+              
+
+               
+              var readStream = fs.createReadStream(volume)
+              var concatStream = concat(gotPicture)
+               
+               
+               
+               
+              readStream.on('error', handleError)
+              
+              // Get the size of the file
+              var stats = fs.statSync(volume);
+              var fileSize         = stats.size;
+              var readSize    = 0; // Incremented by on('data') to keep track of the amount of data we've uploaded
+
+
+                  readStream.on('data', function(buffer) {
+                      var segmentLength   = buffer.length;
+                      // Increment the uploaded data counter
+                      readSize        += segmentLength;
+                      progressFunc(readSize/fileSize, "Reading");
+                  });
+              
+              readStream.pipe(concatStream)
+               
+              function gotPicture(buffer) {
+                console.log(buffer);
+                that.slicer.vol.fileName = require("path").basename(volume);
+                console.log( that.slicer.vol.fileName);
+                that.slicer.vol.rawData[0] = buffer;//fileBuffer.buffer;
+                //const b = Buffer.from(fileBuffer);
+                //var arrayBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+                console.log("Vol Read");
+                that.slicer.vol.decompress( that.slicer.vol);
+                    
+                
+                that.slicer.vol.onFinishedRead = function () {
+                  
+                  that.properties = that.slicer.initProperties();
+                  that.loaded = true;
+                  opts.onload(that.properties);
+               }
+              }
+               
+              function handleError(err) {
+                // handle your error appropriately here, e.g.:
+                console.error(err) // print the error to STDERR
+                process.exit(1) // exit program with non-zero exit code
+              }
+               
+
+            }
+            else
+            {
+              that.slicer.vol.readFiles([volume], function () {
+                  that.properties = that.slicer.initProperties();
+                  that.loaded = true;
+                  opts.onload(that.properties);
+              });
+            }
+            
+           
+            
         }
     });
   }
