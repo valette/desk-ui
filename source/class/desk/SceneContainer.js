@@ -41,7 +41,7 @@ qx.Class.define("desk.SceneContainer",
 			context = callback;
 			opts = {};
 		}
-		opts = opts || {};
+		this.options = opts = opts || {};
 
         this.base(arguments, opts);
 
@@ -52,6 +52,11 @@ qx.Class.define("desk.SceneContainer",
 		if (!desk.Actions.getAction('mesh2ctm')) {
 			this.setConvertVTK(false);
 		}
+		
+		if (this.options.maxZoom)
+		  this.getControls().setMaxZoom(this.options.maxZoom)
+		if (this.options.minZoom)
+		  this.getControls().setMinZoom(this.options.minZoom)
 
 		var leftContainer = this.__leftContainer = new qx.ui.container.Composite();
 		leftContainer.setLayout(new qx.ui.layout.VBox());
@@ -778,7 +783,7 @@ qx.Class.define("desk.SceneContainer",
 			});
 			var intersects = this.getIntersections(slices)[0];
 			var delta = event.getWheelDelta() > 0 ? 1 : -1;
-			if (intersects != undefined) {
+			if (intersects != undefined && this.options.sliceOnWheel) {
 				var slice = intersects.object.userData.viewerProperties.volumeSlice;
 				var maximum = slice.getNumberOfSlices() - 1;
 				var newValue = slice.getSlice() + delta;

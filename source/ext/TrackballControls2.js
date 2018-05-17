@@ -28,6 +28,9 @@ THREE.TrackballControls2 = function ( object ) {
 
 	this.minDistance = 0;
 	this.maxDistance = Infinity;
+	
+	this.minZoom = 0;
+	this.maxZoom = Infinity;
 
 	this.zoomUsingZ = object instanceof THREE.PerspectiveCamera;
 
@@ -158,17 +161,17 @@ THREE.TrackballControls2 = function ( object ) {
 			var factor = ( _zoomEnd - _zoomStart ) * this.zoomSpeed;
 			this.object.zoom = Math.exp( Math.log( this.object.zoom ) - factor);
 			_zoomStart = _zoomEnd;
-
 		} else {
 
 			factor = 1.0 + ( _zoomEnd - _zoomStart ) * this.zoomSpeed;
 
 			if ( factor !== 1.0 && factor > 0.0 ) {
 
-				_eye.multiplyScalar( factor );
 
 				_zoomStart = _zoomEnd;
-
+        if (_eye.length()*factor > this.minZoom && _eye.length()*factor < this.maxZoom)
+          _eye.multiplyScalar( factor );
+          
 			}
 
 		}
@@ -179,9 +182,18 @@ THREE.TrackballControls2 = function ( object ) {
 		if (delta<0) delta /= 1.6;
 
 		_zoomEnd = _zoomStart + delta;
-		this.update();
-	}
 
+		this.update();
+	};
+	 
+  this.setMaxZoom = function (max) {
+    this.maxZoom = max;
+  };
+  
+  this.setMinZoom = function (min) {
+    this.minZoom = min;
+  };
+  
 	this.panCamera = function() {
 
 		var mouseChange = _panEnd.clone().sub( _panStart );

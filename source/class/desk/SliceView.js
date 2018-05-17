@@ -20,7 +20,7 @@ qx.Class.define("desk.SliceView",
 		this.base(arguments);
 		this.__slices = [];
 		this.__orientation = orientation || 0;
-		options = options || {};
+		this.options = options = options || {};
 		console.log("options ", options);
 		this.__textColor = options.textColor || "yellow";
 		this.__alwaysDisplaySlider = options.alwaysDisplaySlider || false;
@@ -758,9 +758,10 @@ qx.Class.define("desk.SliceView",
 			if (this.__orientation == 1) {
 				this.flip(1);
 				this.rotate(1);
+				this.flip(0);//
 			}
 			
-			this.flip(0);
+			//this.flip(0);
 			
 		
 			//if (this.__orientation == 0) this.flip(1);
@@ -1221,7 +1222,13 @@ qx.Class.define("desk.SliceView",
 			
 			slider.addListener('mousewheel', function(e) { e.stopPropagation()});
 			
+			console.log(this.getControls());
 			
+			if (this.options.maxZoom)
+			  this.getControls().setMaxZoom(this.options.maxZoom)
+			if (this.options.minZoom)
+			  this.getControls().setMinZoom(this.options.minZoom)
+			  
 			this.addListener("keypress", function (evt) {
 			  var delta = 0;
         if (evt.getKeyIdentifier() == "Down") {

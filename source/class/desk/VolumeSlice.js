@@ -111,6 +111,7 @@ qx.Class.define("desk.VolumeSlice",
 		this.__texture.magFilter = this.__texture.minFilter = THREE.LinearFilter;
 		this.__texture.type = THREE.FloatType;
 	  this.__texture.format = THREE.LuminanceFormat;
+	  this.__texture.flipY = true;
 	
 	  this.__lookupTable.generateMipmaps = false;
 		this.__lookupTable.magFilter = this.__lookupTable.minFilter = THREE.NearestFilter;
@@ -194,6 +195,7 @@ qx.Class.define("desk.VolumeSlice",
 			"    highp float Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 )); ",
 			"    return Result;",
 			"}",
+			
 
 			"void main() {",
 				//"vec4 rawData = texture2D( texture, vUv );",
@@ -237,6 +239,10 @@ qx.Class.define("desk.VolumeSlice",
 			"uniform float imageType;",
 			"uniform float scalarMin;",
 			"uniform float scalarMax;",
+
+			"highp float easeInOutQuad(highp float t) {",
+			"    return t<.5 ? 2.0*t*t : -1.0+(4.0-2.0*t)*t;",
+			"}",
 
 			"highp float decode32(highp vec4 rgba) {",
 			"    highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;",
@@ -1101,11 +1107,19 @@ qx.Class.define("desk.VolumeSlice",
 							if (err) {
 								console.warn(err);
 							}
-														
+							
+													
 							that.__waitingFromWorker = false;
 							that.__texture.image = imageData;
 							
 							var tmp = { data: imgFloatArray, width: imageData.width, height: imageData.height };
+
+             
+              
+              if (typeof that.__opts.postProcessFunction === 'function') {
+                that.__opts.postProcessFunction(tmp, that.__worker);
+              }
+
 							that.__texture.image = tmp;
 							that.__texture.unpackAlignment = 1;
 							

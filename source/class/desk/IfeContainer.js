@@ -2,6 +2,7 @@
 /**
  * @ignore (ImageData)<
  * @ignore (THREE*)
+ * @ignore (chroma*)
  */
 
 
@@ -55,6 +56,9 @@ qx.Class.define("desk.IfeContainer", {
 
         __IRMAnatName : null,
         __IRMFuncName : null,
+        
+        __contrastSlider : null,
+        __brightnessSlider : null,
 
         __colors : null,
 
@@ -62,7 +66,7 @@ qx.Class.define("desk.IfeContainer", {
         
         __widthMenu : 220,
 
-        __meshes : [],
+        __meshesFunc : [],
 
         __sideViewer : null,
 
@@ -106,8 +110,15 @@ qx.Class.define("desk.IfeContainer", {
             var buttonOpenAnat = this.__buttonOpenAnat = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir une IRM anatomique"), 'resource/ife/open_A_small.png');
             buttonOpenAnat.getChildControl("label").setAllowGrowX(true);
             buttonOpenAnat.getChildControl("label").setTextAlign("left");
+            
+            buttonOpenAnat.addListener("focusin", function(evt) {
+              window.setTimeout(function () {
+                buttonOpenAnat.setEnabled(false);
+                buttonOpenAnat.setEnabled(true);
+              }, 1000);
+            });
 
-            buttonOpenAnat.setAcceptUpload(".nii.gz");
+            buttonOpenAnat.setAcceptUpload(".anat.nii.gz");
             var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpenAnat, "/anat");
             uploader.setAutoUpload(false);
             uploader.addListener("addFile", this.addAnatFile.bind(this));
@@ -118,7 +129,14 @@ qx.Class.define("desk.IfeContainer", {
             buttonOpenFunc.getChildControl("label").setAllowGrowX(true);
             buttonOpenFunc.getChildControl("label").setTextAlign("left");
 
-            buttonOpenFunc.setAcceptUpload(".nii.gz");
+            buttonOpenFunc.addListener("focusin", function(evt) {
+              window.setTimeout(function () {
+                buttonOpenFunc.setEnabled(false);
+                buttonOpenFunc.setEnabled(true);
+              }, 1000);
+            });
+
+            buttonOpenFunc.setAcceptUpload(".fonc.nii.gz");
             buttonOpenFunc.setEnabled(false);
             var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpenFunc, "/fonc");
             uploader.setAutoUpload(false);
@@ -129,6 +147,13 @@ qx.Class.define("desk.IfeContainer", {
             var buttonOpen3Dmodel = this.__buttonOpen3Dmodel = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir un modèle 3D"), 'resource/ife/open_3D_small.png');
             buttonOpen3Dmodel.getChildControl("label").setAllowGrowX(true);
             buttonOpen3Dmodel.getChildControl("label").setTextAlign("left");
+
+            buttonOpen3Dmodel.addListener("focusin", function(evt) {
+              window.setTimeout(function () {
+                buttonOpen3Dmodel.setEnabled(false);
+                buttonOpen3Dmodel.setEnabled(true);
+              }, 100);
+            });
 
             buttonOpen3Dmodel.setAcceptUpload(".stl");
             buttonOpen3Dmodel.setEnabled(false);
@@ -226,9 +251,9 @@ qx.Class.define("desk.IfeContainer", {
 
 
         createAbout : function () {
-            var button = new qx.ui.form.Button(this.tr("A propos") + "...").set({decorator: null});
+            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v0.1.0").set({decorator: null});
 
-            var win = new qx.ui.window.Window(this.tr("A propos"));
+            var win = new qx.ui.window.Window(this.tr("A propos de ")+" EduAnat2 v0.1.0");
             win.set({
                 width : 500,
                 height : 600,
@@ -257,9 +282,7 @@ qx.Class.define("desk.IfeContainer", {
 
             win.add( new qx.ui.basic.Label([
                 "Mentions légales :",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin mattis erat cursus tristique semper. In pharetra leo ut elementum luctus. Quisque lobortis mi et erat tincidunt eleifend. Morbi molestie commodo venenatis. In et ligula cursus, porta est at, pretium sapien. Vivamus placerat, ligula non molestie finibus, libero metus consectetur leo, sed blandit turpis dolor ac magna. Aenean ac lacus magna. Pellentesque tempor, dui sed efficitur gravida, urna nisi aliquam mi, vel condimentum purus nulla sed libero. Nunc id feugiat justo, vel posuere augue. Curabitur ut dui congue, sollicitudin lectus a, bibendum ligula. Suspendisse iaculis purus eu velit tincidunt, quis consequat lacus ultrices.",
-                "Nam dignissim pulvinar sem elementum ornare. Nunc ullamcorper euismod purus vel suscipit. Proin quis luctus nibh. Maecenas luctus urna at iaculis bibendum. Proin placerat nunc cursus lectus luctus semper. Nam volutpat semper magna, id blandit nisl porta vitae. Praesent placerat justo vitae viverra commodo. Etiam ornare odio eget ligula imperdiet semper. Proin imperdiet lorem bibendum eros volutpat commodo vitae vitae nulla. Vivamus sagittis facilisis elit, a tempor nulla luctus et. Etiam feugiat elit tellus, quis euismod nisi eleifend sed. Cras semper purus ut lacinia sollicitudin. Aliquam a consectetur nulla, non maximus lacus.",
-                "Vivamus maximus lacus elementum mauris cursus dignissim. Phasellus aliquam, tortor sit amet tempor feugiat, ipsum libero condimentum risus, a pharetra nulla eros id neque. Praesent ac nisl lorem. Curabitur et consectetur mi. Etiam sollicitudin sapien vitae fringilla imperdiet. Suspendisse in ullamcorper diam, id dictum ante. Nam eleifend arcu tincidunt nulla tincidunt, nec faucibus diam cursus. Suspendisse tristique et nibh ut dapibus. Donec magna enim, lacinia ac ultricies quis, dapibus ut odio. Morbi vulputate sit amet mauris at placerat. Fusce vel faucibus tortor. Donec venenatis arcu nec laoreet aliquet. Morbi mattis a justo eget efficitur. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Maecenas fringilla sem vitae viverra hendrerit. In in erat bibendum, dapibus ligula vel, eleifend libero."
+                ""
               ].join('<br>') ).set({
                 rich : true,
                 width: 460
@@ -313,49 +336,75 @@ qx.Class.define("desk.IfeContainer", {
 
                 var bbox = new THREE.Box3();
                 meshes.forEach( function (obj) {
-                                obj.scale.set(-1, 1, 1);
+                    //obj.scale.set(-1, 1, 1);
                     bbox.union( new THREE.Box3().setFromObject(obj) );
                 });
 
                 that.resetMeshView();
 
-                var size = 25;
-
                 var group = new THREE.Group();
-                //group.scale.set(1, -1, 1);
+
                 that.__meshViewer.addMesh(group);
 
                 var center = bbox.max.add(bbox.min).divideScalar ( 2 ) ;
-                console.log(bbox);
+                
+              
+                var l = new THREE.Vector3().copy(bbox.max).sub(bbox.min);
+                var maxSize = Math.max(l.x, l.y, l.z);
+                
+                //var size = 25;
+                var size = 0.2*maxSize;
+                console.log("Size : ", size);
 
-                group.add( that.createSprite("droite", size, new THREE.Vector3(2*bbox.max.x-bbox.min.x+30, center.y, center.z)) ); //
-                group.add( that.createSprite("gauche", size, new THREE.Vector3(bbox.min.x-37, center.y, center.z)) ); //
+                group.add( that.createSprite("droite", size, new THREE.Vector3(2*bbox.max.x-bbox.min.x+size*1.5, center.y, center.z)) );
+                group.add( that.createSprite("gauche", size, new THREE.Vector3(bbox.min.x-size*1.85, center.y, center.z)) );
 
-                group.add( that.createSprite("avant", size, new THREE.Vector3(center.x, bbox.max.y*2+30, center.z)) ); //
-                group.add( that.createSprite("arrière", size, new THREE.Vector3(center.x, bbox.min.y-25, center.z)) ); //
+                group.add( that.createSprite("ventre", size, new THREE.Vector3(center.x, bbox.max.y*2+size*1.5, center.z)) );
+                group.add( that.createSprite("dos", size, new THREE.Vector3(center.x, bbox.min.y-size*1.25, center.z)) );
 
 
-                group.add( that.createSprite("haut", size, new THREE.Vector3(center.x, center.y, bbox.max.z*2+25)) ); //
-                group.add( that.createSprite("bas", size, new THREE.Vector3(center.x, center.y, bbox.min.z-25)) ); //
+                group.add( that.createSprite("avant", size, new THREE.Vector3(center.x, center.y, bbox.max.z*2+size*1.25)) );
+                group.add( that.createSprite("arrière", size, new THREE.Vector3(center.x, center.y, bbox.min.z-size*1.25)) );
+
+
+                //Update Zoom Limite
+                that.__MPR.getViewers().concat(that.__meshViewer).forEach(function (viewer) {
+                  viewer.getControls().setMinZoom(0.3*maxSize);
+                  viewer.getControls().setMaxZoom(20*maxSize);
+                });
+                
+                
+                console.log("file path? : ", file.getBrowserObject());
+                var path = file.getBrowserObject().path;
+                if (path) {
+                    console.warn("On Electron ! Load Mesh !");
+                    var meshPath;
+                    if (name.substr(name.length -12) == ".anat.nii.gz") {
+                        meshPath = path.substr(0, path.length-12) + ".stl";
+                    }
+                    else if (name.substr(name.length -7) == ".nii.gz") {
+                      var meshPath = path.substr(0, path.length-7) + ".stl";
+                    }
+                    
+                    console.warn(meshPath);
+                    var oReq = new XMLHttpRequest();
+                    oReq.responseType = "arraybuffer";
+                    oReq.onload = function (res) {
+                       console.warn("STL loaded, try to display");
+                       that.addMesh(oReq.response);
+                       console.log(that.__mesh3DModel);
+                       console.log("volume", volume.__userData.workerSlicer.properties);
+                       
+                       //that.__mesh3DModel.position.setX( volume.__userData.workerSlicer.properties.origin[0] );
+                    };
+                    oReq.open("get", meshPath, true);
+                    oReq.send();
+                }
 
 
 
             });
-            console.log("file path? : ", file.getBrowserObject());
-            var path = file.getBrowserObject().path;
-            if (path) {
-                console.warn("On Electron ! Load Mesh !");
-                var meshPath = path.substr(0, path.length-7) + ".stl";
-                console.warn(meshPath);
-                var oReq = new XMLHttpRequest();
-                oReq.responseType = "arraybuffer";
-                oReq.onload = function (res) {
-                   console.warn("STL loaded, try to display");
-                   that.addMesh(oReq.response);
-                };
-                oReq.open("get", meshPath, true);
-                oReq.send();
-            }
+
             
         },
 
@@ -382,11 +431,19 @@ qx.Class.define("desk.IfeContainer", {
                 noworker: true,
                 colors: that.__colors,
                 linearFilter : false,
-                opacity: 0.4
+                opacity: 0.7,
+                postProcessFunction : function (texture, workerSlicer) {
+                  var prop = workerSlicer.properties;
+                  var v = prop.scalarBounds[0];
+                  imgArray = texture.data;
+							    for (var i=imgArray.length; i-->0;) 
+							        if (imgArray[i] === 0.0) 
+							            imgArray[i] = v;
+                }
             }, function(err, volume) {
                 var prop = volume.getUserData("workerSlicer").properties;
                 that.__volumeFunc = volume;
-                that.__meshes = that.__meshViewer.attachVolumeSlices(that.__MPR.getVolumeSlices(volume));
+                that.__meshesFunc = that.__meshViewer.attachVolumeSlices(that.__MPR.getVolumeSlices(volume));
                 that.__IRMFuncName.setValue("<b>" + that.tr("IRM fonctionnelle") + " : </b>" + file.getFilename());
                 that.__buttonOpenFunc.setEnabled(true);
                 that.__buttonOpen3Dmodel.setEnabled(true);
@@ -394,16 +451,16 @@ qx.Class.define("desk.IfeContainer", {
                 that.__subMenuFunc.show();
                 
                 that.__buttonCloseAll.setEnabled(true);
-                
-                that.__meshes.forEach( function (obj) {
+                /*
+                that.__meshesFunc.forEach( function (obj) {
                                 obj.scale.set(-1, 1, 1);
                 });
-                
+                */
                 var volumeSlice = that.__MPR.getVolumeSlices(volume)[0];
 
                 var slices = that.__MPR.getVolumeMeshes(volume);
                 that.hackShaders(volumeSlice, slices);
-                that.hackShaders(volumeSlice, that.__meshes);
+                that.hackShaders(volumeSlice, that.__meshesFunc);
                 that.__seuilSlider.set({
                     minimum: Math.floor(prop.scalarBounds[0] * 100),
                     maximum: Math.floor(prop.scalarBounds[1] * 100),
@@ -412,11 +469,20 @@ qx.Class.define("desk.IfeContainer", {
                 })
 
                 slices.forEach(setMaxThreshold);
-                that.__meshes.forEach(setMaxThreshold);
+                that.__meshesFunc.forEach(setMaxThreshold);
 
                 function setMaxThreshold(target) {
                     target.material.uniforms.thresholdMax.value = prop.scalarBounds[1];
                 }
+                
+                function updateSlice(slice) {
+                    slice.material.uniforms.thresholdMin.value = that.__seuilSlider.getValue() / 100;
+                }
+                that.__MPR.getVolumeMeshes(that.__volumeFunc).forEach(updateSlice);
+                that.__meshesFunc.forEach(updateSlice);
+                that.__meshViewer.render();
+                that.__MPR.render();
+                
 
             });
         },
@@ -457,20 +523,42 @@ qx.Class.define("desk.IfeContainer", {
 
             var geometry = loader.parse( arrayBuffer );
 
+            //https://stackoverflow.com/questions/35843167/three-js-smoothing-normals-using-mergevertices
+            var tempGeo = new THREE.Geometry().fromBufferGeometry(geometry);
+            tempGeo.mergeVertices();
+            // after only mergeVertices my textrues were turning black so this fixed normals issues
+            tempGeo.computeVertexNormals();
+            tempGeo.computeFaceNormals();
+            geometry = new THREE.BufferGeometry().fromGeometry(tempGeo);
+
+
+
+
+
             //Rendering BackSide & Scale -1 pour être raccord avec les vues (hack : inversion des normales)
             var material = new THREE.MeshPhongMaterial( { color: 0xff5533, specular: 0x111111, shininess: 50, transparent : true, opacity : 0.7, side: THREE.BackSide } );
             
+            console.log(material);
+            
+            
             var mesh = new THREE.Mesh( geometry, material );
             mesh.renderOrder = 4;
+            
+            
             mesh.scale.set(-1, 1, 1);
             
-            mesh.geometry.attributes.normal.needsUpdate = true; // required after the first render
+
             mesh.flipSided = true;
             //flip every vertex normal in mesh by multiplying normal by -1
             for(var i = 0; i<mesh.geometry.attributes.normal.array.length; i++) {
                 mesh.geometry.attributes.normal.array[i] = -mesh.geometry.attributes.normal.array[i];
             }
-          
+            
+            mesh.material.needsUpdate = true;
+            
+            mesh.geometry.attributes.normal.needsUpdate = true; // required after the first render
+            mesh.geometry.normalsNeedUpdate = true;
+            
             this.__meshViewer.addMesh( mesh );
             this.__mesh3DModel = mesh;
             this.resetMeshView();
@@ -498,7 +586,7 @@ qx.Class.define("desk.IfeContainer", {
             var container = new qx.ui.container.Composite(layout);
             container.add(button);
 
-            button.addListener("dblclick", function() {
+            button.addListener("click", function() {
                 if (target.isVisible()) {
                     target.exclude();
                     button.setSource("resource/ife/right.png");
@@ -515,12 +603,14 @@ qx.Class.define("desk.IfeContainer", {
             var options = {
                 workerSlicer: true,
                 alwaysDisplaySlider: true,
-                zoomOnWheel: true
+                zoomOnWheel: true,
+                maxZoom:2000,
+                minZoom:30
             };
 
             var MPR = new desk.MPRContainer(null, options);
 
-            var meshViewer = this.__meshViewer = new desk.SceneContainer({noOpts:true});
+            var meshViewer = this.__meshViewer = new desk.SceneContainer({noOpts:true, sliceOnWheel:false, maxZoom:2000, minZoom:30});
             
             var button = new qx.ui.form.Button("R").set({opacity : 0.5, width : 30});
       		  meshViewer.add (button, {right : 0, bottom : 0});
@@ -572,7 +662,7 @@ qx.Class.define("desk.IfeContainer", {
             /* Gestion du contraste */
             var contrastLabel = new qx.ui.basic.Label(this.tr("Contraste") + " : 1.00");
             container.add(contrastLabel);
-            var contrastSlider = new qx.ui.form.Slider();
+            var contrastSlider = this.contrastSlider = new qx.ui.form.Slider();
             contrastSlider.set({
                 minimum: -28,
                 maximum: 28,
@@ -581,10 +671,11 @@ qx.Class.define("desk.IfeContainer", {
             contrastSlider.addListener("changeValue", function(e) {
                 var value = Math.pow(10, e.getData() / 40);
                 contrastLabel.setValue(that.tr("Contraste") + " : " + value.toFixed(2));
-
-                that.__volumeAnat.getUserData('slices').forEach(function(volumeSlice) {
-                    volumeSlice.setContrast(value);
-                });
+                if (that.__volumeAnat) {
+                  that.__volumeAnat.getUserData('slices').forEach(function(volumeSlice) {
+                      volumeSlice.setContrast(value);
+                  });
+                }
             });
             container.add(contrastSlider);
 
@@ -592,7 +683,7 @@ qx.Class.define("desk.IfeContainer", {
             /* Gestion de la luminosité */
             var brightnessLabel = new qx.ui.basic.Label(this.tr("Luminosité") + " : 0.5");
             container.add(brightnessLabel);
-            var brightnessSlider = new qx.ui.form.Slider();
+            var brightnessSlider = this.brightnessSlider = new qx.ui.form.Slider();
             brightnessSlider.set({
                 minimum: 0,
                 maximum: 100,
@@ -602,10 +693,11 @@ qx.Class.define("desk.IfeContainer", {
             brightnessSlider.addListener("changeValue", function(e) {
                 var value = e.getData() / 100;
                 brightnessLabel.setValue(that.tr("Luminosité") + " : " + value.toFixed(2));
-
-                that.__volumeAnat.getUserData('slices').forEach(function(volumeSlice) {
-                    volumeSlice.setBrightness((value-0.5)*2 );
-                });
+                if (that.__volumeAnat) {
+                  that.__volumeAnat.getUserData('slices').forEach(function(volumeSlice) {
+                      volumeSlice.setBrightness((value-0.5)*2 );
+                  });
+                }
             });
             container.add(brightnessSlider);
 
@@ -650,37 +742,47 @@ qx.Class.define("desk.IfeContainer", {
             var seuilSlider = this.__seuilSlider = new qx.ui.form.Slider();
 
             seuilSlider.addListener("changeValue", function(e) {
-				//var prop = that.__volumeFunc.getUserData("workerSlicer").properties;
-				var val = (seuilSlider.getValue()-seuilSlider.getMinimum())/(seuilSlider.getMaximum()-seuilSlider.getMinimum())*100;
+				        //var prop = that.__volumeFunc.getUserData("workerSlicer").properties;
+				        var val = (seuilSlider.getValue()-seuilSlider.getMinimum())/(seuilSlider.getMaximum()-seuilSlider.getMinimum())*100;
                 seuilLabel.setValue(this.tr("Seuil") + " :" +  Math.floor(val) );
+                function updateSlice(slice) {
+                    slice.material.uniforms.thresholdMin.value = seuilSlider.getValue() / 100;
+                }
                 that.__MPR.getVolumeMeshes(that.__volumeFunc).forEach(updateSlice);
-                that.__meshes.forEach(updateSlice);
+                that.__meshesFunc.forEach(updateSlice);
                 that.__meshViewer.render();
                 that.__MPR.render();
             });
-
-            function updateSlice(slice) {
-                slice.material.uniforms.thresholdMin.value = seuilSlider.getValue() / 100;
-            }
 
             container.add(seuilSlider);
             container.add(new qx.ui.basic.Label(this.tr("Echelle de couleur : ")));
 
             var lutArray = [
-                this.generateLut,
-                this.generateLutRB
+                //this.generateLut,
+                //this.generateLutRB,
+                generateChroma( chroma.scale( ["#00f", "#0ff", "#0f0", "#ff0","#f00"] ).domain([0,0.333, 0.5, 0.666, 1]) ),
+                generateChroma( chroma.scale("Spectral").domain([1,0]) ),
+                generateChroma( chroma.scale( ["blue", "#eee", "red"] ).mode('lrgb') ),
+                generateChroma( chroma.scale( ["black", "white"] ).gamma(1/2) ),
             ];
+            
+            function generateChroma(scale) {
+              return function(imgData) {
+                return that.generateChromaLut.apply( undefined, [imgData, scale]);
+              }
+            };
 
             var selectBox = new qx.ui.form.SelectBox();
 
             lutArray.forEach(function(generator) {
                 selectBox.add(new qx.ui.form.ListItem("", that.lutImage(generator)));
             });
-
+            
             selectBox.addListener("changeSelection", function(e) {
                 var index = selectBox.getSelectables().indexOf(e.getData()[0]);
                 console.log(index);
                 that.__colors = lutArray[index]();
+                console.log(that.__colors);
                 if (that.__volumeFunc)
                     that.__MPR.setVolumeLUT(that.__volumeFunc, that.__colors);
             });
@@ -705,6 +807,9 @@ qx.Class.define("desk.IfeContainer", {
             this.__volumeAnat = undefined;
 
             this.__buttonCloseAll.setEnabled(false);
+            
+            this.contrastSlider.set({value : 0});
+            this.brightnessSlider.set({value : 50});
 
 
         },
@@ -720,23 +825,24 @@ qx.Class.define("desk.IfeContainer", {
             if (!this.__volumeFunc) return;
 
             this.__MPR.removeVolume(this.__volumeFunc);
+            this.__meshViewer.removeMeshes(this.__meshesFunc);
             this.__volumeFunc = undefined;
             this.__subMenuFunc.hide();
         },
 
-        lutImage: function(generator) {
+        lutImage: function(generator /*, arguments pass to chroma.scale */) {
             var canvas = document.createElement('canvas');
             canvas.width = this.__widthMenu;
             canvas.height = 16;
             var ctx = canvas.getContext("2d");
             var imgData = new ImageData(this.__widthMenu, 1);
-            generator(imgData);
+            generator(imgData, Array.prototype.slice.call(arguments, 1));
             for (var i = 1; i < 16; i++) {
                 ctx.putImageData(imgData, 0, i);
             }
             return canvas.toDataURL();
         },
-
+        
         generateLut: function(imgData) {
             var paletteSize = 2000;
             var red = [];
@@ -745,11 +851,19 @@ qx.Class.define("desk.IfeContainer", {
             var alpha = [];
             var colorConverter = new THREE.Color();
 
+            function sigmoid(t, delta) {
+              return 1/(1+Math.exp( -t*delta));
+            }
+
+
             if (imgData)
                 paletteSize = imgData.width;
 
             for (var i = 0; i < paletteSize; i++) {
                 colorConverter.setHSL((1 - i / paletteSize) * 230 / 360, 1, 0.5);
+                
+                //colorConverter.setHSL((1-sigmoid(2 * i / paletteSize - 1, 2.8))* 230 / 360, 1, 0.5);
+
                 if (imgData) {
                     imgData.data[4 * i] = 255 * colorConverter.r;
                     imgData.data[4 * i + 1] = 255 * colorConverter.g;
@@ -793,6 +907,40 @@ qx.Class.define("desk.IfeContainer", {
             if (!imgData)
                 return [red, green, blue, alpha];
         },
+        
+        generateChromaLut : function (imgData, scale) {
+            var paletteSize = 2000;
+            var red = [];
+            var green = [];
+            var blue = [];
+            var alpha = [];
+            var args = Array.prototype.slice.call(arguments, 1);
+            
+            var genImg = !!imgData && (imgData instanceof ImageData);
+            
+            
+            if (genImg)
+                paletteSize = imgData.width;
+
+            for (var i = 0; i < paletteSize; i++) {
+                var rgba = scale(i/paletteSize).rgba();
+            
+                if (genImg) {
+                    imgData.data[4 * i] = rgba[0];
+                    imgData.data[4 * i + 1] = rgba[1];
+                    imgData.data[4 * i + 2] = rgba[2];
+                    imgData.data[4 * i + 3] = 255*rgba[3];
+                } else {
+                    red[i] = rgba[0];
+                    green[i] = rgba[1];
+                    blue[i] = rgba[2];
+                    alpha[i] = 255*rgba[3];
+                }
+            }
+            
+            if (!genImg)
+                return [red, green, blue, alpha];
+        },
 
         hackShaders: function(volumeSlice, meshes) {
             meshes.forEach(function(slice) {
@@ -813,9 +961,10 @@ qx.Class.define("desk.IfeContainer", {
                     '} else {',
                     'float range = thresholdMax - thresholdMin;',
                     'correctedValue = ( value - thresholdMin ) / range;',
+                    'float blendingOpacity = correctedValue<0.2?easeInOutQuad(correctedValue*5.0):1.0;',
                     'colorIndex = vec2( correctedValue, 0.0 );',
                     'gl_FragColor = texture2D( lookupTable,colorIndex  );',
-                    'gl_FragColor.a = opacity;',
+                    'gl_FragColor.a = opacity*blendingOpacity;',
                     '}'
                 ].join('\n'));
                 volumeSlice.updateMaterial(slice.material);
@@ -843,26 +992,18 @@ qx.Class.define("desk.IfeContainer", {
 
             context.clearRect(0, 0, canvas.width, canvas.height);
 
-            console.log(canvas);
             context.font = Math.floor(height*0.6) + 'px Helvetica';
 
-            //context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            //context.fillRect(0, 0, canvas.width, canvas.height);
             context.fillStyle = "red";
             context.fillText(text, (canvas.width-width)/2, height*0.8);
             texture.needsUpdate = true;
             
-            console.log(text, width, canvas.width);
-
-
-            var material = new THREE.SpriteMaterial({map :texture});//, depthTest : false});
+            var material = new THREE.SpriteMaterial({map :texture});
             var mesh = new THREE.Sprite(material);
 
             mesh.position.copy(position); //.add( new THREE.Vector3(size * width/ height /2, size/2, 0 ) );
             mesh.scale.x = size * canvas.width/ height;
             mesh.scale.y = size;
-
-            console.log(mesh);
 
             return mesh;
         }

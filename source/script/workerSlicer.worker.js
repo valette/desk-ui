@@ -51958,16 +51958,12 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
 	if (dir === DIRECTION_AXIAL) {
 			xLim = xDim;
 			yLim = yDim;
-			slice = zDim - slice - 1;
-
 	} else if (dir === DIRECTION_CORONAL) {
 			xLim = zDim;
 			yLim = yDim;
-
 	} else if (dir === DIRECTION_SAGITTAL) {
 			xLim = xDim;
 			yLim = zDim;
-
 	}
 
 	var imageData = new ImageData(xLim, yLim);
@@ -51979,17 +51975,16 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
 				if (dir === DIRECTION_AXIAL) {
 						//index3d = ctrX + (ctrY * xDim) + (slice * yDim * xDim);
 
-						value = vol.getVoxelAtIndex(xDim-ctrX - 1, yDim-ctrY - 1, slice, timepoint, true);
+						value = vol.getVoxelAtIndex(ctrX, yDim-ctrY - 1,  zDim - slice - 1, timepoint, true);
 
-				} else if (dir === DIRECTION_CORONAL) {
+				} else if (dir === DIRECTION_CORONAL) { //Sagittal
 						//index3d = ctrX + (slice * xDim) + (ctrY * yDim * xDim);
+						//value = vol.getVoxelAtIndex(xDim-1-slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
+						value = vol.getVoxelAtIndex(slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
 
-						value = vol.getVoxelAtIndex(xDim-1-slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
-
-				} else if (dir === DIRECTION_SAGITTAL) {
+				} else if (dir === DIRECTION_SAGITTAL) { //Coronal
 						//index3d = slice + (ctrX * xDim) + (ctrY * yDim * xDim);
-
-						value = vol.getVoxelAtIndex(xDim-ctrX - 1, yDim-slice-1, zDim-ctrY - 1, timepoint, true);
+            value = vol.getVoxelAtIndex(ctrX, yDim-slice-1, zDim-ctrY - 1, timepoint, true);
 
 				}
 

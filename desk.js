@@ -9,9 +9,10 @@ let win;
 
 electron.app.on('ready', () => {
 	win = new electron.BrowserWindow({
-		icon: '/source/resource/desk/desk.png',
+		icon: (debug ? 'source' : 'build')+'/icone_eduanat2.png',
 		experimentalFeatures : true,
-		experimentalCanvasFeatures : true
+		experimentalCanvasFeatures : true,
+		title:'EduAnat2'
 	});
 
 	var url = 'file://' + __dirname + '/'

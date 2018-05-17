@@ -69,7 +69,7 @@ var WorkerSlicer = function (volume, opts) {
     loadScript(scriptFile, function () {
 	    var progressFunc = function (frac, text) {
 	      var txt = text+" "+(frac*100).toFixed(1)+"%";
-	      console.log("progress", txt);
+	      //console.log("progress", txt);
 	    };
 
         that.slicer = new PapayaSlicer(progressFunc);
