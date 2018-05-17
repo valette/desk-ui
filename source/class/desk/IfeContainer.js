@@ -14,6 +14,9 @@ qx.Class.define("desk.IfeContainer", {
      */
     construct: function(sideViewer) {
 	    this.base(arguments);
+	    
+	    //hack to include
+	    new desk.ProgressBar();
 
 	    this.__sideViewer = sideViewer;
 
@@ -327,7 +330,7 @@ qx.Class.define("desk.IfeContainer", {
 
         addAnatFile: function(evt) {
 
-            const {dialog} = require('electron').remote;
+            var dialog = require('electron').remote.dialog;
             var filesList = dialog.showOpenDialog({
               filters : [
                 {name: 'Anat Nifti Image', extensions: ['anat.nii.gz']},
@@ -454,7 +457,7 @@ qx.Class.define("desk.IfeContainer", {
         },
 
         addFuncFile: function(evt) {
-            const {dialog} = require('electron').remote;
+            var dialog = require('electron').remote.dialog;
             var filesList = dialog.showOpenDialog({
               filters : [
                 {name: 'Anat Nifti Image', extensions: ['fonc.nii.gz']},

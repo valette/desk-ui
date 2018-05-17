@@ -69,13 +69,39 @@ var WorkerSlicer = function (volume, opts) {
     loadScript(scriptFile, function () {
     
       
-      var pb = new qx.ui.indicator.ProgressBar();
-      this.getRoot().add(pb, { left : 20, top: 20});
+      var root = qx.core.Init.getApplication().getRoot();
+      
+      var win = new qx.ui.window.Window("Chargement de l'image");
+      win.set({
+          width : 300,
+          height : 100,
+          alwaysOnTop : true,
+          showMinimize : false,
+          showMaximize : false,
+          centerOnAppear : true,
+          modal : true,
+          movable : false,
+          allowMaximize : false,
+          allowMinimize : false,
+          resizable : false,
+          showClose : false
+      });
 
+      win.setLayout(new qx.ui.layout.VBox(10));
+      var progressText = new qx.ui.basic.Label("Initialisation...");
+      win.add(progressText);
+      
+      var pb = new desk.ProgressBar();
+      win.add(pb);
 
+      root.add(win);
+      console.log("Add Root win");
+      win.open();
+      
 	    var progressFunc = function (frac, text) {
 	      var txt = text+" "+(frac*100).toFixed(1)+"%";
 	      console.log("progress", txt);
+	      progressText.setValue(text);
 	      pb.setValue(frac*100);
 
 	    };
@@ -111,12 +137,12 @@ var WorkerSlicer = function (volume, opts) {
               var readSize    = 0; // Incremented by on('data') to keep track of the amount of data we've uploaded
 
 
-                  readStream.on('data', function(buffer) {
-                      var segmentLength   = buffer.length;
-                      // Increment the uploaded data counter
-                      readSize        += segmentLength;
-                      progressFunc(readSize/fileSize, "Reading");
-                  });
+              readStream.on('data', function(buffer) {
+                  var segmentLength   = buffer.length;
+                  // Increment the uploaded data counter
+                  readSize        += segmentLength;
+                  progressFunc(readSize/fileSize, "Reading");
+              });
               
               readStream.pipe(concatStream)
                
@@ -136,6 +162,7 @@ var WorkerSlicer = function (volume, opts) {
                   that.properties = that.slicer.initProperties();
                   that.loaded = true;
                   opts.onload(that.properties);
+                  win.close();
                }
               }
                
@@ -153,6 +180,7 @@ var WorkerSlicer = function (volume, opts) {
                   that.properties = that.slicer.initProperties();
                   that.loaded = true;
                   opts.onload(that.properties);
+                  win.close();
               });
             }
             
