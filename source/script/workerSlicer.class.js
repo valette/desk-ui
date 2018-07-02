@@ -99,9 +99,10 @@ var WorkerSlicer = function (volume, opts) {
       win.open();
       
 	    var progressFunc = function (frac, text) {
+	      if (text == "Unpacking") text = "Décompression";
 	      var txt = text+" "+(frac*100).toFixed(1)+"%";
-	      console.log("progress", txt);
-	      progressText.setValue(text);
+	      //console.log("progress", txt);
+	      progressText.setValue(txt);
 	      pb.setValue(frac*100);
 
 	    };
@@ -141,7 +142,7 @@ var WorkerSlicer = function (volume, opts) {
                   var segmentLength   = buffer.length;
                   // Increment the uploaded data counter
                   readSize        += segmentLength;
-                  progressFunc(readSize/fileSize, "Reading");
+                  progressFunc(readSize/fileSize, "Chargement");
               });
               
               readStream.pipe(concatStream)
@@ -158,7 +159,7 @@ var WorkerSlicer = function (volume, opts) {
                     
                 
                 that.slicer.vol.onFinishedRead = function () {
-                  
+                  console.log(that.slicer.vol);
                   that.properties = that.slicer.initProperties();
                   that.loaded = true;
                   opts.onload(that.properties);
@@ -169,7 +170,6 @@ var WorkerSlicer = function (volume, opts) {
               function handleError(err) {
                 // handle your error appropriately here, e.g.:
                 console.error(err) // print the error to STDERR
-                process.exit(1) // exit program with non-zero exit code
               }
                
 

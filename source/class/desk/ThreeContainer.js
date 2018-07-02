@@ -43,6 +43,11 @@ qx.Class.define("desk.ThreeContainer",
 		var controls = this.__controls = new THREE.TrackballControls2(camera, canvas);
 		controls.zoomSpeed = 6;
 		scene.add(camera);
+		
+		if (opts.cameraFov) {
+		  console.log("CHANGE CAMERA FOV");
+		  camera.fov = opts.cameraFov;
+		}
 
 		// lights
 		var dirLight = new THREE.DirectionalLight( 0x888888 );
@@ -399,8 +404,10 @@ qx.Class.define("desk.ThreeContainer",
 				return;
 			}
 
-			var bbdl = bbox.getSize().length();
 			var camera = this.__camera;
+			var fovFactor = Math.tan(50 * Math.PI/180)/Math.tan(camera.fov * Math.PI/180);
+
+			var bbdl = bbox.getSize().length()*fovFactor;
 			var controls = this.__controls;
 
 			if (this.__boudingBoxDiagonalLength === 0) {
