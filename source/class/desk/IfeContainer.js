@@ -54,8 +54,12 @@ qx.Class.define("desk.IfeContainer", {
         __buttonOpen3Dmodel: null,
         __buttonCloseAll : null,
 
+        __menu : null,
         __subMenuAnat: null,
         __subMenuFunc: null,
+        __subMenuButtons : null,
+        
+        __collapseButton : null,
 
         __IRMAnatName : null,
         __IRMFuncName : null,
@@ -77,12 +81,13 @@ qx.Class.define("desk.IfeContainer", {
          * create UI
          */
         createUI: function() {
-            var menu = this.createMenu();
+            var menu = this.__menu = this.createMenu();
             this.add(menu, {
                 flex: 0
             });
-
-            this.add(this.createCollapseButton(menu), {
+            
+            this.__collapseButton = this.createCollapseButton();
+            this.add(this.__collapseButton, {
                 flex: 0
             });
 
@@ -108,118 +113,10 @@ qx.Class.define("desk.IfeContainer", {
 
 
             container.add(new qx.ui.core.Spacer(), {flex: 1});
-
-            /* Button Open Anat */
             
-            var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une IRM anatomique"), 'resource/ife/open_A_small.png');
+            this.__subMenuButtons = this.createSubMenuButtons();
+            container.add(this.__subMenuButtons);
             
-            buttonOpenAnat.getChildControl("label").setAllowGrowX(true);
-            buttonOpenAnat.getChildControl("label").setTextAlign("left");
-            
-            buttonOpenAnat.addListener("execute", this.addAnatFile.bind(this));
-
-/*
-            
-            var buttonOpenAnat2 = this.__buttonOpenAnat = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir une IRM anatomique"), 'resource/ife/open_A_small.png');        
-            
-            buttonOpenAnat2.addListener("focusin", function(evt) {
-              window.setTimeout(function () {
-                buttonOpenAnat.setEnabled(false);
-                buttonOpenAnat.setEnabled(true);
-              }, 1000);
-            });
-
-            buttonOpenAnat2.setAcceptUpload(".anat.nii.gz");
-            var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpenAnat2, "/anat");
-            uploader.setAutoUpload(false);
-            uploader.addListener("addFile", function (e) {
-              console.log(e);
-              that.addAnatFile(e);
-            });
-            
-            container.add(buttonOpenAnat2);
-  */          
-            
-            
-            
-            
-            container.add(buttonOpenAnat);
-        
-            /* Button Open Func
-            var buttonOpenFunc = this.__buttonOpenFunc = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/open_F_small.png');
-
-            buttonOpenFunc.addListener("focusin", function(evt) {
-              window.setTimeout(function () {
-                buttonOpenFunc.setEnabled(false);
-                buttonOpenFunc.setEnabled(true);
-              }, 1000);
-            });
-
-            buttonOpenFunc.setAcceptUpload(".fonc.nii.gz");
-            buttonOpenFunc.setEnabled(false);
-            var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpenFunc, "/fonc");
-            uploader.setAutoUpload(false);
-            uploader.addListener("addFile", this.addFuncFile.bind(this)); */
-            var buttonOpenFunc = this.__buttonOpenFunc = new qx.ui.form.Button(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/open_F_small.png');
-            
-            
-            buttonOpenFunc.getChildControl("label").setAllowGrowX(true);
-            buttonOpenFunc.getChildControl("label").setTextAlign("left");
-
-            buttonOpenFunc.addListener("execute", this.addFuncFile.bind(this));
-
-            container.add(buttonOpenFunc);
-
-            var buttonOpen3Dmodel = this.__buttonOpen3Dmodel = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir un modèle 3D"), 'resource/ife/open_3D_small.png');
-            /* Button Open Mesh 
-
-            buttonOpen3Dmodel.getChildControl("label").setAllowGrowX(true);
-            buttonOpen3Dmodel.getChildControl("label").setTextAlign("left");
-
-            buttonOpen3Dmodel.addListener("focusin", function(evt) {
-              window.setTimeout(function () {
-                buttonOpen3Dmodel.setEnabled(false);
-                buttonOpen3Dmodel.setEnabled(true);
-              }, 100);
-            });
-
-            buttonOpen3Dmodel.setAcceptUpload(".stl");
-            buttonOpen3Dmodel.setEnabled(false);
-            var uploader = new com.zenesis.qx.upload.UploadMgr(buttonOpen3Dmodel, "/mesh");
-            uploader.setAutoUpload(false);
-            uploader.addListener("addFile", this.addMeshFile.bind(this));
-
-            container.add(buttonOpen3Dmodel);
-
-            */
-
-            /* Button Close all */
-            var buttonCloseAll = this.__buttonCloseAll = new qx.ui.form.Button(this.tr("Tout fermer"), 'resource/ife/close_small.png');
-            buttonCloseAll.getChildControl("label").setAllowGrowX(true);
-            buttonCloseAll.getChildControl("label").setTextAlign("left");
-            buttonCloseAll.addListener("execute", this.removeAll.bind(this));
-            buttonCloseAll.setEnabled(false);
-            container.add(buttonCloseAll);
-
-            /* Button compare */
-            if (that.__sideViewer) {
-                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"));
-
-                buttonCompare.addListener("execute", function () {
-                    if (that.__sideViewer.isVisible()) {
-                        that.__sideViewer.exclude();
-                        buttonCompare.setLabel(that.tr("Comparer deux IRM"));
-                        //that.unlink();
-                    } else {
-                        that.__sideViewer.show();
-                        buttonCompare.setLabel(that.tr("Fermer la comparaison"));
-                        //that.link(that.__sideViewer);
-                    }
-                });
-
-                container.add(buttonCompare);
-            }
-
             container.add(new qx.ui.core.Spacer(), {flex: 1});
 
             this.__subMenuAnat = this.createSubMenuAnat();
@@ -260,7 +157,6 @@ qx.Class.define("desk.IfeContainer", {
             });
 
             // label to show the e.g. the alert message
-
             win.add(new qx.ui.basic.Label(message));
 
             // "ok" button to close the window
@@ -441,7 +337,6 @@ qx.Class.define("desk.IfeContainer", {
                        console.warn("STL loaded, try to display");
                        that.addMesh(oReq.response);
                        console.log(that.__mesh3DModel);
-                       console.log("volume", volume.__userData.workerSlicer.properties);
                        
                        //that.__mesh3DModel.position.setX( volume.__userData.workerSlicer.properties.origin[0] );
                     };
@@ -607,6 +502,11 @@ qx.Class.define("desk.IfeContainer", {
             
             mesh.scale.set(-1, 1, 1);
             
+            var prop = this.__volumeAnat.getUserData('workerSlicer').properties;
+            console.log(prop);
+            var offsetX = prop.dimensions[0] * prop.spacing[0];
+            mesh.position.set(offsetX, 0, 0);
+            
 
             mesh.flipSided = true;
             //flip every vertex normal in mesh by multiplying normal by -1
@@ -619,6 +519,7 @@ qx.Class.define("desk.IfeContainer", {
             mesh.geometry.attributes.normal.needsUpdate = true; // required after the first render
             mesh.geometry.normalsNeedUpdate = true;
             
+            console.log(mesh);
             this.__meshViewer.addMesh( mesh );
             this.__mesh3DModel = mesh;
             this.resetMeshView();
@@ -635,7 +536,7 @@ qx.Class.define("desk.IfeContainer", {
             }
         },
 
-        createCollapseButton: function(target) {
+        createCollapseButton: function() {
             var button = new qx.ui.basic.Image("resource/ife/left.png");
             button.set({
                 width: 16,
@@ -645,8 +546,9 @@ qx.Class.define("desk.IfeContainer", {
             layout.setAlignY("middle");
             var container = new qx.ui.container.Composite(layout);
             container.add(button);
-
+            var that = this;
             button.addListener("click", function() {
+                target = that.getChildren()[0];
                 if (target.isVisible()) {
                     target.exclude();
                     button.setSource("resource/ife/right.png");
@@ -670,7 +572,7 @@ qx.Class.define("desk.IfeContainer", {
 
             var MPR = new desk.MPRContainer(null, options);
 
-            var meshViewer = this.__meshViewer = new desk.SceneContainer({noOpts:true, sliceOnWheel:false, maxZoom:2000, minZoom:30});
+            var meshViewer = this.__meshViewer = new desk.SceneContainer({noOpts:true, sliceOnWheel:false, maxZoom:2000, minZoom:30, cameraFov : 35});
             
             var button = new qx.ui.form.Button("R").set({opacity : 0.5, width : 30});
       		  meshViewer.add (button, {right : 0, bottom : 0});
@@ -693,12 +595,125 @@ qx.Class.define("desk.IfeContainer", {
         },
 
         unlink : function () {
-				this.__MPR.__viewers.forEach (function (viewer) {
-					viewer.unlink();
-				});
-
-				this.__meshViewer.unlink();
+            this.__MPR.__viewers.forEach (function (viewer) {
+			    viewer.unlink();
+			});
+			this.__meshViewer.unlink();
         },
+
+               
+        createSubMenuButtons: function() {
+            var that = this;
+
+            var layout = new qx.ui.layout.VBox();
+            var container = new qx.ui.container.Composite(layout);
+            
+            layout.setSpacing(10);
+            container.setPadding(10);
+            container.setPaddingRight(0);
+            
+
+            /* Button Open Anat */
+            
+            var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une image anatomique"), 'resource/ife/open_A_small.png');
+            
+            buttonOpenAnat.getChildControl("label").setAllowGrowX(true);
+            buttonOpenAnat.getChildControl("label").setTextAlign("left");
+            
+            buttonOpenAnat.addListener("execute", this.addAnatFile.bind(this));
+            
+            container.add(buttonOpenAnat);
+        
+            var buttonOpenFunc = this.__buttonOpenFunc = new qx.ui.form.Button(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/open_F_small.png');
+            
+            
+            buttonOpenFunc.getChildControl("label").setAllowGrowX(true);
+            buttonOpenFunc.getChildControl("label").setTextAlign("left");
+
+            buttonOpenFunc.addListener("execute", this.addFuncFile.bind(this));
+
+            container.add(buttonOpenFunc);
+
+            var buttonOpen3Dmodel = this.__buttonOpen3Dmodel = new com.zenesis.qx.upload.UploadButton(this.tr("Ouvrir un modèle 3D"), 'resource/ife/open_3D_small.png');
+
+            /* Button Close all */
+            var buttonCloseAll = this.__buttonCloseAll = new qx.ui.form.Button(this.tr("Tout fermer"), 'resource/ife/close_small.png');
+            buttonCloseAll.getChildControl("label").setAllowGrowX(true);
+            buttonCloseAll.getChildControl("label").setTextAlign("left");
+            buttonCloseAll.addListener("execute", this.removeAll.bind(this));
+            buttonCloseAll.setEnabled(false);
+            container.add(buttonCloseAll);
+
+            /* Button compare */
+            if (that.__sideViewer) {
+                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"));
+
+                buttonCompare.addListener("execute", function () {
+                    if (that.__sideViewer.isVisible()) {
+                        that.__sideViewer.exclude();
+                        buttonCompare.setLabel(that.tr("Comparer deux IRM"));
+                        //that.unlink();
+                        
+                        that.switchMenu(true);
+                        that.__sideViewer.switchMenu(true);
+                        
+                    } else {
+                        that.__sideViewer.show();
+                        buttonCompare.setLabel(that.tr("Fermer la comparaison"));
+                        //that.link(that.__sideViewer);
+                        
+                        that.switchMenu(false);
+                        that.__sideViewer.switchMenu(false);
+                        
+                    }
+                });
+
+                container.add(buttonCompare);
+            }
+            
+            return container;
+            
+        },
+        
+        switchMenu : function (vertical) {
+            console.warn("vertical", vertical);
+            var layout = vertical ? new qx.ui.layout.HBox() : new qx.ui.layout.VBox();
+            this.setLayout(layout);
+            
+            this.remove(this.__menu);
+            
+            if (!vertical) this.remove(this.__collapseButton); //remove collapse
+                
+                
+            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox());
+            
+            menu.add(new qx.ui.core.Spacer(), {flex: 1});
+            menu.add(this.__subMenuButtons);
+            
+            var target;
+            if (vertical) {
+                target = menu;
+            }
+            else {
+                target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+            
+            }
+
+            target.add(this.__subMenuAnat);
+            target.add(this.__subMenuFunc);
+
+            menu.add(new qx.ui.core.Spacer(), {flex: 1});
+            
+            if (target !== menu) menu.add(target);
+            
+            menu.add(new qx.ui.core.Spacer(), {flex: 1});
+            
+            this.addAt(menu, vertical?0:1);
+            
+            if (vertical) this.addAt(this.__collapseButton, 1);
+            
+        },
+
 
         createSubMenuAnat: function() {
             var that = this;
