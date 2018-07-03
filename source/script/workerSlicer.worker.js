@@ -51925,6 +51925,23 @@ PapayaSlicer.prototype.initProperties = function() {
 
 }
 
+
+papaya.volume.VoxelValue.prototype.getVoxelFast = function (ctrX, ctrY, ctrZ) {
+        var offset = this.orientation.convertIndexToOffset(ctrX, ctrY, ctrZ);
+        
+        if (this.usesGlobalDataScale) {
+            value = (this.checkSwap(this.imageData.data[offset]) * this.globalDataScaleSlope) +
+                this.globalDataScaleIntercept;
+        } else {
+            dataScaleIndex = parseInt(offset / this.sliceSize);
+            value = (this.checkSwap(this.imageData.data[offset]) * this.dataScaleSlopes[dataScaleIndex]) +
+                this.dataScaleIntercepts[dataScaleIndex];
+        }
+        
+        return value;
+}
+
+
 PapayaSlicer.prototype.generateSlice = function(data, callback) {
 
   var slice = data[0];
@@ -51966,35 +51983,43 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
 			yLim = zDim;
 	}
 
-	var imageData = new ImageData(xLim, yLim);
+	//var imageData = new ImageData(xLim, yLim);
+	var imageData = {width: xLim, height : yLim};
+
 	imageFloat32Array = new Float32Array(xLim*yLim);
+	
+	var voxelValue = vol.transform.voxelValue;
+	
+	
+	//console.log(voxelValue.usesGlobalDataScale);
 
 	for (var ctrY = 0; ctrY < yLim; ctrY += 1) {
 		for (var ctrX = 0; ctrX < xLim; ctrX += 1) {
 				//var index3d;
 				if (dir === DIRECTION_AXIAL) {
-						//index3d = ctrX + (ctrY * xDim) + (slice * yDim * xDim);
-
-						value = vol.getVoxelAtIndex(ctrX, yDim-ctrY - 1,  zDim - slice - 1, timepoint, true);
+						//value = voxelValue.getVoxelAtIndex(ctrX, yDim-ctrY - 1,  zDim - slice - 1, timepoint, true);
+						
+						value = voxelValue.getVoxelFast(ctrX, yDim-ctrY - 1,  zDim - slice - 1);
 
 				} else if (dir === DIRECTION_CORONAL) { //Sagittal
-						//index3d = ctrX + (slice * xDim) + (ctrY * yDim * xDim);
-						//value = vol.getVoxelAtIndex(xDim-1-slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
-						value = vol.getVoxelAtIndex(slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
+						//value = voxelValue.getVoxelAtIndex(slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
+						
+						value = voxelValue.getVoxelFast(slice, yDim-ctrY - 1, zDim-ctrX - 1);
 
 				} else if (dir === DIRECTION_SAGITTAL) { //Coronal
-						//index3d = slice + (ctrX * xDim) + (ctrY * yDim * xDim);
-            value = vol.getVoxelAtIndex(ctrX, yDim-slice-1, zDim-ctrY - 1, timepoint, true);
+            //value = voxelValue.getVoxelAtIndex(ctrX, yDim-slice-1, zDim-ctrY - 1, timepoint, true);
+            
+            value = voxelValue.getVoxelFast(ctrX, yDim-slice-1, zDim-ctrY - 1);
 
 				}
-
+        /*
 				index = ((ctrY * xLim) + ctrX) * 4;
 				view.setFloat32(0, value);
 				imageData.data[index]   = view.getUint8(0);
 				imageData.data[index+1] = view.getUint8(1);
 				imageData.data[index+2] = view.getUint8(2);
 				imageData.data[index+3] = view.getUint8(3);
-				
+				*/
 				imageFloat32Array[(ctrY * xLim) + ctrX] = value;
 
 

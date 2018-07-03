@@ -64,6 +64,9 @@ qx.Class.define("desk.IfeContainer", {
         __IRMAnatName : null,
         __IRMFuncName : null,
         
+        __funcButtonMeta : null,
+        __anatButtonMeta : null,
+        
         __contrastSlider : null,
         __brightnessSlider : null,
 
@@ -83,7 +86,7 @@ qx.Class.define("desk.IfeContainer", {
         createUI: function() {
             var menu = this.__menu = this.createMenu();
             this.add(menu, {
-                flex: 0
+                flex:0
             });
             
             this.__collapseButton = this.createCollapseButton();
@@ -137,10 +140,13 @@ qx.Class.define("desk.IfeContainer", {
         },
 
 
-        alert : function (message) {
+        alert : function (message, title) {
             // create the window instance
             var root = qx.core.Init.getApplication().getRoot();
-            var win = new qx.ui.window.Window( this.tr("Erreur : type de fichier") );
+            
+            if (title === undefined) title = this.tr("Erreur : type de fichier");
+            
+            var win = new qx.ui.window.Window( title );
             win.setLayout(new qx.ui.layout.VBox(10));
 
             win.set({
@@ -156,8 +162,12 @@ qx.Class.define("desk.IfeContainer", {
                 allowMinimize : false
             });
 
+            var label = new qx.ui.basic.Label(message);
+
+            label.set({rich: true, wrap : true});
+
             // label to show the e.g. the alert message
-            win.add(new qx.ui.basic.Label(message));
+            win.add(label);
 
             // "ok" button to close the window
             var alertBtn = new qx.ui.form.Button("OK");
@@ -238,6 +248,9 @@ qx.Class.define("desk.IfeContainer", {
             });
             
             //var name = file.getBrowserObject().name;
+            
+            if (!filesList || !filesList.length) return;
+            
             var name = require("path").basename(filesList[0]);
             
             console.log(filesList);
@@ -261,15 +274,66 @@ qx.Class.define("desk.IfeContainer", {
                 that.__buttonOpenAnat.setEnabled(false);
             }, 1);
 
-            this.__MPR.addVolume(filesList[0]/*file.getBrowserObject()*/, {
+            this.__MPR.addVolume(filesList[0], {
                 workerSlicer: true,
                 noworker: true
             }, function(err, volume) {
+            
+                var slicer = volume.getUserData("workerSlicer").slicer;
+                var prop = volume.getUserData("workerSlicer").properties;
+                console.log(prop);
+                var dir = 0;
+                var slice = 0;
+                
+                
+                var t0 = performance.now();
+
+            
+              function profiling(dir) {
+                slicer.generateSlice([slice, dir], function () {
+                  slice++;
+                  //console.log(slice);
+                  if (slice < prop.dimensions[dir])
+                    profiling(dir, slice);
+                  else {
+                    var t1 = performance.now() - t0;
+                    slice = 0;
+                    t0 = performance.now();
+                    console.log("PERFORMANCE " + dir + " (ns) : ", 1000*1000*t1/prop.dimensions[dir]/ prop.dimensions[(dir+1)%3]/ prop.dimensions[(dir+2)%3]);
+                    
+                    console.log("PERFORMANCE " + dir + " (ms) : ", t1/prop.dimensions[dir]);
+                    if (dir < 2) profiling(dir+1);
+                  }
+                    
+                });
+              }
+              /*
+              setTimeout(function () {
+                profiling(0)
+              }, 5000);
+              */
+            
+            
+            
+            
                 that.__volumeAnat = volume;
+                volume.setUserData("path", filesList[0]);
+                
+                that.__anatButtonMeta.exclude();
+                that.loadMeta(volume, function (err, meta) {
+                  if (err === null) { //show info button
+                    that.__anatButtonMeta.show();
+                  }
+                  else { //show info button
+                    that.__anatButtonMeta.exclude();
+                  }
+                }); 
+                
+                
                 var volSlice = that.__MPR.getVolumeSlices(volume);
                 var meshes = that.__meshViewer.attachVolumeSlices(volSlice);
 
-                that.__IRMAnatName.setValue("<b>" + that.tr("IRM anatomique") + " : </b>" + name);
+                that.__IRMAnatName.setValue(name);
                 that.__buttonOpenFunc.setEnabled(true);
                 that.__buttonOpen3Dmodel.setEnabled(true);
                 that.__buttonOpenAnat.setEnabled(true);
@@ -363,6 +427,8 @@ qx.Class.define("desk.IfeContainer", {
               properties: ['openFile']
             });
             
+            if (!filesList || !filesList.length) return;
+            
             //var name = file.getBrowserObject().name;
             var name = require("path").basename(filesList[0]);
             
@@ -398,8 +464,20 @@ qx.Class.define("desk.IfeContainer", {
             }, function(err, volume) {
                 var prop = volume.getUserData("workerSlicer").properties;
                 that.__volumeFunc = volume;
+                volume.setUserData("path", filesList[0]);
+                
+                that.__funcButtonMeta.exclude();
+                that.loadMeta(volume, function (err, meta) {
+                  if (err === null) { //show info button
+                    that.__funcButtonMeta.show();
+                  }
+                  else { //show info button
+                    that.__funcButtonMeta.exclude();
+                  }
+                }); 
+                
                 that.__meshesFunc = that.__meshViewer.attachVolumeSlices(that.__MPR.getVolumeSlices(volume));
-                that.__IRMFuncName.setValue("<b>" + that.tr("IRM fonctionnelle") + " : </b>" + name);
+                that.__IRMFuncName.setValue(name);
                 that.__buttonOpenFunc.setEnabled(true);
                 that.__buttonOpen3Dmodel.setEnabled(true);
                 that.__buttonOpenAnat.setEnabled(true);
@@ -696,7 +774,6 @@ qx.Class.define("desk.IfeContainer", {
             }
             else {
                 target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
-            
             }
 
             target.add(this.__subMenuAnat);
@@ -721,17 +798,35 @@ qx.Class.define("desk.IfeContainer", {
             var layout = new qx.ui.layout.VBox();
             var container = new qx.ui.container.Composite(layout);
             
+            var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+            
+                titleContainer.add(new qx.ui.basic.Label().set({
+                    value: "<b>" + this.tr("Image anatomique") + " : </b>",
+                    rich: true
+                }));
+                
+                titleContainer.add(new qx.ui.core.Spacer(), {flex: 1});
+                
+                
+                var button_meta = this.__anatButtonMeta = new qx.ui.form.Button(null, 'resource/ife/info_small.png').set({
+                    decorator: null
+                });
+                titleContainer.add(button_meta);
+                button_meta.addListener("execute", function() {
+                    that.showMeta(that.__volumeAnat);
+                });
+                
+                
+            container.add(titleContainer);
+            
             this.__IRMAnatName = new qx.ui.basic.Label().set({
-                value: "<b>" + this.tr("IRM anatomique") + " : </b>",
                 rich: true,
-                //width : this.__widthMenu,
                 wrap : true
             });
 
             this.__IRMAnatName.setAllowGrowX(false);
 
             container.add(this.__IRMAnatName);
-
 
 
             /* Gestion du contraste */
@@ -792,25 +887,42 @@ qx.Class.define("desk.IfeContainer", {
             var layout = new qx.ui.layout.VBox();
             var container = new qx.ui.container.Composite(layout);
 
-            this.__IRMFuncName = new qx.ui.basic.Label().set({
-                value: "<b>" + this.tr("IRM fonctionnelle") + " : </b>",
-                rich: true,
-                width : this.__widthMenu,
-                wrap : true
-            })
 
-            var labelFuncContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
-            labelFuncContainer.setAllowGrowX(false);
-            container.add(labelFuncContainer);
-            labelFuncContainer.add(this.__IRMFuncName);
-            var button_close_func = new qx.ui.form.Button(null, 'resource/ife/close_small_small.png').set({
-                decorator: null
+            var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+            
+                titleContainer.add(new qx.ui.basic.Label().set({
+                    value: "<b>" + this.tr("Calque fonctionnelle") + " : </b>",
+                    rich: true
+                }));
+                
+                titleContainer.add(new qx.ui.core.Spacer(), {flex: 1});
+                
+                
+                var button_meta = this.__funcButtonMeta = new qx.ui.form.Button(null, 'resource/ife/info_small.png').set({
+                    decorator: null
+                });
+                titleContainer.add(button_meta);
+                button_meta.addListener("execute", function() {
+                    that.showMeta(that.__volumeAnat);
+                });
+                
+                var button_close = new qx.ui.form.Button(null, 'resource/ife/close_small_small.png').set({
+                    decorator: null
+                });
+                titleContainer.add(button_close);
+                button_close.addListener("execute", this.removeFunc.bind(this));
+                
+            container.add(titleContainer);
+            
+            this.__IRMFuncName = new qx.ui.basic.Label().set({
+                rich: true,
+                wrap : true
             });
-            labelFuncContainer.add(new qx.ui.core.Spacer(), {
-                flex: 1
-            });
-            labelFuncContainer.add(button_close_func);
-            button_close_func.addListener("execute", this.removeFunc.bind(this));
+
+            this.__IRMFuncName.setAllowGrowX(false);
+
+            container.add(this.__IRMFuncName);
+            
 
             var seuilLabel = new qx.ui.basic.Label(this.tr("Seuil") + " :");
             container.add(seuilLabel);
@@ -865,12 +977,41 @@ qx.Class.define("desk.IfeContainer", {
 
             return container;
         },
+        
+        showMeta : function (volume) {
+            var metadonnees = volume.getUserData("metadonnees");
+            var that = this;
+            
+            if (!metadonnees) {
+                this.alert("Métadonnées indisponibles", "Erreur");
+            }
+            
+            this.alert(metadonnees, "Métadonnées");
+        },
+        
+        loadMeta : function (volume, callback) {
+            var path = volume.getUserData("path");
+            path = path.substr(0, path.length-7) + ".xml";
+            
+            var oReq = new XMLHttpRequest();
+            oReq.onload = function (res) {
+               volume.setUserData(this.responseText);
+               callback(null, this.responseText);
+            };
+            
+            oReq.onerror = function () {
+                callback("error");
+            };
+            
+            oReq.open("get", path, true);
+            oReq.send();
+        },
 
         removeAll: function() {
             this.__MPR.removeAllVolumes();
             this.__meshViewer.removeAllMeshes();
 
-            this.__IRMAnatName.setValue("<b>" + this.tr("IRM anatomique") + " : </b>");
+            this.__IRMAnatName.setValue("");
 
             this.__buttonOpenFunc.setEnabled(false);
             this.__buttonOpen3Dmodel.setEnabled(false);

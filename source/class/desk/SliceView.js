@@ -1186,6 +1186,12 @@ qx.Class.define("desk.SliceView",
 				["Ve", "Ga", "Do", "Dr"],
 				["Av", "Ve", "Ar", "Do"],
 				["Av", "Ga", "Ar", "Dr"]][this.__orientation];
+				
+		  var name = [
+		    "Axial",
+		    "Sagittal",
+		    "Coronal"
+		  ][this.__orientation];
 
 			var directionOverlays = this.__directionOverlays = [
 				{left: "50%", top:"1%"},
@@ -1197,6 +1203,12 @@ qx.Class.define("desk.SliceView",
 				this.add(label, position);
 				return label;
 			}, this);
+
+			var nameLabel = new qx.ui.basic.Label(name);
+			nameLabel.set({font : font, opacity : 0.75,
+				textColor : this.__textColor});
+			this.add(nameLabel, {bottom :5, left :10});
+
 
 			var label = this.__sliceLabel = new qx.ui.basic.Label("0");
 			label.set({textAlign: "center", width : 30, font : font,
@@ -1218,6 +1230,10 @@ qx.Class.define("desk.SliceView",
 				var slice = this.getFirstSlice();
 				if (!slice) return;
 				this.setSlice(slice.getNumberOfSlices() - 1 - e.getData());
+			}, this);
+			
+			slider.addListener("mouseover",function(e){
+				slider.focus();
 			}, this);
 			
 			slider.addListener('mousewheel', function(e) { e.stopPropagation()});

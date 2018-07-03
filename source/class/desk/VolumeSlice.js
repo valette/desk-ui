@@ -188,33 +188,8 @@ qx.Class.define("desk.VolumeSlice",
 			"uniform float thresholdMax;",
 			"varying vec2 vUv;",
 
-			"highp float decode32(highp vec4 rgba) {",
-			"    highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;",
-			"    highp float Exponent = 2.0 * mod(rgba[0],128.0) + step(128.0,rgba[1]) - 127.0; ",
-			"    highp float Mantissa = mod(rgba[1],128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + float(0x800000);",
-			"    highp float Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 )); ",
-			"    return Result;",
-			"}",
-			
-
 			"void main() {",
-				//"vec4 rawData = texture2D( texture, vUv );",
-				//"vec4 rawBytes = floor(rawData*vec4(255.0)+vec4(0.5));",
-
-				//"float value = decode32(rawBytes);",
 				"float value = texture2D( texture, vUv );",
-
-				//"float correctedValue = value * contrast + brightness;",
-				//"vec4 correctedColor = vec4(correctedValue);",
-				//"correctedColor[3] = 1.0;",
-				//"gl_FragColor = correctedColor;",
-				//"return;",
-				/*
-				"float clampedValue=clamp(correctedValue * lutRatio/256.0, 0.0, 1.0);",
-				"vec2 colorIndex=vec2(clampedValue,0.0);",
-				"vec4 colorFromLookupTable = texture2D( lookupTable,colorIndex  );",
-				"colorFromLookupTable[3] = 1.0;",
-				"gl_FragColor=mix(correctedColor, colorFromLookupTable, useLookupTable);",*/
 				'if ( ( value > thresholdMax ) || ( value < thresholdMin ) || ( value == 0.0 ) ) {',
 						'discard;',
 				'} else {',
@@ -1110,7 +1085,7 @@ qx.Class.define("desk.VolumeSlice",
 							
 													
 							that.__waitingFromWorker = false;
-							that.__texture.image = imageData;
+							//that.__texture.image = imageData;
 							
 							var tmp = { data: imgFloatArray, width: imageData.width, height: imageData.height };
 
