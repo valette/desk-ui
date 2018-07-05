@@ -45564,7 +45564,7 @@ gifti.DataArray.prototype.getNumElements = function(dimIndex) {
     if (dimIndex === undefined) {
         dimIndex = 0;
     }
-    
+
     return parseInt(this.attributes[gifti.ATT_DIMN + dimIndex]);
 };
 
@@ -51910,25 +51910,55 @@ PapayaSlicer.prototype.initProperties = function() {
         max = Math.max(max, value);
       }
 
+
+      var numberOfScalarComponents = Math.floor(vol.imageData.data.length / vol.header.imageDimensions.dataLengths[0]);
+
+      if (numberOfScalarComponents !== 3 && numberOfScalarComponents !== 1) numberOfScalarComponents = 1;
+
+      var scalarType = this.typePapaya2vtk[vol.header.imageType.datatype];
+
+      if (scalarType == 7) { // C'est un unsigned int, il faut regarder la taille
+        switch (vol.header.imageType.numBytes) {
+          case 1 :
+            scalarType = 3;
+            break;
+          case 2 :
+            scalarType = 5;
+            break;
+
+          case 4 :
+            scalarType = 7;
+            break;
+
+        }
+
+      }
+
       var orig = vol.getOrigin();
       var properties = {
         dimensions : [vol.getXDim(), vol.getYDim(), vol.getZDim()],
         extent : [0, vol.getXDim()-1, 0, vol.getYDim()-1, 0, vol.getZDim()-1],
         origin : [orig.x, orig.y, orig.z],
         spacing : [vol.getXSize(), vol.getYSize(), vol.getZSize()],
-        scalarType : this.typePapaya2vtk[vol.header.imageType.datatype],
+        scalarType :scalarType,
         scalarTypeAsString : vol.header.imageType.getTypeDescription(),
-        scalarBounds : [min, max]
+        scalarBounds : [min, max],
+        numberOfScalarComponents : numberOfScalarComponents
       };
-      
+
+      this.properties = properties;
+
       return properties;
 
 }
 
+//No TimePoint
+//usesGlobalDataScale = false
+//forceABS = false
+// ctrX, ctrY, ctrZ : integer (no rounding performed)
+papaya.volume.VoxelValue.prototype.getVoxelFast = function (ctrX, ctrY, ctrZ, offset) {
+        offset += this.orientation.convertIndexToOffset(ctrX, ctrY, ctrZ);
 
-papaya.volume.VoxelValue.prototype.getVoxelFast = function (ctrX, ctrY, ctrZ) {
-        var offset = this.orientation.convertIndexToOffset(ctrX, ctrY, ctrZ);
-        
         if (this.usesGlobalDataScale) {
             value = (this.checkSwap(this.imageData.data[offset]) * this.globalDataScaleSlope) +
                 this.globalDataScaleIntercept;
@@ -51937,7 +51967,7 @@ papaya.volume.VoxelValue.prototype.getVoxelFast = function (ctrX, ctrY, ctrZ) {
             value = (this.checkSwap(this.imageData.data[offset]) * this.dataScaleSlopes[dataScaleIndex]) +
                 this.dataScaleIntercepts[dataScaleIndex];
         }
-        
+
         return value;
 }
 
@@ -51948,13 +51978,13 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
   var dir  = data[1];
   var uuid = data[2];
   var vol = this.vol;
-  
+
 
 
 	//Changement Papaya <-> vtk
 	//if (dir == 1) dir = 2;
 	//else if (dir == 2) dir = 1;
-	
+
 	// /!\ Saggital & Coronal sont donc inversé sur les images selon la convention
 
   var xDim = vol.getXDim();
@@ -51986,47 +52016,53 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
 	//var imageData = new ImageData(xLim, yLim);
 	var imageData = {width: xLim, height : yLim};
 
-	imageFloat32Array = new Float32Array(xLim*yLim);
-	
 	var voxelValue = vol.transform.voxelValue;
-	
-	
-	//console.log(voxelValue.usesGlobalDataScale);
 
+  var typedArray;
+  if (this.properties.numberOfScalarComponents == 3) {
+    typedArray = new Uint8Array(xLim*yLim*this.properties.numberOfScalarComponents);
+  }
+  else {
+    typedArray = new Float32Array(xLim*yLim);
+  }
+
+  var numVoxelsSeries = vol.header.imageDimensions.getNumVoxelsSeries();
+
+  var cLim = this.properties.numberOfScalarComponents*numVoxelsSeries;
 	for (var ctrY = 0; ctrY < yLim; ctrY += 1) {
 		for (var ctrX = 0; ctrX < xLim; ctrX += 1) {
-				//var index3d;
-				if (dir === DIRECTION_AXIAL) {
-						//value = voxelValue.getVoxelAtIndex(ctrX, yDim-ctrY - 1,  zDim - slice - 1, timepoint, true);
-						
-						value = voxelValue.getVoxelFast(ctrX, yDim-ctrY - 1,  zDim - slice - 1);
+    	for (var channel = 0 ; channel < this.properties.numberOfScalarComponents ; channel++) {
+				  //var index3d;
+				  if (dir === DIRECTION_AXIAL) {
+						  //value = voxelValue.getVoxelAtIndex(ctrX, yDim-ctrY - 1,  zDim - slice - 1, timepoint, true);
+						  value = voxelValue.getVoxelFast(ctrX, yDim-ctrY - 1,  zDim - slice - 1, channel*numVoxelsSeries);
+				  } else if (dir === DIRECTION_CORONAL) { //Sagittal
+						  //value = voxelValue.getVoxelAtIndex(slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
+						  value = voxelValue.getVoxelFast(slice, yDim-ctrY - 1, zDim-ctrX - 1, channel*numVoxelsSeries);
+				  } else if (dir === DIRECTION_SAGITTAL) { //Coronal
+              //value = voxelValue.getVoxelAtIndex(ctrX, yDim-slice-1, zDim-ctrY - 1, timepoint, true);
+              value = voxelValue.getVoxelFast(ctrX, yDim-slice-1, zDim-ctrY - 1, channel*numVoxelsSeries);
+				  }
 
-				} else if (dir === DIRECTION_CORONAL) { //Sagittal
-						//value = voxelValue.getVoxelAtIndex(slice, yDim-ctrY - 1, zDim-ctrX - 1, timepoint, true);
-						
-						value = voxelValue.getVoxelFast(slice, yDim-ctrY - 1, zDim-ctrX - 1);
+          /*
+				  index = ((ctrY * xLim) + ctrX) * 4;
+				  view.setFloat32(0, value);
+				  imageData.data[index]   = view.getUint8(0);
+				  imageData.data[index+1] = view.getUint8(1);
+				  imageData.data[index+2] = view.getUint8(2);
+				  imageData.data[index+3] = view.getUint8(3);
+				  */
 
-				} else if (dir === DIRECTION_SAGITTAL) { //Coronal
-            //value = voxelValue.getVoxelAtIndex(ctrX, yDim-slice-1, zDim-ctrY - 1, timepoint, true);
-            
-            value = voxelValue.getVoxelFast(ctrX, yDim-slice-1, zDim-ctrY - 1);
-
-				}
-        /*
-				index = ((ctrY * xLim) + ctrX) * 4;
-				view.setFloat32(0, value);
-				imageData.data[index]   = view.getUint8(0);
-				imageData.data[index+1] = view.getUint8(1);
-				imageData.data[index+2] = view.getUint8(2);
-				imageData.data[index+3] = view.getUint8(3);
-				*/
-				imageFloat32Array[(ctrY * xLim) + ctrX] = value;
+			    var index = (ctrY * xLim) + ctrX;
+			    index = this.properties.numberOfScalarComponents*(index) + channel;
+			    typedArray[index] = value;
 
 
+        }
 			}
 		};
 
-  callback(null, imageData, imageFloat32Array);
+  callback(null, imageData, typedArray);
 }
 
 
@@ -52049,8 +52085,6 @@ if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScop
 
 
 	self.addEventListener('message', function(e) {
-		console.log("event : ", e);
-
 	  var message = e.data[0];
 	  var data = e.data[1];
 
@@ -52066,14 +52100,12 @@ if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScop
 		});
 	  }
 	  else if (message == 'loadLocalImage') {
-		console.log("LoadLocalFile from worker");
 		obj.vol.readFiles([data], function () {
 		  var properties = obj.initProperties();
           postMessage(['imageLoaded', properties]);
 		});
 	  }
 	  else if (message == 'getSlice') {
-		//console.log("Receive getSlice", data)
 		obj.generateSlice(data, function (err, imageData) {
 			var uuid = data[2];
 			postMessage(["slice", [uuid, imageData] ], [imageData.data.buffer]);
@@ -52085,4 +52117,3 @@ if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScop
 } else {
     // In main thread !
 }
-

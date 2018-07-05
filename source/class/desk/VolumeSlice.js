@@ -172,36 +172,6 @@ qx.Class.define("desk.VolumeSlice",
 			"}"
 		].join("\n"),
 
-		FRAGMENTSHADERPASSTRHROUGH : [
-			"precision highp float;",
-			"uniform sampler2D texture;",
-			"uniform sampler2D lookupTable;",
-			"uniform float contrast;",
-			"uniform float brightness;",
-			"uniform float opacity;",
-			"uniform float imageType;",
-			"uniform float scalarMin;",
-			"uniform float scalarMax;",
-			"uniform float lutRatio;",
-			"uniform float useLookupTable;",
-			"uniform float thresholdMin;",
-			"uniform float thresholdMax;",
-			"varying vec2 vUv;",
-
-			"void main() {",
-				"float value = texture2D( texture, vUv );",
-				'if ( ( value > thresholdMax ) || ( value < thresholdMin ) || ( value == 0.0 ) ) {',
-						'discard;',
-				'} else {',
-					'float range = thresholdMax - thresholdMin;',
-					'float correctedValue = ( value - thresholdMin ) / range;',
-					'vec2 colorIndex = vec2( correctedValue, 0.0 );',
-					'gl_FragColor = texture2D( lookupTable, colorIndex  );',
-					'gl_FragColor.a = 1.0;',
-			 '}',
-			'}'
-		].join("\n"),
-
 		FRAGMENTSHADERBEGIN : [
 			"precision highp float;",
 			"uniform sampler2D texture;",
@@ -506,14 +476,14 @@ qx.Class.define("desk.VolumeSlice",
 		__updateWorkerSlicer : function (callback, context) {
 			//Todo : get Image parameters
 			var prop = this.__opts.workerSlicer.properties;
-
+      console.log("scalarType: ", prop.scalarType, prop.numberOfScalarComponents);
 			this.__dimensions = prop.dimensions;
 			this.__origin = [0, 0, 0]; //prop.origin;
 			this.__spacing = prop.spacing;
 			this.__extent = prop.extent;
 			this.__scalarTypeString = prop.scalarTypeAsString;
 			this.__scalarType = prop.scalarType;
-			this.__numberOfScalarComponents = 1;
+			this.__numberOfScalarComponents = prop.numberOfScalarComponents;
 			this.__scalarMin = prop.scalarBounds[0];
 			this.__scalarMax = prop.scalarBounds[1];
 			this.__finalizeUpdate();
@@ -736,7 +706,6 @@ qx.Class.define("desk.VolumeSlice",
 
 			material.fragmentShader += "\n" + material.baseShader.baseShaderEnd;
 
-			//material.fragmentshader = FRAGMENTSHADERPASSTRHROUGH;
 			material.needsUpdate = true;
 		},
 
@@ -778,8 +747,6 @@ qx.Class.define("desk.VolumeSlice",
 			} else {
 				shader = desk.VolumeSlice.FRAGMENTSHADERENDMULTICHANNEL;
 			}
-
-			//shader = desk.VolumeSlice.FRAGMENTSHADERPASSTRHROUGH;
 
 			//console.log("shader : ", shader);
 			var baseUniforms = {
@@ -1102,6 +1069,11 @@ qx.Class.define("desk.VolumeSlice",
 								material.uniforms.imageType.value = that.__availableImageFormat;
 							}, that);
 							that.__texture.needsUpdate = true;
+							if (that.__numberOfScalarComponents == 3) {
+							  that.__texture.format = THREE.RGBFormat;
+							  that.__texture.type = THREE.UnsignedByteType;
+							}
+							
 							if (that.__numberOfScalarComponents === 1) {
 								that.__contrastMultiplier = 1 / Math.abs(that.__scalarMax - that.__scalarMin);
 								that.__brightnessOffset = - that.__scalarMin * that.__contrastMultiplier;

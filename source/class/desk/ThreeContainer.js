@@ -7,7 +7,7 @@
  * @ignore(Uint8Array)
  * @lint ignoreDeprecated (alert)
 */
-qx.Class.define("desk.ThreeContainer", 
+qx.Class.define("desk.ThreeContainer",
 {
 	extend : qx.ui.container.Composite,
 	include : desk.LinkMixin,
@@ -43,9 +43,8 @@ qx.Class.define("desk.ThreeContainer",
 		var controls = this.__controls = new THREE.TrackballControls2(camera, canvas);
 		controls.zoomSpeed = 6;
 		scene.add(camera);
-		
+
 		if (opts.cameraFov) {
-		  console.log("CHANGE CAMERA FOV");
 		  camera.fov = opts.cameraFov;
 		}
 
@@ -364,7 +363,7 @@ qx.Class.define("desk.ThreeContainer",
 		* Returns the viewpoint
 		* @return {Object} the viewpoint
 		*/
-		getViewpoint : function () {			
+		getViewpoint : function () {
 			return {
 				controls : this.__controls.getState(),
 				camera : this.__camera,
@@ -528,5 +527,5 @@ qx.Class.define("desk.ThreeContainer",
 		__controls : null,
 		__renderer : null
 	}
-	
+
 });

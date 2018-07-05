@@ -21,7 +21,6 @@ qx.Class.define("desk.SliceView",
 		this.__slices = [];
 		this.__orientation = orientation || 0;
 		this.options = options = options || {};
-		console.log("options ", options);
 		this.__textColor = options.textColor || "yellow";
 		this.__alwaysDisplaySlider = options.alwaysDisplaySlider || false;
 		this.__zoomOnWheel = options.zoomOnWheel || false;
@@ -760,20 +759,20 @@ qx.Class.define("desk.SliceView",
 				this.rotate(1);
 				this.flip(0);//
 			}
-			
+
 			//this.flip(0);
-			
-		
+
+
 			//if (this.__orientation == 0) this.flip(1);
-			
+
 
 			this.__position[0] = undefined; // to force cross position update
-			
+
 			//Set at the middle
 			this.setCrossPosition(slice.getDimensions().map(function (dim) {
 				return dim === 1 ? 0 : Math.round(dim / 2);
 			}));
-			
+
 		},
 
 		/** adds a volume to the view
@@ -1186,7 +1185,7 @@ qx.Class.define("desk.SliceView",
 				["Ve", "Ga", "Do", "Dr"],
 				["Av", "Ve", "Ar", "Do"],
 				["Av", "Ga", "Ar", "Dr"]][this.__orientation];
-				
+
 		  var name = [
 		    "Axial",
 		    "Sagittal",
@@ -1231,20 +1230,18 @@ qx.Class.define("desk.SliceView",
 				if (!slice) return;
 				this.setSlice(slice.getNumberOfSlices() - 1 - e.getData());
 			}, this);
-			
+
 			slider.addListener("mouseover",function(e){
 				slider.focus();
 			}, this);
-			
+
 			slider.addListener('mousewheel', function(e) { e.stopPropagation()});
-			
-			console.log(this.getControls());
-			
+
 			if (this.options.maxZoom)
 			  this.getControls().setMaxZoom(this.options.maxZoom)
 			if (this.options.minZoom)
 			  this.getControls().setMinZoom(this.options.minZoom)
-			  
+
 			this.addListener("keypress", function (evt) {
 			  var delta = 0;
         if (evt.getKeyIdentifier() == "Down") {
@@ -1252,9 +1249,9 @@ qx.Class.define("desk.SliceView",
         } else if (evt.getKeyIdentifier() == "Up") {
           delta = 1;
         }
-        else 
+        else
           return;
-        
+
           var slice = this.getFirstSlice();
           if (!slice) return;
           this.setSlice(slice.getNumberOfSlices()+delta);
@@ -1292,7 +1289,7 @@ qx.Class.define("desk.SliceView",
 			}
 
 			var value = slice.getNumberOfSlices() - 1 - sliceId;
-			
+
 			this.__sliceLabel.setValue(value + "");
 
 			this.__slider.setValue(Math.max(this.__slider.getMinimum(),

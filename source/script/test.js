@@ -25,30 +25,11 @@ window.setTimeout(function () {
 
 
         // label to show the e.g. the alert message
-
         win.add(new qx.ui.basic.Label(qxRoot.tr("WebGL n'est pas supporté par votre système.")));
-
-
         root.add(win);
-
-
         win.open();
         return;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     var container = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
