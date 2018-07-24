@@ -94,7 +94,7 @@ qx.Class.define("desk.Actions",
 		}
 
 		if (!this.__engine) {
-			desk.FileSystem.readFile(this.__savedActionsFile,
+			desk.FileSystem.readFile(this.__savedActionFile,
 				function (err, result) {
 					if (err) {
 						console.log("Error while reading actions cache");
@@ -241,7 +241,7 @@ qx.Class.define("desk.Actions",
 		__settings : null,
 		__ongoingActions : null,
 		__recordedActions : null,
-		__savedActionsFile : 'cache/responses.json',
+		__savedActionFile : 'cache/responses.json',
 		__firstReadFile : null,
 		__settingsButton : null,
 		__engine : false,
@@ -431,7 +431,8 @@ qx.Class.define("desk.Actions",
 					files : recordedFiles
 				};
 				this.__recordedActions = null;
-				desk.FileSystem.writeFile(this.__savedActionsFile,
+				this.debug( 'saving action list to ' + this.__savedActionFile );
+				desk.FileSystem.writeFile(this.__savedActionFile,
 					JSON.stringify(records), function () {
 						alert(Object.keys(records.actions).length + " actions recorded\n"
 							+ Object.keys(records.files).length + " files recorded");
@@ -851,7 +852,7 @@ qx.Class.define("desk.Actions",
 			}
 			log.clear();
 			var content;
-			desk.FileSystem.readFile(this.__savedActionsFile, function (err, res) {
+			desk.FileSystem.readFile(this.__savedActionFile, function (err, res) {
 				content = JSON.parse(res) ;
 				if (err) content = {files : {} ,actions : {}};
 				var actions = content.actions;
@@ -894,17 +895,17 @@ qx.Class.define("desk.Actions",
 				log.log("Actions to copy : ");
 
 				Object.keys(actions).forEach(function (hash) {
-					log.log(actions[hash].outputDirectory, "blue");
+					log.log(actions[hash].outputDirectory + '\n', "blue");
 				});
 				if (Object.keys(actions).length === 0) {
-					log.log("none");
+					log.log("none\n");
 				}
 				log.log("Files to copy : ");
 				Object.keys(files).forEach(function (hash) {
-					log.log(files[hash]);
+					log.log(files[hash] + '\n');
 				});
 				if (Object.keys(files).length === 0) {
-					log.log("none");
+					log.log("none\n");
 				}
 			});
 		},
@@ -1016,7 +1017,7 @@ qx.Class.define("desk.Actions",
 					self.debug("copying recorded actions");
 					desk.Actions.execute({
 						action : "copy",
-						source : self.__savedActionsFile,
+						source : self.__savedActionFile,
 						destination : installDir + "/cache"
 					}, callback);
 				},
