@@ -24,7 +24,7 @@ DESK can also help to generate static content suited to release on the web. An e
 
 a live demo is visible here: [https://desk.creatis.insa-lyon.fr/demo/](https://desk.creatis.insa-lyon.fr/demo/)
 
-more infos? Click here [http://www.creatis.insa-lyon.fr/site7/fr/desk](http://www.creatis.insa-lyon.fr/site7/fr/desk)
+more infos? Click here [http://www.creatis.insa-lyon.fr/~valette/desk.html](http://www.creatis.insa-lyon.fr/~valette/desk.html)
 
 ### Dependencies ###
 To build desk-ui on your computer, you need:

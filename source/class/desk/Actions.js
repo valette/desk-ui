@@ -94,7 +94,7 @@ qx.Class.define("desk.Actions",
 		}
 
 		if (!this.__engine) {
-			desk.FileSystem.readFile(this.__savedActionsFile,
+			desk.FileSystem.readFile(this.__savedActionFile,
 				function (err, result) {
 					if (err) {
 						console.log("Error while reading actions cache");
@@ -241,7 +241,7 @@ qx.Class.define("desk.Actions",
 		__settings : null,
 		__ongoingActions : null,
 		__recordedActions : null,
-		__savedActionsFile : 'cache/responses.json',
+		__savedActionFile : 'cache/responses.json',
 		__firstReadFile : null,
 		__settingsButton : null,
 		__engine : false,
@@ -324,11 +324,12 @@ qx.Class.define("desk.Actions",
 			menu.add(new qx.ui.menu.Button("dev", null, null, devMenu));
 
 			var links = {
-				'API documentation' : desk.FileSystem.getFileURL('ui/api'),
-				'Debug mode' : desk.FileSystem.getFileURL('ui/source'),
-				'Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
-				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser',
-				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master'
+				'THREE.js API' : 'https://threejs.org/docs/',
+				'desk-ui API' : desk.FileSystem.getFileURL('ui/api'),
+				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/source'),
+				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master',
+				'Qooxdoo Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
+				'Qooxdoo Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
 			};
 
 			Object.keys( links ).forEach( function (key) {
@@ -430,7 +431,8 @@ qx.Class.define("desk.Actions",
 					files : recordedFiles
 				};
 				this.__recordedActions = null;
-				desk.FileSystem.writeFile(this.__savedActionsFile,
+				this.debug( 'saving action list to ' + this.__savedActionFile );
+				desk.FileSystem.writeFile(this.__savedActionFile,
 					JSON.stringify(records), function () {
 						alert(Object.keys(records.actions).length + " actions recorded\n"
 							+ Object.keys(records.files).length + " files recorded");
@@ -495,7 +497,8 @@ qx.Class.define("desk.Actions",
 			button.setToolTipText("To display server logs");
 			button.addListener('execute', function () {
 				function displayLog(data) {
-					log.log(data, 'yellow');
+					if ( typeof data === "object" ) data = JSON.stringify( data, null, "  " );
+					log.log( data + '\n', 'yellow');
 				}
 				var win = new qx.ui.window.Window('Server log').set(
 					{width : 600, height : 500, layout : new qx.ui.layout.HBox()});
@@ -525,7 +528,7 @@ qx.Class.define("desk.Actions",
 				var oldConsoleLog = console.log;
 				console.log = function (message) {
 					oldConsoleLog.apply(console, arguments);
-					log.log(message.toString());
+					log.log(message.toString() + '\n' );
 				};
 				var win = new qx.ui.window.Window('Console log').set(
 					{width : 600, height : 300, layout : new qx.ui.layout.HBox()});
@@ -621,25 +624,27 @@ qx.Class.define("desk.Actions",
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
-			if ( res.error && !res.killed ) {
+			if ( params.POST.manage ) {
+
+				delete this.__runingActions[ res.handle ];
+
+			} else if ( res.error  ) {
+
+				console.log( "Error : ", res );
+				params.error = res.error;
 				var item = params.item;
-				if (!item) {
-					this.__addActionToList(params);
-					item = params.item;
-				}
-				item.setDecorator("tooltip-error");
-				console.warn("Error : ");
-				console.warn(res);
+				if ( item ) item.setDecorator("tooltip-error")
+
 			} else {
+
 				delete this.__runingActions[res.handle];
 				params.actionFinished = true;
-				if (params.item) {
-					this.__garbageContainer.add(params.item);
-				}
+				if (params.item) this.__garbageContainer.add(params.item);
+
 			}
 
 			if (params.callback) {
-				params.callback.call(params.context, res.error, res);
+				params.callback.call(params.context, res.killed || res.error, res);
 			}
 		},
 
@@ -706,7 +711,7 @@ qx.Class.define("desk.Actions",
 					desk.Actions.execute( { manage : 'list'}, function (err, res) {
 						Object.keys(res.ongoingActions).forEach( function ( handle2 ) {
 							if ( handle !== handle2 ) return;
-							new desk.FileTail( res.ongoingActions[handle].RPC.outputDirectory + "action.log" );
+							new desk.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
 						});
 					} );
 				} );
@@ -723,10 +728,18 @@ qx.Class.define("desk.Actions",
 				item.setLabel( "Reconnecting to server ..." );
 				this.__socket.connect();
 			}
-			item.set({decorator : "button-hover", opacity : 0.7});
+
+			item.set( {
+
+				opacity : 0.7,
+				decorator : params.error ? "tooltip-error" : "button-hover"
+
+			} );
+
 			params.item = item;
 			item.setUserData("params", params);
 			this.__ongoingActions.add(item);
+			return item;
 		},
 
 		/**
@@ -839,7 +852,7 @@ qx.Class.define("desk.Actions",
 			}
 			log.clear();
 			var content;
-			desk.FileSystem.readFile(this.__savedActionsFile, function (err, res) {
+			desk.FileSystem.readFile(this.__savedActionFile, function (err, res) {
 				content = JSON.parse(res) ;
 				if (err) content = {files : {} ,actions : {}};
 				var actions = content.actions;
@@ -882,17 +895,17 @@ qx.Class.define("desk.Actions",
 				log.log("Actions to copy : ");
 
 				Object.keys(actions).forEach(function (hash) {
-					log.log(actions[hash].outputDirectory, "blue");
+					log.log(actions[hash].outputDirectory + '\n', "blue");
 				});
 				if (Object.keys(actions).length === 0) {
-					log.log("none");
+					log.log("none\n");
 				}
 				log.log("Files to copy : ");
 				Object.keys(files).forEach(function (hash) {
-					log.log(files[hash]);
+					log.log(files[hash] + '\n');
 				});
 				if (Object.keys(files).length === 0) {
-					log.log("none");
+					log.log("none\n");
 				}
 			});
 		},
@@ -1004,7 +1017,7 @@ qx.Class.define("desk.Actions",
 					self.debug("copying recorded actions");
 					desk.Actions.execute({
 						action : "copy",
-						source : self.__savedActionsFile,
+						source : self.__savedActionFile,
 						destination : installDir + "/cache"
 					}, callback);
 				},

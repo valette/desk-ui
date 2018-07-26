@@ -266,6 +266,7 @@ qx.Class.define("desk.SceneContainer",
 			if (opt.updateCamera !== false) {
 				this.viewAll();
 			}
+			this.render();
 		},
 
 		/**
@@ -433,8 +434,9 @@ qx.Class.define("desk.SceneContainer",
 				this.__readFile(path + xmlName, meshParameters,
 					function () {callback();});
 			}.bind(this), function () {
+				this.viewAllSync();
 				callback(object);
-			});
+			}.bind(this));
 		},
 
 		/**

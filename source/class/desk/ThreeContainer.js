@@ -66,7 +66,10 @@ qx.Class.define("desk.ThreeContainer",
 		this.__resizeThreeCanvas();
 		this.__setupFullscreen();
 
-		this.viewAll = _.debounce( this.viewAll, 20 );
+		this.viewAllSync = this.viewAll;
+		this.viewAll = _.debounce( this.viewAll, 20, { leading : true } );
+
+		this.tempVector3 = new THREE.Vector3();
 	},
 
 	destruct : function(){
@@ -238,6 +241,7 @@ qx.Class.define("desk.ThreeContainer",
 		 * @param thetaZ {Number} : angle on the Z axis
 		 */
 		rotateView : function ( thetaX, thetaY, thetaZ ) {
+			this.viewAll.flush();
 			var controls = this.getControls();
 			var backup = controls.enabled;
 			controls.enabled = true;
@@ -390,7 +394,10 @@ qx.Class.define("desk.ThreeContainer",
 		resetView : function () {
 			this.__boudingBoxDiagonalLength = 0;
 			this.viewAll();
+			this.viewAll.flush();
 		},
+
+		tempVector3 : null,
 
 		/**
 		* Sets the camera to view all objects in the scene
@@ -398,22 +405,22 @@ qx.Class.define("desk.ThreeContainer",
 		viewAll : function () {
 			var bbox = new THREE.Box3().setFromObject( this.__scene );
 
-			if (bbox.isEmpty()) {
+			if ( bbox.isEmpty() ) {
 				return;
 			}
 
-			var bbdl = bbox.getSize().length();
+			var bbdl = bbox.getSize( this.tempVector3 ).length();
 			var camera = this.__camera;
 			var controls = this.__controls;
 
 			if (this.__boudingBoxDiagonalLength === 0) {
-				var center = bbox.getCenter();
+				var center = bbox.getCenter( this.tempVector3 );
 				this.__boudingBoxDiagonalLength = bbdl;
-				camera.position.copy(center);
+				camera.position.copy( center );
 				camera.position.sub(
 					this.__initialCameraFront.clone().multiplyScalar( bbdl ) );
 				camera.up.copy( this.__initialCameraUp );
-				controls.target.copy(center);
+				controls.target.copy( center );
 			} else {
 				var ratio = bbdl / this.__boudingBoxDiagonalLength;
 				this.__boudingBoxDiagonalLength = bbdl;
