@@ -362,7 +362,7 @@ qx.Class.define("desk.FileSystem",
 		/**
 		* tests whether a file (or directory) exists or not
 		* @param path {String} the path to test
-		* @param callback {Function} callback with boolean as parameter when done
+		* @param callback {Function} callback with error and boolean as parameter when done
 		* @param context {Object} optional context for the callback
 		*/
 		exists : function (path, callback, context) {
@@ -371,7 +371,7 @@ qx.Class.define("desk.FileSystem",
 				path : path,
 				stdout : true
 			}, function (err, message) {
-				callback.call(context, null, JSON.parse(message.stdout));
+				callback.call(context, err, JSON.parse(message.stdout));
 			});
 			return;
 		},
