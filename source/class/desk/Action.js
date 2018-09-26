@@ -136,7 +136,7 @@ qx.Class.define("desk.Action",
 				return;
 			}
 			var jsonFile = this.getOutputDirectory() + 'action.json';
-			desk.FileSystem.exists(jsonFile, function (exists) {
+			desk.FileSystem.exists(jsonFile, function (err, exists) {
 				if (!exists) return;
 				desk.FileSystem.readFile(jsonFile,
 					function(err, result) {
