@@ -314,7 +314,7 @@ qx.Class.define("desk.SliceView",
 		 * @param slices {Array} array of slices to remove
 		*/
 		removeVolumes : function (slices) {
-			slices.forEach(this.removeVolume, this);
+			if (slices) slices.forEach(this.removeVolume, this);
 		},
 
 		__reorientationContainer : null,
