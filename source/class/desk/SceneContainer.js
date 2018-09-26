@@ -622,11 +622,11 @@ qx.Class.define("desk.SceneContainer",
 		__addDropSupport : function () {
 			this.setDroppable(true);
 			this.addListener("drop", function(e) {
-				if (e.supportsType("fileBrowser")) {
+				if (e.supportsType("volumeSlices")) {
+					this.attachVolumeSlices(e.getData("volumeSlices"));
+				} else if (e.supportsType("fileBrowser")) {
 					e.getData("fileBrowser").getSelectedFiles().
 						forEach(function (file) {this.addFile(file);}, this);
-				} else if (e.supportsType("volumeSlices")) {
-					this.attachVolumeSlices(e.getData("volumeSlices"));
 				}
 			}, this);
 			this.addListener('appear', function() {
