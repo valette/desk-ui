@@ -637,15 +637,14 @@ qx.Class.define("desk.MPRContainer",
 
       if (options.workerSlicer) {
         var worker;
-        
+
         var slicerOpts = {
           onprogress : function (text) {
             //$('#progress').text(text);
             //console.log(text);
           },
           onload : function (properties) {
-            console.log("Load finished !");
-            console.log("properties : ", properties);
+            console.log("Load finished ! properties : ", properties);
             addVolumeToViewers(worker);
           },
           local: fileObject.constructor == File || typeof fileObject == "string" ,

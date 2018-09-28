@@ -93,7 +93,7 @@ qx.Class.define("desk.VolumeSlice",
 
 		var filter = opts.linearFilter ? THREE.LinearFilter : THREE.NearestFilter;
 
-    
+
 		this.__texture = new THREE.DataTexture();
 
 		this.__texture.onUpdate = function () {
@@ -112,7 +112,7 @@ qx.Class.define("desk.VolumeSlice",
 		this.__texture.type = THREE.FloatType;
 	  this.__texture.format = THREE.LuminanceFormat;
 	  this.__texture.flipY = true;
-	
+
 	  this.__lookupTable.generateMipmaps = false;
 		this.__lookupTable.magFilter = this.__lookupTable.minFilter = THREE.NearestFilter;
 
@@ -231,7 +231,7 @@ qx.Class.define("desk.VolumeSlice",
 			//"float Exponent = 2.0 * mod(rawBytes[3],128.0) + step(128.0,rawBytes[2]) - 127.0;",
 			//"float Mantissa = mod(rawBytes[2],128.0)*65536.0 + rawBytes[1]*256.0 +rawBytes[0]+ 8388608.0;",
 			//"float value = Sign * Mantissa * pow(2.0,Exponent - 23.0);"
-			
+
 			//"float value = decode32(rawBytes);"
 			"vec4 rawFloats = texture2D( texture, vUv );",
 			"float value = rawFloats.x;"
@@ -476,7 +476,7 @@ qx.Class.define("desk.VolumeSlice",
 		__updateWorkerSlicer : function (callback, context) {
 			//Todo : get Image parameters
 			var prop = this.__opts.workerSlicer.properties;
-      console.log("scalarType: ", prop.scalarType, prop.numberOfScalarComponents);
+
 			this.__dimensions = prop.dimensions;
 			this.__origin = [0, 0, 0]; //prop.origin;
 			this.__spacing = prop.spacing;
@@ -492,7 +492,7 @@ qx.Class.define("desk.VolumeSlice",
 			}, 0);
 			return;
 		},
-		
+
 		setWorker : function (worker) {
 		  this.__worker = worker;
 		},
@@ -1049,22 +1049,22 @@ qx.Class.define("desk.VolumeSlice",
 							if (err) {
 								console.warn(err);
 							}
-							
-													
+
+
 							that.__waitingFromWorker = false;
 							//that.__texture.image = imageData;
-							
+
 							var tmp = { data: imgFloatArray, width: imageData.width, height: imageData.height };
 
-             
-              
+
+
               if (typeof that.__opts.postProcessFunction === 'function') {
                 that.__opts.postProcessFunction(tmp, that.__worker);
               }
 
 							that.__texture.image = tmp;
 							that.__texture.unpackAlignment = 1;
-							
+
 							that.__materials.forEach(function (material) {
 								material.uniforms.imageType.value = that.__availableImageFormat;
 							}, that);
@@ -1073,7 +1073,7 @@ qx.Class.define("desk.VolumeSlice",
 							  that.__texture.format = THREE.RGBFormat;
 							  that.__texture.type = THREE.UnsignedByteType;
 							}
-							
+
 							if (that.__numberOfScalarComponents === 1) {
 								that.__contrastMultiplier = 1 / Math.abs(that.__scalarMax - that.__scalarMin);
 								that.__brightnessOffset = - that.__scalarMin * that.__contrastMultiplier;

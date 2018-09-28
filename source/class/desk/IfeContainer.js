@@ -88,14 +88,46 @@ qx.Class.define("desk.IfeContainer", {
             this.add(MPR, { flex: 6 });
 
             this.__buttonOpenFunc.addListener("execute", function () {
-                var target;
-                if (!that.__subMenuFunc[0].__volumeFunc && !that.__subMenuFunc[1].__volumeFunc) {
+                var target = _.find(that.__subMenuFunc, function (o) { return !o.volumeFunc;});
+                
+                if (target === undefined) {
+                    var index = require('electron').remote.dialog.showMessageBox({
+                      type : "warning",
+                      title : "Echec de l'ouverture d'un nouveau calque",
+                      message : "3 calques sont déjà ouverts, supprimer un calque afin de pouvoir en ouvrir un autre.",
+                      buttons : ['Ok']
+                    });
+                } else {
+                  target.addFuncFile(function () {
+                      //Before
+                    window.setTimeout(function() {
+                        that.__buttonOpenAnat.setEnabled(false);
+                        that.__buttonOpenFunc.setEnabled(false);
+                    }, 1);
+
+                  }, function() {
+                        //Show and move to the end
+                      var parent = target.$$parent;
+                      parent.remove(target);
+                      parent.add(target, {flex:1});
+                      target.show();
+                  
+                      //After
+                      that.__buttonOpenFunc.setEnabled(true);
+                      that.__buttonOpenAnat.setEnabled(true);
+                      that.__buttonCloseAll.setEnabled(true);
+                  });
+                }
+                
+                /*
+
+                if (!that.__subMenuFunc[0].volumeFunc && !that.__subMenuFunc[1].volumeFunc) {
                     //Aucun calque ouvert
                     target = that.__subMenuFunc[0];
                 }
                 var dialog = require('electron').remote.dialog;
 
-                if (that.__subMenuFunc[0].__volumeFunc && !that.__subMenuFunc[1].__volumeFunc) {
+                if (that.__subMenuFunc[0].volumeFunc && !that.__subMenuFunc[1].volumeFunc) {
                     //Calque ouvert sur le 1er slot
                     var index = dialog.showMessageBox({
                       type : "question",
@@ -111,7 +143,7 @@ qx.Class.define("desk.IfeContainer", {
                       else target = that.__subMenuFunc[1];
                 }
 
-                if (!that.__subMenuFunc[0].__volumeFunc && that.__subMenuFunc[1].__volumeFunc) {
+                if (!that.__subMenuFunc[0].volumeFunc && that.__subMenuFunc[1].volumeFunc) {
                     //Calque ouvert sur le 1er slot
                     var index = dialog.showMessageBox({
                       type : "question",
@@ -127,7 +159,7 @@ qx.Class.define("desk.IfeContainer", {
                       else target = that.__subMenuFunc[0];
                 }
 
-                if (that.__subMenuFunc[0].__volumeFunc && that.__subMenuFunc[1].__volumeFunc) {
+                if (that.__subMenuFunc[0].volumeFunc && that.__subMenuFunc[1].volumeFunc) {
                   //Calque ouvert sur le 1er slot
                   var index = dialog.showMessageBox({
                     type : "question",
@@ -143,21 +175,7 @@ qx.Class.define("desk.IfeContainer", {
                     else target = that.__subMenuFunc[0];
                 }
 
-
-
-                target.addFuncFile(function () {
-                    //Before
-                  window.setTimeout(function() {
-                      that.__buttonOpenAnat.setEnabled(false);
-                      that.__buttonOpenFunc.setEnabled(false);
-                  }, 1);
-
-                }, function() {
-                    //After
-                    that.__buttonOpenFunc.setEnabled(true);
-                    that.__buttonOpenAnat.setEnabled(true);
-                    that.__buttonCloseAll.setEnabled(true);
-                });
+  */
             });
         },
 
@@ -181,18 +199,25 @@ qx.Class.define("desk.IfeContainer", {
 
             container.add(new qx.ui.core.Spacer(), {flex: 1});
 
+            var scroll = new qx.ui.container.Scroll();
+            var target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+            scroll.add(target);
+            
             this.__subMenuAnat = this.createSubMenuAnat();
-            container.add(this.__subMenuAnat);
+            target.add(this.__subMenuAnat);
 
-            container.add(new qx.ui.core.Spacer(), {flex: 1});
-
+            target.add(new qx.ui.core.Spacer(), {flex: 1});
+            
             this.__subMenuFunc = [];
-
             this.__subMenuFunc[0] = new desk.FuncLayer(this.__MPR, this.__meshViewer);
-            container.add(this.__subMenuFunc[0], {flex: 1});
+            target.add(this.__subMenuFunc[0], {flex: 1});
             this.__subMenuFunc[1] = new desk.FuncLayer(this.__MPR, this.__meshViewer);
-            container.add(this.__subMenuFunc[1], {flex: 1});
-
+            target.add(this.__subMenuFunc[1], {flex: 1});
+            this.__subMenuFunc[2] = new desk.FuncLayer(this.__MPR, this.__meshViewer);
+            target.add(this.__subMenuFunc[2], {flex: 1});
+            
+            container.add(scroll);
+            
             container.add(new qx.ui.core.Spacer(), {flex: 1});
 
             if (that.__sideViewer) {
@@ -203,7 +228,7 @@ qx.Class.define("desk.IfeContainer", {
         },
 
 
-        alert : function (message, title) {
+        alert : function (message, title, option) {
             // create the window instance
             var root = qx.core.Init.getApplication().getRoot();
 
@@ -213,7 +238,7 @@ qx.Class.define("desk.IfeContainer", {
             win.setLayout(new qx.ui.layout.VBox(10));
 
             win.set({
-                width : 400,
+                width : option.width || 400,
                 alwaysOnTop : true,
                 showMinimize : false,
                 showMaximize : false,
@@ -230,7 +255,12 @@ qx.Class.define("desk.IfeContainer", {
             label.set({rich: true, wrap : true});
 
             // label to show the e.g. the alert message
-            win.add(label);
+            
+            var scroll = new qx.ui.container.Scroll().set({maxHeight:600});
+            
+            win.add(scroll);
+             
+            scroll.add(label);
 
             // "ok" button to close the window
             var alertBtn = new qx.ui.form.Button("OK");
@@ -392,6 +422,7 @@ qx.Class.define("desk.IfeContainer", {
                 that.__buttonOpenFunc.setEnabled(true);
                 that.__buttonOpenAnat.setEnabled(true);
                 that.__subMenuAnat.show();
+                console.error("HEE");
 
                 that.__buttonCloseAll.setEnabled(true);
 
@@ -410,7 +441,6 @@ qx.Class.define("desk.IfeContainer", {
 
                 //var size = 25;
                 var size = 0.2*maxSize;
-                console.log("Size : ", size);
 
                 group.add( that.createSprite("droite",  size, new THREE.Vector3(2*bbox.max.x-bbox.min.x+size*1.5, center.y, center.z)) );
                 group.add( that.createSprite("gauche",  size, new THREE.Vector3(bbox.min.x-size*1.85, center.y, center.z)) );
@@ -457,7 +487,7 @@ qx.Class.define("desk.IfeContainer", {
 
 
             if (name.substr(name.length -4) !== ".stl") {
-                dialog.showMessageBox({
+                require('electron').remote.dialog.showMessageBox({
                   type : "error",
                   title : "Erreur : type de fichier",
                   message : "Ne sont acceptés que les maillages au format .stl",
@@ -580,9 +610,19 @@ qx.Class.define("desk.IfeContainer", {
 
             var button = new qx.ui.form.Button("R").set({opacity : 0.5, width : 30});
             meshViewer.add (button, {right : 0, bottom : 0});
+            var that = this;
+            
+            button.addListener("execute", function () {
+              that.resetMeshView();
+            });
+
 
             var screenshot = new qx.ui.form.Button(null, "resource/desk/camera-photo.png").set({opacity : 0.5, width : 30, height : 29});
             meshViewer.add (screenshot, {right : 30, bottom : 0});
+            
+            
+            
+            
             screenshot.addListener("execute", function () {
 
               var remote = require('electron').remote;
@@ -693,27 +733,37 @@ qx.Class.define("desk.IfeContainer", {
 
             if (!vertical) this.remove(this.__collapseButton); //remove collapse
 
-
-            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox());
-
+            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205});
             menu.add(new qx.ui.core.Spacer(), {flex: 1});
             menu.add(this.__subMenuButtons);
 
-            var target;
+            var target, parent;
             if (vertical) {
-                target = menu;
-            }
-            else {
+                menu.setPadding(10);
+                menu.setPaddingRight(0);
+                parent = new qx.ui.container.Scroll().set({});
                 target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+                parent.add(target);
+            }
+            else { //compare mode
+                parent = new qx.ui.container.Scroll().set({ maxHeight: 200 });
+                target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+
+                parent.add(target);
             }
 
             target.add(this.__subMenuAnat);
+            target.add(new qx.ui.core.Spacer(), {flex: 1});
             target.add(this.__subMenuFunc[0]);
+            target.add(new qx.ui.core.Spacer(), {flex: 1});
             target.add(this.__subMenuFunc[1]);
+            target.add(new qx.ui.core.Spacer(), {flex: 1});
+            target.add(this.__subMenuFunc[2]);
+
 
             menu.add(new qx.ui.core.Spacer(), {flex: 1});
 
-            if (target !== menu) menu.add(target);
+            if (parent !== menu) menu.add(parent);
 
             menu.add(new qx.ui.core.Spacer(), {flex: 1});
 
@@ -728,7 +778,10 @@ qx.Class.define("desk.IfeContainer", {
             var that = this;
 
             var layout = new qx.ui.layout.VBox();
-            var container = new qx.ui.container.Composite(layout);
+            var container = new qx.ui.container.Composite(layout).set({
+              minWidth:200,
+              maxWidth:250
+            });
 
             var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
@@ -753,7 +806,8 @@ qx.Class.define("desk.IfeContainer", {
 
             this.__IRMAnatName = new qx.ui.basic.Label().set({
                 rich: true,
-                wrap : true
+                wrap : true,
+                maxWidth:250
             });
 
             this.__IRMAnatName.setAllowGrowX(false);
@@ -766,8 +820,8 @@ qx.Class.define("desk.IfeContainer", {
             container.add(contrastLabel);
             var contrastSlider = this.contrastSlider = new qx.ui.form.Slider();
             contrastSlider.set({
-                minimum: -28,
-                maximum: 28,
+                minimum: -40,
+                maximum: 40,
                 singleStep: 1
             });
             contrastSlider.addListener("changeValue", function(e) {
@@ -814,7 +868,7 @@ qx.Class.define("desk.IfeContainer", {
             var that = this;
 
             if (!metadonnees) {
-              dialog.showMessageBox({
+              require('electron').remote.dialog.showMessageBox({
                 type : "error",
                 title : "Erreur",
                 message : "Métadonnées indisponibles",
@@ -822,16 +876,58 @@ qx.Class.define("desk.IfeContainer", {
               });
             }
 
-            this.alert(metadonnees, "Métadonnées");
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(metadonnees,"text/xml");
+            var lom = xmlDoc.getElementsByTagName("lom")[0];
+            var general = lom.getElementsByTagName("general")[0];
+            
+            var title       = general.getElementsByTagName("title")[0].childNodes[0].childNodes[0].nodeValue;
+            
+            
+            var description = this.nl2br(general.getElementsByTagName("description")[0].childNodes[0].childNodes[0].nodeValue.trim() );
+            
+
+            var contributeursNodeList = lom.getElementsByTagName("lifeCycle")[0].getElementsByTagName("contribute");
+            
+            var contributeurs = [];
+            
+            for(i = 0;i < contributeursNodeList.length; i++)
+            {
+                contributeurs.push(contributeursNodeList[i].getElementsByTagName("entity")[0].childNodes[0].nodeValue);
+            }
+                        
+            
+            var txt = "<h2>"+title+"</h2>"
+              + "<h4>Description</h4>" + description + "<br>"
+              + "<h4>Contributeurs : </h4>"
+              + "<ul>";
+              
+           contributeurs.forEach(function (contributeur) {
+              txt += "<li>" + contributeur + "</li>";
+           });
+           
+           txt += "</ul>";
+            
+            
+            this.alert(txt, "Métadonnées", { width : 800 } );
+            
+            
         },
 
+
+        nl2br : function (str, is_xhtml) {
+          var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br ' + '/>' : '<br>'; 
+          return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
+        },
+        
         loadMeta : function (volume, callback) {
             var path = volume.getUserData("path");
             path = path.substr(0, path.length-7) + ".xml";
-
+ 
             var oReq = new XMLHttpRequest();
             oReq.onload = function (res) {
-               volume.setUserData(this.responseText);
+               volume.setUserData("metadonnees", this.responseText);
+               console.log("HERE !!!");
                callback(null, this.responseText);
             };
 
@@ -846,6 +942,7 @@ qx.Class.define("desk.IfeContainer", {
         removeAll: function() {
           this.__subMenuFunc[0].removeFunc();
           this.__subMenuFunc[1].removeFunc();
+          this.__subMenuFunc[2].removeFunc();
 
             this.__MPR.removeAllVolumes();
             this.__meshViewer.removeAllMeshes();

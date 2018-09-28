@@ -39,30 +39,34 @@ qx.Class.define("desk.FuncLayer", {
     },
 
     properties: {
-
+      volumeFunc : { nullable : true }
     },
 
     members: {
       __MPR : null,
       __meshViewer : null,
       __funcButtonMeta : null,
-      __volumeFunc : null,
       __IRMFuncName : null,
       __seuilSlider : null,
       __meshesFunc : null,
       __colors : null,
       __widthMenu : 220,
+      
 
       /**
        * create UI
        */
       createUI: function() {
+          this.set({
+              minWidth:200,
+              maxWidth:250
+            });
           var that = this;
 
           var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
               titleContainer.add(new qx.ui.basic.Label().set({
-                  value: "<b>" + this.tr("Calque fonctionnelle") + " : </b>",
+                  value: "<b>" + this.tr("Calque fonctionnel") + " : </b>",
                   rich: true
               }));
 
@@ -74,7 +78,7 @@ qx.Class.define("desk.FuncLayer", {
               });
               titleContainer.add(button_meta);
               button_meta.addListener("execute", function() {
-                  that.showMeta(that.__volumeFunc);
+                  that.showMeta(that.volumeFunc);
               });
 
               var button_close = new qx.ui.form.Button(null, 'resource/ife/close_small_small.png').set({
@@ -104,7 +108,7 @@ qx.Class.define("desk.FuncLayer", {
               function updateSlice(slice) {
                   slice.material.uniforms.thresholdMin.value = seuilSlider.getValue() / 100;
               }
-              that.__MPR.getVolumeMeshes(that.__volumeFunc).forEach(updateSlice);
+              that.__MPR.getVolumeMeshes(that.volumeFunc).forEach(updateSlice);
               that.__meshesFunc.forEach(updateSlice);
               that.__meshViewer.render();
               that.__MPR.render();
@@ -116,7 +120,12 @@ qx.Class.define("desk.FuncLayer", {
           var lutArray = [
               generateChroma( chroma.scale( ["#00f", "#0ff", "#0f0", "#ff0","#f00"] ).domain([0,0.333, 0.5, 0.666, 1]) ),
               generateChroma( chroma.scale("Spectral").domain([1,0]) ),
-              generateChroma( chroma.scale( ["blue", "#eee", "red"] ).mode('lrgb') ),
+              generateChroma( chroma.scale( ["blue",  "#eee",  "red"] ).mode('lrgb') ),
+              generateChroma( chroma.scale( ["black", "green", "white"] ).gamma(1/2) ),
+              generateChroma( chroma.scale( ["black", "red",   "white"] ).gamma(1/2) ),
+              generateChroma( chroma.scale( ["black", "blue",  "white"] ).gamma(1/2) ),
+              generateChroma( chroma.scale( ["yellow", "orange", "red"] ) ),
+              generateChroma( chroma.scale( ["black", "red", "yellow", "white"] ) ),
               generateChroma( chroma.scale( ["black", "white"] ).gamma(1/2) ),
           ];
 
@@ -137,31 +146,14 @@ qx.Class.define("desk.FuncLayer", {
               console.log(index);
               that.__colors = lutArray[index]();
               console.log(that.__colors);
-              if (that.__volumeFunc)
-                  that.__MPR.setVolumeLUT(that.__volumeFunc, that.__colors);
+              if (that.volumeFunc)
+                  that.__MPR.setVolumeLUT(that.volumeFunc, that.__colors);
           });
           this.add(selectBox);
 
           this.__colors = this.generateLut();
 
 
-      },
-
-      showMeta : function (volume) {
-          var metadonnees = volume.getUserData("metadonnees");
-          var that = this;
-
-          if (!metadonnees) {
-              var dialog = require('electron').remote.dialog;
-              dialog.showMessageBox({
-                type : "error",
-                title : "Erreur",
-                message : "Métadonnées indisponibles",
-                buttons : ['Ok']
-              });
-          }
-
-          this.alert(metadonnees, "Métadonnées");
       },
 
       addFuncFile: function(cbBefore, cbAfter) {
@@ -202,18 +194,18 @@ qx.Class.define("desk.FuncLayer", {
               linearFilter : false,
               opacity: 0.7,
               postProcessFunction : function (texture, workerSlicer) {
-                var prop = workerSlicer.properties;
+              /*  var prop = workerSlicer.properties;
                 var v = prop.scalarBounds[0];
                 imgArray = texture.data;
 						    for (var i=imgArray.length; i-->0;)
 						        if (imgArray[i] === 0.0)
-						            imgArray[i] = v;
+						            imgArray[i] = v;*/
               }
           };
 
           this.__MPR.addVolume(filesList[0], properties, function(err, volume) {
               var prop = volume.getUserData("workerSlicer").properties;
-              that.__volumeFunc = volume;
+              that.volumeFunc = volume;
               volume.setUserData("path", filesList[0]);
 
               that.__funcButtonMeta.exclude();
@@ -228,8 +220,6 @@ qx.Class.define("desk.FuncLayer", {
 
               that.__meshesFunc = that.__meshViewer.attachVolumeSlices(that.__MPR.getVolumeSlices(volume));
               that.__IRMFuncName.setValue(name);
-
-              that.show();
 
 
               var volumeSlice = that.__MPR.getVolumeSlices(volume)[0];
@@ -254,77 +244,141 @@ qx.Class.define("desk.FuncLayer", {
               function updateSlice(slice) {
                   slice.material.uniforms.thresholdMin.value = that.__seuilSlider.getValue() / 100;
               }
-              that.__MPR.getVolumeMeshes(that.__volumeFunc).forEach(updateSlice);
+              that.__MPR.getVolumeMeshes(that.volumeFunc).forEach(updateSlice);
               that.__meshesFunc.forEach(updateSlice);
               that.__meshViewer.render();
               that.__MPR.render();
+
+              window.setTimeout(function () {
+                if (that.$$parent.$$parent.name == "qx.ui.core.scroll.ScrollPane") {
+                  that.$$parent.$$parent.scrollByY(10000);
+                }
+              }, 50);
 
               cbAfter();
           });
       },
 
-      loadMeta : function (volume, callback) {
-          var path = volume.getUserData("path");
-          path = path.substr(0, path.length-7) + ".xml";
+        showMeta : function (volume) {
+            var metadonnees = volume.getUserData("metadonnees");
+            var that = this;
 
-          var oReq = new XMLHttpRequest();
-          oReq.onload = function (res) {
-             volume.setUserData(this.responseText);
-             callback(null, this.responseText);
-          };
+            if (!metadonnees) {
+              require('electron').remote.dialog.showMessageBox({
+                type : "error",
+                title : "Erreur",
+                message : "Métadonnées indisponibles",
+                buttons : ['Ok']
+              });
+            }
 
-          oReq.onerror = function () {
-              callback("error");
-          };
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(metadonnees,"text/xml");
+            var lom = xmlDoc.getElementsByTagName("lom")[0];
+            var general = lom.getElementsByTagName("general")[0];
+            
+            var title       = general.getElementsByTagName("title")[0].childNodes[0].childNodes[0].nodeValue;
+            var description = this.nl2br(general.getElementsByTagName("description")[0].childNodes[0].childNodes[0].nodeValue.trim() );
 
-          oReq.open("get", path, true);
-          oReq.send();
-      },
+            var contributeursNodeList = lom.getElementsByTagName("lifeCycle")[0].getElementsByTagName("contribute");
+            
+            var contributeurs = [];
+            
+            for(i = 0;i < contributeursNodeList.length; i++)
+            {
+                contributeurs.push(contributeursNodeList[i].getElementsByTagName("entity")[0].childNodes[0].nodeValue);
+            }
+           
+            
+            var txt = "<h2>"+title+"</h2>"
+              + "<h4>Description</h4>" + description + "<br>"
+              + "<h4>Contributeurs : </h4>"
+              + "<ul>";
+              
+           contributeurs.forEach(function (contributeur) {
+              txt += "<li>" + contributeur + "</li>";
+           });
+           
+           txt += "</ul>";
+            
+            
+            this.alert(txt, "Métadonnées", { width : 800 } );
+            
+            
+        },
 
-      alert : function (message, title) {
-          // create the window instance
-          var root = qx.core.Init.getApplication().getRoot();
+        nl2br : function (str, is_xhtml) {
+          var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br ' + '/>' : '<br>'; 
+          return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
+        },
+        
+        loadMeta : function (volume, callback) {
+            var path = volume.getUserData("path");
+            path = path.substr(0, path.length-7) + ".xml";
+ 
+            var oReq = new XMLHttpRequest();
+            oReq.onload = function (res) {
+               volume.setUserData("metadonnees", this.responseText);
+               console.log("HERE !!!");
+               callback(null, this.responseText);
+            };
 
-          if (title === undefined) title = this.tr("Erreur : type de fichier");
+            oReq.onerror = function () {
+                callback("error");
+            };
 
-          var win = new qx.ui.window.Window( title );
-          win.setLayout(new qx.ui.layout.VBox(10));
+            oReq.open("get", path, true);
+            oReq.send();
+        },
 
-          win.set({
-              width : 400,
-              alwaysOnTop : true,
-              showMinimize : false,
-              showMaximize : false,
-              centerOnAppear : true,
-              modal : true,
-              movable : false,
-              resizable : false,
-              allowMaximize : false,
-              allowMinimize : false
-          });
+        alert : function (message, title, option) {
+            // create the window instance
+            var root = qx.core.Init.getApplication().getRoot();
 
-          var label = new qx.ui.basic.Label(message);
+            if (title === undefined) title = this.tr("Erreur : type de fichier");
 
-          label.set({rich: true, wrap : true});
+            var win = new qx.ui.window.Window( title );
+            win.setLayout(new qx.ui.layout.VBox(10));
 
-          // label to show the e.g. the alert message
-          win.add(label);
+            win.set({
+                width : option.width || 400,
+                alwaysOnTop : true,
+                showMinimize : false,
+                showMaximize : false,
+                centerOnAppear : true,
+                modal : true,
+                movable : false,
+                resizable : false,
+                allowMaximize : false,
+                allowMinimize : false
+            });
 
-          // "ok" button to close the window
-          var alertBtn = new qx.ui.form.Button("OK");
+            var label = new qx.ui.basic.Label(message);
 
-          root.add(win);
+            label.set({rich: true, wrap : true});
 
-          alertBtn.addListener("execute", win.close.bind(win));
+            // label to show the e.g. the alert message
+            var scroll = new qx.ui.container.Scroll().set({maxHeight:600});
+            
+            win.add(scroll);
+             
+            scroll.add(label);
 
-          win.add(alertBtn);
+            // "ok" button to close the window
+            var alertBtn = new qx.ui.form.Button("OK");
 
-          alertBtn.setMarginLeft(100);
-          alertBtn.setMarginRight(100);
+            root.add(win);
 
-          win.open();
+            alertBtn.addListener("execute", win.close.bind(win));
 
-      },
+            win.add(alertBtn);
+
+            alertBtn.setMarginLeft(100);
+            alertBtn.setMarginRight(100);
+
+            win.open();
+
+        },
 
 
       hackShaders: function(volumeSlice, meshes) {
@@ -341,7 +395,7 @@ qx.Class.define("desk.FuncLayer", {
                   value: 200
               });
               shader.extraShaders.push([
-                  'if ( ( value > thresholdMax ) || ( value < thresholdMin ) || ( value == 0.0 ) ) {',
+                  'if ( ( value >= thresholdMax ) || ( value <= thresholdMin ) || ( value == 0.0 ) ) {',
                   'discard;',
                   '} else {',
                   'float range = thresholdMax - thresholdMin;',
@@ -357,11 +411,11 @@ qx.Class.define("desk.FuncLayer", {
       },
 
       removeFunc: function() {
-          if (!this.__volumeFunc) return;
+          if (!this.volumeFunc) return;
 
-          this.__MPR.removeVolume(this.__volumeFunc);
+          this.__MPR.removeVolume(this.volumeFunc);
           this.__meshViewer.removeMeshes(this.__meshesFunc);
-          this.__volumeFunc = undefined;
+          this.volumeFunc = undefined;
           this.exclude();
       },
 
@@ -447,6 +501,6 @@ qx.Class.define("desk.FuncLayer", {
           }
           if (!imgData)
               return [red, green, blue, alpha];
-      },
+      }
     }
 });

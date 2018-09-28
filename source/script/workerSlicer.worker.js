@@ -51915,8 +51915,9 @@ PapayaSlicer.prototype.initProperties = function() {
 
       if (numberOfScalarComponents !== 3 && numberOfScalarComponents !== 1) numberOfScalarComponents = 1;
 
-      var scalarType = this.typePapaya2vtk[vol.header.imageType.datatype];
 
+      /*
+      var scalarType = this.typePapaya2vtk[vol.header.imageType.datatype];
       if (scalarType == 7) { // C'est un unsigned int, il faut regarder la taille
         switch (vol.header.imageType.numBytes) {
           case 1 :
@@ -51925,13 +51926,17 @@ PapayaSlicer.prototype.initProperties = function() {
           case 2 :
             scalarType = 5;
             break;
-
           case 4 :
             scalarType = 7;
             break;
 
         }
-
+      }*/
+      if (numberOfScalarComponents == 3) {
+        scalarType = 3;
+      }
+      else {
+        scalarType = 6;
       }
 
       var orig = vol.getOrigin();

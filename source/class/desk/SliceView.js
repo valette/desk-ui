@@ -1251,10 +1251,11 @@ qx.Class.define("desk.SliceView",
         }
         else
           return;
-
-          var slice = this.getFirstSlice();
-          if (!slice) return;
-          this.setSlice(slice.getNumberOfSlices()+delta);
+          
+        var slice = this.getFirstSlice();
+        
+        if (!slice) return;
+        this.setSlice(slice.getSlice()+delta);
       });
 
 			var container = this.__rightContainer =

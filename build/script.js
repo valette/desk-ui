@@ -2,6 +2,8 @@
 
 const electron = require('electron');
 
+electron.app.commandLine.appendSwitch('ignore-gpu-blacklist', 'true');
+
 var win;
 
 electron.app.on('ready', () => {

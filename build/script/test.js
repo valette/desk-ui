@@ -4,7 +4,6 @@ window.setTimeout(function () {
 
     if (!Detector.webgl) {
         // create the window instance
-        var root = qx.core.Init.getApplication().getRoot();
         var win = new qx.ui.window.Window( qxRoot.tr("Erreur : WebGL non supporté") );
         win.setLayout(new qx.ui.layout.VBox(10));
 
@@ -25,39 +24,23 @@ window.setTimeout(function () {
 
 
         // label to show the e.g. the alert message
-
         win.add(new qx.ui.basic.Label(qxRoot.tr("WebGL n'est pas supporté par votre système.")));
-
-
-        root.add(win);
-
-
+        qxRoot.add(win);
         win.open();
         return;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    var container = new qx.ui.container.Composite(new qx.ui.layout.HBox());
-
+    //var container = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+    var container = new qx.ui.splitpane.Pane("horizontal");
+    console.log(qxRoot);
     qxRoot.add(container, {width:"100%", height:"100%"});
-
+//    qxRoot.add(container, {top:0, left:0, bottom:0, right:0, width:"100%", height:"100%"});
     var sideViewer = new desk.IfeContainer();
     var mainViewer = new desk.IfeContainer( sideViewer );
 
-	container.add(mainViewer, {flex : 1});
-    container.add(sideViewer, {flex : 1});
+	  container.add(mainViewer);
+    container.add(sideViewer);
     sideViewer.exclude();
+
+
 });
