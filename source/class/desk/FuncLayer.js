@@ -71,8 +71,7 @@ qx.Class.define("desk.FuncLayer", {
               }));
 
               titleContainer.add(new qx.ui.core.Spacer(), {flex: 1});
-
-
+              
               var button_meta = this.__funcButtonMeta = new qx.ui.form.Button(null, 'resource/ife/info_small.png').set({
                   decorator: null
               });
@@ -98,13 +97,13 @@ qx.Class.define("desk.FuncLayer", {
 
           this.add(this.__IRMFuncName);
 
-          var seuilLabel = new qx.ui.basic.Label(this.tr("Seuil") + " :");
+          var seuilLabel = new qx.ui.basic.Label(this.tr("Seuil") + " : <b></b>").set({rich:true});
           this.add(seuilLabel);
           var seuilSlider = this.__seuilSlider = new qx.ui.form.Slider();
 
           seuilSlider.addListener("changeValue", function(e) {
 		          var val = (seuilSlider.getValue()-seuilSlider.getMinimum())/(seuilSlider.getMaximum()-seuilSlider.getMinimum())*100;
-              seuilLabel.setValue(this.tr("Seuil") + " :" +  Math.floor(val) );
+              seuilLabel.setValue(this.tr("Seuil") + " : <b>" +  Math.floor(val) + "</b>" );
               function updateSlice(slice) {
                   slice.material.uniforms.thresholdMin.value = seuilSlider.getValue() / 100;
               }
@@ -150,6 +149,8 @@ qx.Class.define("desk.FuncLayer", {
                   that.__MPR.setVolumeLUT(that.volumeFunc, that.__colors);
           });
           this.add(selectBox);
+
+          this.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
 
           this.__colors = this.generateLut();
 
@@ -219,7 +220,7 @@ qx.Class.define("desk.FuncLayer", {
               });
 
               that.__meshesFunc = that.__meshViewer.attachVolumeSlices(that.__MPR.getVolumeSlices(volume));
-              that.__IRMFuncName.setValue(name);
+              that.__IRMFuncName.setValue(name.split(".")[0]);
 
 
               var volumeSlice = that.__MPR.getVolumeSlices(volume)[0];

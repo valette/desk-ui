@@ -1216,8 +1216,8 @@ qx.Class.define("desk.SliceView",
 
 			var slider = this.__slider = new qx.ui.form.Slider().set (
 				{minimum : 0, maximum : 100, value : 0,	width :30,
-					opacity : 0.75, backgroundColor : "transparent",
-					orientation : "vertical"
+					opacity : 0.75, backgroundColor : desk.VolumeSlice.COLORS[this.__orientation],
+					orientation : "vertical",
 			});
 			slider.addListener('mousedown', function () {
 				this.__sliderInUse = true;

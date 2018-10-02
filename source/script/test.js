@@ -38,6 +38,8 @@ window.setTimeout(function () {
     var sideViewer = new desk.IfeContainer();
     var mainViewer = new desk.IfeContainer( sideViewer );
 
+    sideViewer.setMainViewer(mainViewer);
+    
 	  container.add(mainViewer);
     container.add(sideViewer);
     sideViewer.exclude();

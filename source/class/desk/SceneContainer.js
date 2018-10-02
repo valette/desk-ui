@@ -546,29 +546,50 @@ qx.Class.define("desk.SceneContainer",
 			function update () {
 				var coords = volumeSlice.getCornersCoordinates();
 				var vertices = geometry.attributes.position;
+				var vertices2 = line.geometry.attributes.position;
+				
 				for (var i = 0; i < 4 * 3; i++) {
 					vertices.array[i] = coords[i];
+					vertices2.array[i] = coords[i];
 				}
 				vertices.needsUpdate = true;
 				geometry.computeBoundingBox();
+
 				geometry.computeFaceNormals();
 				geometry.computeBoundingSphere();
-				var vertices2 = lineGeometry.attributes.position;
-				[0, 1, 3, 2, 0].forEach(function (i, j) {
-					vertices2.copyAt(j, vertices, i);
-				});
-				vertices2.needsUpdate = true;
+				
+				
+				/* LINE MESH */
+				var vecCoords = [];
+				 
+				for (var i =0 ; i < 4 ; i++)
+				  vecCoords[i] = new THREE.Vector3(coords[3*i], coords[3*i+1], coords[3*i+2]);
+				   
+				line.position.addVectors(vecCoords[3], vecCoords[0]).divideScalar(2);
+				line.scale.set(1.03, 1.03, 1.03);
+				  
+				for (var i =0 ; i < 4 ; i++) {
+				    vertices2.array[i*3]   = vertices2.array[i*3]   - line.position.x;
+				    vertices2.array[i*3+1] = vertices2.array[i*3+1] - line.position.y;
+				    vertices2.array[i*3+2] = vertices2.array[i*3+2] - line.position.z;
+				}
+				  
+        vertices2.needsUpdate = true;
+
+				
 				this.render();
 			}
-
-			var lineMaterial = new THREE.LineBasicMaterial({linewidth: 5,
-				color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()]});
-
-			var lineGeometry = new THREE.BufferGeometry();
-			var positions = new Float32Array( 5 * 3 );
-			lineGeometry.addAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
-			var line = new THREE.Line ( lineGeometry, lineMaterial );
+			
+			var lineGeometry = new THREE.PlaneBufferGeometry( 1, 1);
+			var lineMaterial = new THREE.MeshBasicMaterial({
+			  color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()], 
+			  side:THREE.DoubleSide,
+			  polygonOffset: true,
+        polygonOffsetFactor: 1.0,
+        polygonOffsetUnits: 4.0	});
+			var line = new THREE.Mesh( lineGeometry, lineMaterial );
 			mesh.add(line);
+			
 
 			volumeSlice.fireEvent('changeImage');
 

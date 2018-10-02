@@ -40,7 +40,7 @@ qx.Class.define("desk.IfeContainer", {
     },
 
     properties: {
-
+		  mainViewer : { init : null},
     },
 
     members: {
@@ -186,11 +186,15 @@ qx.Class.define("desk.IfeContainer", {
             var layout = new qx.ui.layout.VBox();
             layout.setSpacing(10);
             var container = new qx.ui.container.Composite(layout);
+            
+            
             container.set({
                 width: this.__widthMenu+50
             })
             container.setPadding(10);
             container.setPaddingRight(0);
+
+            container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
 
             container.add(new qx.ui.core.Spacer(), {flex: 1});
 
@@ -198,15 +202,14 @@ qx.Class.define("desk.IfeContainer", {
             container.add(this.__subMenuButtons);
 
             container.add(new qx.ui.core.Spacer(), {flex: 1});
-
+              
             var scroll = new qx.ui.container.Scroll();
             var target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
             scroll.add(target);
             
             this.__subMenuAnat = this.createSubMenuAnat();
             target.add(this.__subMenuAnat);
-
-            target.add(new qx.ui.core.Spacer(), {flex: 1});
+            
             
             this.__subMenuFunc = [];
             this.__subMenuFunc[0] = new desk.FuncLayer(this.__MPR, this.__meshViewer);
@@ -298,15 +301,30 @@ qx.Class.define("desk.IfeContainer", {
             });
 
             win.setLayout(new qx.ui.layout.VBox(10));
-
-            var logos = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+            var layout = new qx.ui.layout.HBox();
+            layout.setSpacing(5);
+            var logos = new qx.ui.container.Composite(layout);
 
             //logos.add(new qx.ui.core.Spacer(), {flex: 1});
-            logos.add(new qx.ui.basic.Image("resource/ife/logo_ife.jpg") );
-            //logos.add(new qx.ui.core.Spacer(), {flex: 1});
-            logos.add(new qx.ui.basic.Image("resource/ife/logo_ens.jpg") );
-            //logos.add(new qx.ui.core.Spacer(), {flex: 1});
-
+            var im = new qx.ui.basic.Image("resource/ife/logo/ife.jpg");
+            im.set({scale:true});
+            logos.add(  im);
+            
+            im = new qx.ui.basic.Image("resource/ife/logo/ens.jpg");
+            im.set({scale:true});
+            logos.add(  im);
+            
+            im = new qx.ui.basic.Image("resource/ife/logo/labexCortex.png");
+            im.set({scale:true});
+            logos.add(  im);
+            
+            
+            im = new qx.ui.basic.Image("resource/ife/logo/labexPrimes.png");
+            im.set({scale:true});
+            logos.add(  im);
+            
+            
+            
             win.add(logos);
 
             win.add( new qx.ui.basic.Label([
@@ -316,6 +334,14 @@ qx.Class.define("desk.IfeContainer", {
                 rich : true,
                 width: 460
             }) );
+            
+            
+                        // "ok" button to close the window
+            var alertBtn = new qx.ui.form.Button("OK");
+
+            alertBtn.addListener("execute", win.close.bind(win));
+
+            win.add(alertBtn);
 
             qx.core.Init.getApplication().getRoot().add(win, {left:20, top:20});
 
@@ -418,11 +444,10 @@ qx.Class.define("desk.IfeContainer", {
                 var volSlice = that.__MPR.getVolumeSlices(volume);
                 var meshes = that.__meshViewer.attachVolumeSlices(volSlice);
 
-                that.__IRMAnatName.setValue(name);
+                that.__IRMAnatName.setValue(name.split(".")[0]);
                 that.__buttonOpenFunc.setEnabled(true);
                 that.__buttonOpenAnat.setEnabled(true);
                 that.__subMenuAnat.show();
-                console.error("HEE");
 
                 that.__buttonCloseAll.setEnabled(true);
 
@@ -671,6 +696,7 @@ qx.Class.define("desk.IfeContainer", {
             /* Button Open Anat */
 
             var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une image anatomique"), 'resource/ife/open_A_small.png');
+            console.log(buttonOpenAnat);
 
             buttonOpenAnat.getChildControl("label").setAllowGrowX(true);
             buttonOpenAnat.getChildControl("label").setTextAlign("left");
@@ -719,6 +745,38 @@ qx.Class.define("desk.IfeContainer", {
                 });
 
                 container.add(buttonCompare);
+            }
+            else {
+              var button = new qx.ui.form.Button(this.tr("Masquer le menu"));
+              var showContainer;
+              button.addListener("click", function() {
+                  var target = that.getChildren()[1];
+                  if (target.isVisible()) {
+                      target.exclude();
+
+                      that.getMainViewer().getChildren()[1].exclude();
+                      
+                      showContainer = new qx.ui.container.Composite(new qx.ui.layout.Canvas());
+
+                      that.add(showContainer);
+                      var showButton = new qx.ui.form.Button(this.tr("Afficher le menu"));
+                      showContainer.add(showButton, {bottom: 0, right: 0});
+                      
+                      var phantom = new qx.ui.core.Widget();
+                      phantom.setHeight(29);
+                      that.getMainViewer().add(phantom);
+                      
+                      showButton.addListener("click", function() {
+                        target.show();
+                        that.getMainViewer().getChildren()[1].show();
+                        that.remove(showContainer);
+                        that.getMainViewer().remove(phantom);
+                      });
+                  }
+              });
+              
+              container.add(button);
+              
             }
 
             return container;
@@ -769,7 +827,10 @@ qx.Class.define("desk.IfeContainer", {
 
             this.addAt(menu, vertical?0:1);
 
-            if (vertical) this.addAt(this.__collapseButton, 1);
+            if (vertical) {
+              this.addAt(this.__collapseButton, 1);
+              menu.add(this.createAbout());
+            }
 
         },
 
@@ -782,6 +843,8 @@ qx.Class.define("desk.IfeContainer", {
               minWidth:200,
               maxWidth:250
             });
+
+            container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
 
             var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
@@ -816,7 +879,7 @@ qx.Class.define("desk.IfeContainer", {
 
 
             /* Gestion du contraste */
-            var contrastLabel = new qx.ui.basic.Label(this.tr("Contraste") + " : 1.00");
+            var contrastLabel = new qx.ui.basic.Label(this.tr("Contraste") + " : <b>1.00</b>").set({rich:true});
             container.add(contrastLabel);
             var contrastSlider = this.contrastSlider = new qx.ui.form.Slider();
             contrastSlider.set({
@@ -826,7 +889,7 @@ qx.Class.define("desk.IfeContainer", {
             });
             contrastSlider.addListener("changeValue", function(e) {
                 var value = Math.pow(10, e.getData() / 40);
-                contrastLabel.setValue(that.tr("Contraste") + " : " + value.toFixed(2));
+                contrastLabel.setValue(that.tr("Contraste") + " : <b>" + value.toFixed(2) + "</b>");
                 if (that.__volumeAnat) {
                   that.__volumeAnat.getUserData('slices').forEach(function(volumeSlice) {
                       volumeSlice.setContrast(value);
@@ -837,7 +900,7 @@ qx.Class.define("desk.IfeContainer", {
 
 
             /* Gestion de la luminosité */
-            var brightnessLabel = new qx.ui.basic.Label(this.tr("Luminosité") + " : 0.5");
+            var brightnessLabel = new qx.ui.basic.Label(this.tr("Luminosité") + " : <b>0.5</b>").set({rich:true});
             container.add(brightnessLabel);
             var brightnessSlider = this.brightnessSlider = new qx.ui.form.Slider();
             brightnessSlider.set({
@@ -848,7 +911,7 @@ qx.Class.define("desk.IfeContainer", {
             });
             brightnessSlider.addListener("changeValue", function(e) {
                 var value = e.getData() / 100;
-                brightnessLabel.setValue(that.tr("Luminosité") + " : " + value.toFixed(2));
+                brightnessLabel.setValue(that.tr("Luminosité") + " : <b>" + value.toFixed(2)+"</b>");
                 if (that.__volumeAnat) {
                   that.__volumeAnat.getUserData('slices').forEach(function(volumeSlice) {
                       volumeSlice.setBrightness((value-0.5)*2 );
@@ -856,10 +919,9 @@ qx.Class.define("desk.IfeContainer", {
                 }
             });
             container.add(brightnessSlider);
-
-            container.add(new qx.ui.core.Spacer(), {
-                flex: 1
-            });
+            container.add(new qx.ui.core.Spacer(), {flex: 0.5});
+            container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
+            container.add(new qx.ui.core.Spacer(), {flex: 0.5});
             return container;
         },
 
