@@ -124,6 +124,7 @@ qx.Class.define("desk.FileBrowser",
 					case "png":
 					case "hdr":
 					case "tif":
+					case "nii":
 						image = "desk/img.png";
 						break;
 					default:
