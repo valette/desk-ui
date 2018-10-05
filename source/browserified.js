@@ -25,6 +25,7 @@ if (typeof importScripts == 'function') {
 	return;
 }
 
+require('./ext/WebGL.js');
 Terminal = require( 'xterm' ).Terminal;
 require ('../node_modules/xterm/src/xterm.css');
 
@@ -52,8 +53,6 @@ var ace   = require('brace');
 			require('brace/theme/eclipse');
 			require('brace/ext/searchbox');
 			require("brace/ext/language_tools");
-
-Detector  = require('three/examples/js/Detector.js');
 
 var work  = require('webworkify');
 

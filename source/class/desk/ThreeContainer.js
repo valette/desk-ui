@@ -1,7 +1,7 @@
 /**
 * A container which includes a THREE.js scene, camera, controls and renderer
  * @ignore(THREE.*)
- * @ignore(Detector.*)
+ * @ignore(WEBGL.*)
  * @ignore(requestAnimationFrame)
  * @ignore(Blob)
  * @ignore(_.debounce)
@@ -37,7 +37,7 @@ qx.Class.define("desk.ThreeContainer",
 		threeCanvas.set({syncDimension : true, zIndex : 0});
 		var canvas = threeCanvas.getContentElement().getCanvas();
 
-		if (!Detector.webgl) alert("Error! : webGL is not available! Check your configuration");
+		if (!WEBGL.isWebGLAvailable()) alert("Error! : webGL is not available! Check your configuration");
 
 		var scene = this.__scene = new THREE.Scene();
 		var camera = this.__camera = opts.orthographic ? new THREE.OrthographicCamera() : new THREE.PerspectiveCamera();
