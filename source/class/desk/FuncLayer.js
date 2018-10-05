@@ -80,6 +80,27 @@ qx.Class.define("desk.FuncLayer", {
                   that.showMeta(that.volumeFunc);
               });
 
+              var button_hide = new qx.ui.form.Button(null, 'resource/ife/show.png').set({
+                  decorator: null
+              });
+              
+              console.log(button_hide);
+              titleContainer.add(button_hide);
+              var imageVisible = true;
+              button_hide.addListener("execute", function () {
+                if (imageVisible) {
+                  imageVisible = false;
+                  that.__MPR.setVolumeOpacity(that.volumeFunc, 0);
+                  button_hide.__childControls.icon.setSource('resource/ife/hide.png');
+                }
+                else {
+                  imageVisible = true;
+                  that.__MPR.setVolumeOpacity(that.volumeFunc, 0.7);
+                  button_hide.__childControls.icon.setSource('resource/ife/show.png');
+                }
+              });
+
+
               var button_close = new qx.ui.form.Button(null, 'resource/ife/close_small_small.png').set({
                   decorator: null
               });
@@ -150,7 +171,7 @@ qx.Class.define("desk.FuncLayer", {
           });
           this.add(selectBox);
 
-          this.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
+          //this.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
 
           this.__colors = this.generateLut();
 
@@ -161,7 +182,7 @@ qx.Class.define("desk.FuncLayer", {
           var dialog = require('electron').remote.dialog;
           var filesList = dialog.showOpenDialog({
             filters : [
-              {name: 'Anat Nifti Image', extensions: ['fonc.nii.gz']},
+              {name: 'Fonc Nifti Image', extensions: ['fonc.nii.gz']},
               {name: 'Nifti Image', extensions: ['nii.gz']},
               {name: 'All Files', extensions: ['*']}
 
@@ -273,35 +294,24 @@ qx.Class.define("desk.FuncLayer", {
               });
             }
 
-            var parser = new DOMParser();
-            var xmlDoc = parser.parseFromString(metadonnees,"text/xml");
-            var lom = xmlDoc.getElementsByTagName("lom")[0];
-            var general = lom.getElementsByTagName("general")[0];
-            
-            var title       = general.getElementsByTagName("title")[0].childNodes[0].childNodes[0].nodeValue;
-            var description = this.nl2br(general.getElementsByTagName("description")[0].childNodes[0].childNodes[0].nodeValue.trim() );
-
+            var parser                = new DOMParser();
+            var xmlDoc                = parser.parseFromString(metadonnees,"text/xml");
+            var lom                   = xmlDoc.getElementsByTagName("lom")[0];
+            var general               = lom.getElementsByTagName("general")[0];
+            var title                 = general.getElementsByTagName("title")[0].childNodes[0].childNodes[0].nodeValue;
+            var description           = this.nl2br(general.getElementsByTagName("description")[0].childNodes[0].childNodes[0].nodeValue.trim() );
             var contributeursNodeList = lom.getElementsByTagName("lifeCycle")[0].getElementsByTagName("contribute");
-            
-            var contributeurs = [];
-            
+            var contributeurs         = [];
             for(i = 0;i < contributeursNodeList.length; i++)
-            {
                 contributeurs.push(contributeursNodeList[i].getElementsByTagName("entity")[0].childNodes[0].nodeValue);
-            }
-           
-            
             var txt = "<h2>"+title+"</h2>"
               + "<h4>Description</h4>" + description + "<br>"
               + "<h4>Contributeurs : </h4>"
               + "<ul>";
-              
            contributeurs.forEach(function (contributeur) {
               txt += "<li>" + contributeur + "</li>";
            });
-           
            txt += "</ul>";
-            
             
             this.alert(txt, "Métadonnées", { width : 800 } );
             
@@ -385,6 +395,11 @@ qx.Class.define("desk.FuncLayer", {
       hackShaders: function(volumeSlice, meshes) {
           meshes.forEach(function(slice) {
               var shader = slice.material.baseShader;
+              
+            slice.material.polygonOffset = true;
+						slice.material.polygonOffsetFactor = -1;
+						slice.material.polygonOffsetUnits = -4.0;
+              
               shader.extraUniforms.push({
                   name: 'thresholdMin',
                   type: "f",
