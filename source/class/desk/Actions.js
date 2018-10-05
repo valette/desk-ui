@@ -32,6 +32,14 @@ qx.Class.define("desk.Actions",
 				// support for node.js
 				this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
 				this.__engine = "node";
+				this.__socket.on("action started", function (POST) {
+					var actions = desk.Actions.getInstance();
+					var params = actions.__runingActions[POST.handle] =
+						actions.__runingActions[POST.handle] || { POST : POST };
+					setTimeout(function () {
+						actions.__addActionToList( actions.__runingActions[POST.handle] );
+					}.bind( this ) , 2000 );
+				}, this );
 				this.__socket.on("action finished", this.__onActionEnd.bind(this));
 				this.__socket.on("disconnect", function () {
 					console.warn( 'disconnected from server' );
@@ -149,7 +157,6 @@ qx.Class.define("desk.Actions",
 			if (actions.isForceUpdate()) params.force_update = true;
 
 			var parameters = {
-				actionFinished : false,
 				callback : callback || function () {},
 				context : context,
 				options : options,
@@ -179,9 +186,6 @@ qx.Class.define("desk.Actions",
 				}
 			} else {
 				actions.__execute(params);
-				setTimeout(function () {
-					actions.__addActionToList(parameters);
-				}, Math.max(1000, (_.size(actions.__runingActions) - 20) * 1000));
 			}
 
 			actions.__runingActions[params.handle] = parameters;
@@ -638,7 +642,6 @@ qx.Class.define("desk.Actions",
 			} else {
 
 				delete this.__runingActions[res.handle];
-				params.actionFinished = true;
 				if (params.item) this.__garbageContainer.add(params.item);
 
 			}
@@ -673,7 +676,7 @@ qx.Class.define("desk.Actions",
 		* @param params {Object} action parameters
 		*/
 		__addActionToList : function(params) {
-			if (params.item || params.actionFinished || params.POST.manage) {
+			if ( !params || params.POST.silent || params.POST.manage ) {
 				return;
 			}
 			if (this.__ongoingActions.getChildren().length > 20) {
