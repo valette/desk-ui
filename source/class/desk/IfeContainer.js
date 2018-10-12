@@ -56,6 +56,7 @@ qx.Class.define("desk.IfeContainer", {
         __buttonCloseAll : null,
 
         __menu : null,
+        __burger:null,
         __subMenuAnat: null,
         __subMenuFunc: null,
         __subMenuButtons : null,
@@ -83,8 +84,8 @@ qx.Class.define("desk.IfeContainer", {
             var menu = this.__menu = this.createMenu();
             this.add(menu, { flex:0 });
 
-            this.__collapseButton = this.createCollapseButton();
-            this.add(this.__collapseButton, { flex: 0 });
+            //this.__collapseButton = this.createCollapseButton();
+            //this.add(this.__collapseButton, { flex: 0 });
 
             this.add(MPR, { flex: 6 });
 
@@ -190,13 +191,54 @@ qx.Class.define("desk.IfeContainer", {
             
             
             container.set({
-                width: this.__widthMenu+50
+                width: this.__widthMenu+50,
+                backgroundColor: "rgb(249, 250, 248)"
             })
-            container.setPadding(10);
-            container.setPaddingRight(0);
+            container.setPadding(5);
+            //container.setPaddingRight(0);
 
-            container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
+            //container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
+            
+            var burger = this.__burger = new qx.ui.basic.Image("resource/ife/menu.png");
+            burger.setAlignX("right");
+            burger.setCursor("pointer");
+            container.add(burger);
+            var menuVisible = true;
+            var phantom = new qx.ui.core.Widget();
+                      phantom.setHeight(42);
+            burger.addListener("click", function () {
+                if (menuVisible) {
+                    if (!that.__sideViewer) {
+                      that.getChildren()[1].exclude();
+                      that.add(burger);
+                      that.getMainViewer().getChildren()[1].exclude();
+                      
 
+                      that.getMainViewer().add(phantom);
+                      
+                    } else {
+                      that.__menu.exclude();
+                      that.addAt(burger, 0);
+                    }
+                    burger.setPadding(5);
+                    menuVisible = false;
+                } else {
+                    menuVisible = true;
+                    if (!that.__sideViewer) {
+                      that.getChildren()[1].show();
+                      that.remove(burger);
+                      that.getChildren()[1].add(burger);
+                      that.getMainViewer().getChildren()[1].show();
+                      that.getMainViewer().remove(phantom);
+                    } else {
+                      that.__menu.show();
+                      that.remove(burger);
+                      that.__menu.addAt(burger, 0);
+                    }
+                    burger.setPadding(0);
+                }
+            });
+            
             container.add(new qx.ui.core.Spacer(), {flex: 1});
 
             this.__subMenuButtons = this.createSubMenuButtons();
@@ -205,7 +247,7 @@ qx.Class.define("desk.IfeContainer", {
             container.add(new qx.ui.core.Spacer(), {flex: 1});
               
             var scroll = new qx.ui.container.Scroll();
-            var target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+            var target = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:20}));
             scroll.add(target);
             
             this.__subMenuAnat = this.createSubMenuAnat();
@@ -284,7 +326,7 @@ qx.Class.define("desk.IfeContainer", {
 
 
         createAbout : function () {
-            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v0.1.0").set({decorator: null});
+            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v0.1.0", "resource/ife/about.png").set({decorator: null});
 
             var win = new qx.ui.window.Window(this.tr("A propos de ")+" EduAnat2 v0.1.0");
             win.set({
@@ -626,6 +668,7 @@ qx.Class.define("desk.IfeContainer", {
             };
 
             var MPR = new desk.MPRContainer(null, options);
+            
 
             var meshViewer = this.__meshViewer = new desk.SceneContainer({
                   noOpts:true,
@@ -634,8 +677,8 @@ qx.Class.define("desk.IfeContainer", {
                   minZoom:30,
                   cameraFov : 35});
 
-            var button = new qx.ui.form.Button("R").set({opacity : 0.5, width : 30});
-            meshViewer.add (button, {right : 0, bottom : 0});
+            var button = new qx.ui.form.Button(null, "resource/ife/reset.png").set({decorator: null});
+            meshViewer.add (button, {right : 3, bottom : 3});
             var that = this;
             
             button.addListener("execute", function () {
@@ -643,17 +686,30 @@ qx.Class.define("desk.IfeContainer", {
             });
 
 
-            var screenshot = new qx.ui.form.Button(null, "resource/desk/camera-photo.png").set({opacity : 0.5, width : 30, height : 29});
-            meshViewer.add (screenshot, {right : 30, bottom : 0});
+            var screenshot = new qx.ui.form.Button(null, "resource/ife/screenshot.png").set({decorator: null});
+            meshViewer.add (screenshot, {right : 38, bottom : 3});
             
             
             
             
             screenshot.addListener("execute", function () {
+              var el = MPR.getContentElement().getDomElement(); 
+              var style = window.getComputedStyle(el);
+
+              console.log(el);
+              
+              var rect = { 
+                x: parseInt(style.getPropertyValue('left'), 10), 
+                y: parseInt(style.getPropertyValue('top'), 10), 
+                height: parseInt(style.getPropertyValue('height'), 10), 
+                width: parseInt(style.getPropertyValue('width'), 10) };
+
+              console.log(rect);
 
               var remote = require('electron').remote;
               var webContents = remote.getCurrentWebContents();
-              webContents.capturePage(function (image) {
+              webContents.capturePage(rect, function (image) {
+                console.log(arguments.length);
                 var dialog = remote.dialog;
                 var fn = dialog.showSaveDialog({
                   defaultPath: 'capture.png',
@@ -696,7 +752,7 @@ qx.Class.define("desk.IfeContainer", {
 
             /* Button Open Anat */
 
-            var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une image anatomique"), 'resource/ife/open_A_small.png');
+            var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une image anatomique"), 'resource/ife/anat.png');
             console.log(buttonOpenAnat);
 
             buttonOpenAnat.getChildControl("label").setAllowGrowX(true);
@@ -706,24 +762,16 @@ qx.Class.define("desk.IfeContainer", {
 
             container.add(buttonOpenAnat);
 
-            var buttonOpenFunc = this.__buttonOpenFunc = new qx.ui.form.Button(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/open_F_small.png');
+            var buttonOpenFunc = this.__buttonOpenFunc = new qx.ui.form.Button(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/func.png');
 
             buttonOpenFunc.getChildControl("label").setAllowGrowX(true);
             buttonOpenFunc.getChildControl("label").setTextAlign("left");
 
             container.add(buttonOpenFunc);
 
-            /* Button Close all */
-            var buttonCloseAll = this.__buttonCloseAll = new qx.ui.form.Button(this.tr("Tout fermer"), 'resource/ife/close_small.png');
-            buttonCloseAll.getChildControl("label").setAllowGrowX(true);
-            buttonCloseAll.getChildControl("label").setTextAlign("left");
-            buttonCloseAll.addListener("execute", this.removeAll.bind(this));
-            buttonCloseAll.setEnabled(false);
-            container.add(buttonCloseAll);
-
             /* Button compare */
             if (that.__sideViewer) {
-                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"));
+                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"), 'resource/ife/compare.png');
 
                 buttonCompare.addListener("execute", function () {
                     if (that.__sideViewer.isVisible()) {
@@ -748,6 +796,7 @@ qx.Class.define("desk.IfeContainer", {
                 container.add(buttonCompare);
             }
             else {
+            /*
               var button = new qx.ui.form.Button(this.tr("Masquer le menu"));
               var showContainer;
               button.addListener("click", function() {
@@ -777,8 +826,18 @@ qx.Class.define("desk.IfeContainer", {
               });
               
               container.add(button);
-              
+              */
             }
+
+
+            /* Button Close all */
+            var buttonCloseAll = this.__buttonCloseAll = new qx.ui.form.Button(this.tr("Tout fermer"), 'resource/ife/close_small.png');
+            buttonCloseAll.getChildControl("label").setAllowGrowX(true);
+            buttonCloseAll.getChildControl("label").setTextAlign("left");
+            buttonCloseAll.addListener("execute", this.removeAll.bind(this));
+            buttonCloseAll.setEnabled(false);
+            container.add(buttonCloseAll);
+
 
             return container;
 
@@ -790,33 +849,31 @@ qx.Class.define("desk.IfeContainer", {
 
             this.remove(this.__menu);
 
-            if (!vertical) this.remove(this.__collapseButton); //remove collapse
+            //if (!vertical) this.remove(this.__collapseButton); //remove collapse
 
-            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205});
+            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205, backgroundColor: "rgb(249, 250, 248)"});
             menu.add(new qx.ui.core.Spacer(), {flex: 1});
             menu.add(this.__subMenuButtons);
 
             var target, parent;
             if (vertical) {
-                menu.setPadding(10);
-                menu.setPaddingRight(0);
+                menu.setPadding(5);
+                
+                menu.addAt(this.__burger, 0);
                 parent = new qx.ui.container.Scroll().set({});
-                target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
-                parent.add(target);
+                target = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:20}));
+                parent.add(target, {flex: 1});
             }
             else { //compare mode
                 parent = new qx.ui.container.Scroll().set({ maxHeight: 200 });
-                target = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+                target = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:10}));
 
-                parent.add(target);
+                parent.add(target, {flex: 1});
             }
 
             target.add(this.__subMenuAnat);
-            target.add(new qx.ui.core.Spacer(), {flex: 1});
             target.add(this.__subMenuFunc[0]);
-            target.add(new qx.ui.core.Spacer(), {flex: 1});
             target.add(this.__subMenuFunc[1]);
-            target.add(new qx.ui.core.Spacer(), {flex: 1});
             target.add(this.__subMenuFunc[2]);
 
 
@@ -829,8 +886,11 @@ qx.Class.define("desk.IfeContainer", {
             this.addAt(menu, vertical?0:1);
 
             if (vertical) {
-              this.addAt(this.__collapseButton, 1);
+              //this.addAt(this.__collapseButton, 1);
               menu.add(this.createAbout());
+            }
+            else if (!this.__sideViewer) {
+              menu.add(this.__burger);
             }
 
         },
@@ -845,7 +905,7 @@ qx.Class.define("desk.IfeContainer", {
               maxWidth:250
             });
 
-            container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
+            //container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
 
             var titleContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
@@ -921,7 +981,7 @@ qx.Class.define("desk.IfeContainer", {
             });
             container.add(brightnessSlider);
             container.add(new qx.ui.core.Spacer(), {flex: 0.5});
-            container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
+            //container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
             container.add(new qx.ui.core.Spacer(), {flex: 0.5});
             return container;
         },

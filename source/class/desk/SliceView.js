@@ -1209,10 +1209,32 @@ qx.Class.define("desk.SliceView",
 			this.add(nameLabel, {bottom :5, left :10});
 
 
-			var label = this.__sliceLabel = new qx.ui.basic.Label("0");
-			label.set({textAlign: "center", width : 30, font : font,
-				textColor : this.__textColor});
-			this.add(label, {top :5, right :0});
+			var label = this.__sliceLabel = new qx.ui.form.TextField("0");
+			
+			
+			label.set({textAlign: "center", width : 37, font : font,
+				textColor : this.__textColor, backgroundColor:"transparent", filter:/[0-9]/});
+		  
+		  label.addListener("mousedown", function(event) {
+		    event.stopPropagation();
+		  });
+		  
+		  window.loopGuard = false;  
+		  
+		  label.addListener('changeValue', function () {
+		    if (!qx.ui.core.FocusHandler.getInstance().isActive(label)) return;
+		    
+		    label.blur();
+		    
+				var slice = this.getFirstSlice();
+				if (!slice) return;
+				
+				if (window.loopGuard !== true) {
+				  window.loopGuard = true;
+				  this.setSlice(slice.getNumberOfSlices() - 1 - parseInt(label.getValue()) );
+				  window.loopGuard = false;
+				}
+		  }, this);
 
 			var slider = this.__slider = new qx.ui.form.Slider().set (
 				{minimum : 0, maximum : 100, value : 0,	width :30,
@@ -1271,6 +1293,8 @@ qx.Class.define("desk.SliceView",
 				event.stopPropagation();
 			}, this);
 			this.add(container, {right : 0, top : 0, height : "100%"});
+			
+			this.add(label, {top :0, right :0});
 		},
 
 		// this member is true only when user is manipulating the slider
