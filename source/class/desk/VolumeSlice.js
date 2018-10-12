@@ -160,7 +160,7 @@ qx.Class.define("desk.VolumeSlice",
 	},
 
 	statics : {
-		COLORS : ["blue", "red", "yellow"],
+		COLORS : ["#009FE3", "#CD1719", "#FFED00"],
 
 		VERTEXSHADER : [
 			"varying vec2 vUv;",

@@ -14,5 +14,22 @@ qx.Theme.define("desk.ui.theme.Font",
 
   fonts :
   {
+    "default" :
+    {
+      size : 13,
+      lineHeight : 1.4,
+      family : ["Tahoma", "Liberation Sans", "Arial", "sans-serif"],
+      sources:
+      [
+        {
+          family : "FiraSans-Regular",
+          source:
+          [
+            "resource/ife/fira-sans/FiraSans-Regular.woff2",
+            //"resource/ife/fira-sans/FiraSans-ExtraLightItalic.woff2"
+          ]
+        }
+      ]
+    }
   }
 });

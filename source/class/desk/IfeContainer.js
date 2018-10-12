@@ -190,7 +190,8 @@ qx.Class.define("desk.IfeContainer", {
             
             
             container.set({
-                width: this.__widthMenu+50
+                width: this.__widthMenu+50,
+                backgroundColor: "rgb(249, 250, 248)"
             })
             container.setPadding(5);
             //container.setPaddingRight(0);
@@ -215,7 +216,7 @@ qx.Class.define("desk.IfeContainer", {
                       that.getMainViewer().add(phantom);
                       
                     } else {
-                      container.exclude();
+                      that.__menu.exclude();
                       that.addAt(burger, 0);
                     }
                     burger.setPadding(5);
@@ -229,9 +230,9 @@ qx.Class.define("desk.IfeContainer", {
                       that.getMainViewer().getChildren()[1].show();
                       that.getMainViewer().remove(phantom);
                     } else {
-                      container.show();
+                      that.__menu.show();
                       that.remove(burger);
-                      container.addAt(burger, 0);
+                      that.__menu.addAt(burger, 0);
                     }
                     burger.setPadding(0);
                 }
@@ -324,7 +325,7 @@ qx.Class.define("desk.IfeContainer", {
 
 
         createAbout : function () {
-            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v0.1.0").set({decorator: null});
+            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v0.1.0", "resource/ife/about.png").set({decorator: null});
 
             var win = new qx.ui.window.Window(this.tr("A propos de ")+" EduAnat2 v0.1.0");
             win.set({
@@ -675,8 +676,8 @@ qx.Class.define("desk.IfeContainer", {
                   minZoom:30,
                   cameraFov : 35});
 
-            var button = new qx.ui.form.Button("R").set({opacity : 0.5, width : 30});
-            meshViewer.add (button, {right : 0, bottom : 0});
+            var button = new qx.ui.form.Button(null, "resource/ife/reset.png").set({decorator: null});
+            meshViewer.add (button, {right : 3, bottom : 3});
             var that = this;
             
             button.addListener("execute", function () {
@@ -684,8 +685,8 @@ qx.Class.define("desk.IfeContainer", {
             });
 
 
-            var screenshot = new qx.ui.form.Button(null, "resource/desk/camera-photo.png").set({opacity : 0.5, width : 30, height : 29});
-            meshViewer.add (screenshot, {right : 30, bottom : 0});
+            var screenshot = new qx.ui.form.Button(null, "resource/ife/screenshot.png").set({decorator: null});
+            meshViewer.add (screenshot, {right : 38, bottom : 3});
             
             
             
@@ -750,7 +751,7 @@ qx.Class.define("desk.IfeContainer", {
 
             /* Button Open Anat */
 
-            var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une image anatomique"), 'resource/ife/open_A_small.png');
+            var buttonOpenAnat = this.__buttonOpenAnat = new qx.ui.form.Button(this.tr("Ouvrir une image anatomique"), 'resource/ife/anat.png');
             console.log(buttonOpenAnat);
 
             buttonOpenAnat.getChildControl("label").setAllowGrowX(true);
@@ -760,7 +761,7 @@ qx.Class.define("desk.IfeContainer", {
 
             container.add(buttonOpenAnat);
 
-            var buttonOpenFunc = this.__buttonOpenFunc = new qx.ui.form.Button(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/open_F_small.png');
+            var buttonOpenFunc = this.__buttonOpenFunc = new qx.ui.form.Button(this.tr("Ouvrir un calque fonctionnel"), 'resource/ife/func.png');
 
             buttonOpenFunc.getChildControl("label").setAllowGrowX(true);
             buttonOpenFunc.getChildControl("label").setTextAlign("left");
@@ -769,7 +770,7 @@ qx.Class.define("desk.IfeContainer", {
 
             /* Button compare */
             if (that.__sideViewer) {
-                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"));
+                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"), 'resource/ife/compare.png');
 
                 buttonCompare.addListener("execute", function () {
                     if (that.__sideViewer.isVisible()) {
@@ -849,7 +850,7 @@ qx.Class.define("desk.IfeContainer", {
 
             //if (!vertical) this.remove(this.__collapseButton); //remove collapse
 
-            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205});
+            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205, backgroundColor: "rgb(249, 250, 248)"});
             menu.add(new qx.ui.core.Spacer(), {flex: 1});
             menu.add(this.__subMenuButtons);
 
