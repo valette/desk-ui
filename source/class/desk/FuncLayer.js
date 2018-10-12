@@ -285,7 +285,7 @@ qx.Class.define("desk.FuncLayer", {
             
             var contributeurs = [];
             
-            for(i = 0;i < contributeursNodeList.length; i++)
+            for(var i = 0;i < contributeursNodeList.length; i++)
             {
                 contributeurs.push(contributeursNodeList[i].getElementsByTagName("entity")[0].childNodes[0].nodeValue);
             }

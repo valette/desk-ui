@@ -5,6 +5,7 @@
  * @ignore (chroma*)
  * @ignore (require*)
  * @ignore (performance*)
+  * @ignore (_*)
  */
 
 
@@ -40,7 +41,7 @@ qx.Class.define("desk.IfeContainer", {
     },
 
     properties: {
-		  mainViewer : { init : null},
+		  mainViewer : { init : null}
     },
 
     members: {
@@ -953,7 +954,7 @@ qx.Class.define("desk.IfeContainer", {
             
             var contributeurs = [];
             
-            for(i = 0;i < contributeursNodeList.length; i++)
+            for(var i = 0;i < contributeursNodeList.length; i++)
             {
                 contributeurs.push(contributeursNodeList[i].getElementsByTagName("entity")[0].childNodes[0].nodeValue);
             }
