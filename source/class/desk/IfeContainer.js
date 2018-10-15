@@ -472,7 +472,7 @@ qx.Class.define("desk.IfeContainer", {
             }, function(err, volume) {
                 that.__volumeAnat = volume;
                 volume.setUserData("path", filesList[0]);
-
+/*
                 that.__anatButtonMeta.exclude();
                 that.loadMeta(volume, function (err, meta) {
                   if (err === null) { //show info button
@@ -482,7 +482,7 @@ qx.Class.define("desk.IfeContainer", {
                     that.__anatButtonMeta.exclude();
                   }
                 });
-
+*/
 
                 var volSlice = that.__MPR.getVolumeSlices(volume);
                 var meshes = that.__meshViewer.attachVolumeSlices(volSlice);
@@ -916,7 +916,7 @@ qx.Class.define("desk.IfeContainer", {
 
                 titleContainer.add(new qx.ui.core.Spacer(), {flex: 1});
 
-
+/*
                 var button_meta = this.__anatButtonMeta = new qx.ui.form.Button(null, 'resource/ife/info_small.png').set({
                     decorator: null
                 });
@@ -924,7 +924,7 @@ qx.Class.define("desk.IfeContainer", {
                 button_meta.addListener("execute", function() {
                     that.showMeta(that.__volumeAnat);
                 });
-
+*/
 
             container.add(titleContainer);
 
