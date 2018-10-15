@@ -22,6 +22,12 @@ qx.Class.define("desk.IfeContainer", {
 	    new desk.ProgressBar();
 
 	    this.__sideViewer = sideViewer;
+	    
+	    if (sideViewer) {
+	      this.__backgroundColor = "rgb(248, 252, 247)";
+	    } else {
+	      this.__backgroundColor = "rgb(252, 247, 248)";
+	    }
 
 	    var layout = new qx.ui.layout.HBox();
         layout.setSpacing(1);
@@ -47,6 +53,7 @@ qx.Class.define("desk.IfeContainer", {
     members: {
         __MPR: null,
         __meshViewer: null,
+        __backgroundColor : "white",
 
         __volumeAnat: null,
         __mesh3DModel : null,
@@ -192,7 +199,7 @@ qx.Class.define("desk.IfeContainer", {
             
             container.set({
                 width: this.__widthMenu+50,
-                backgroundColor: "rgb(249, 250, 248)"
+                backgroundColor: this.__backgroundColor
             })
             container.setPadding(5);
             //container.setPaddingRight(0);
@@ -772,7 +779,9 @@ qx.Class.define("desk.IfeContainer", {
             /* Button compare */
             if (that.__sideViewer) {
                 var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"), 'resource/ife/compare.png');
-
+                buttonCompare.getChildControl("label").setAllowGrowX(true);
+                buttonCompare.getChildControl("label").setTextAlign("left");
+            
                 buttonCompare.addListener("execute", function () {
                     if (that.__sideViewer.isVisible()) {
                         that.__sideViewer.exclude();
@@ -851,7 +860,7 @@ qx.Class.define("desk.IfeContainer", {
 
             //if (!vertical) this.remove(this.__collapseButton); //remove collapse
 
-            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205, backgroundColor: "rgb(249, 250, 248)"});
+            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205, backgroundColor: this.__backgroundColor});
             menu.add(new qx.ui.core.Spacer(), {flex: 1});
             menu.add(this.__subMenuButtons);
 
@@ -1068,6 +1077,7 @@ qx.Class.define("desk.IfeContainer", {
           this.__subMenuFunc[2].removeFunc();
 
             this.__MPR.removeAllVolumes();
+            this.__MPR.resetMaximize();
             this.__meshViewer.removeAllMeshes();
 
             this.__IRMAnatName.setValue("");
