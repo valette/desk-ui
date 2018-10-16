@@ -1175,9 +1175,6 @@ qx.Class.define("desk.SceneContainer",
 						delete attributes[key].array;
 					});
 				}
-				if (mesh.geometry.index) {
-					delete mesh.geometry.index.array;
-				}
 			}
 
 			if (mesh.material) {
