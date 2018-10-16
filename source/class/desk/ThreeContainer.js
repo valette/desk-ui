@@ -145,6 +145,7 @@ qx.Class.define("desk.ThreeContainer",
 		//clean the scene
 		this._deleteMembers(this.__scene);
 		this.__scene = null;
+		this.__renderer.dispose();
 		this._deleteMembers(this.__renderer);
 		this.__renderer = null;
 		this.__threeCanvas = null;
