@@ -449,7 +449,10 @@ qx.Class.define("desk.SliceView",
 		__createCrossMeshes : function (volumeSlice) {
 			var coord = volumeSlice.get2DCornersCoordinates();
 			var material = new THREE.LineBasicMaterial({color : 0x4169FF,
-				linewidth : 2, opacity : 0.5, transparent : true});
+				linewidth : 2, opacity : 0.5, transparent : true,
+			  polygonOffset: true,
+        polygonOffsetFactor: -2.0,
+        polygonOffsetUnits: -10.0});
 
 			this.__crossMeshes.forEach(function (mesh) {
 				this.getScene().remove(mesh);
@@ -458,8 +461,8 @@ qx.Class.define("desk.SliceView",
 
 			function v(x,y,z) {return new THREE.Vector3(x,y,z)}
 			this.__crossMeshes =  [
-				[v(coord[0], 0, 0), v(coord[2], 0, 0)],
-				[v(0, coord[1], 0), v(0, coord[5], 0)]
+				[v(coord[0], 0, 1), v(coord[2], 0, 1)],
+				[v(0, coord[1], 1), v(0, coord[5], 1)]
 			].map(function (coords) {
 				var geometry = new THREE.Geometry();
 				geometry.vertices.push(coords[0], coords[1]);
@@ -961,7 +964,9 @@ qx.Class.define("desk.SliceView",
 			if (!this.__alwaysDisplaySlider) {
 				this.__rightContainer.setVisibility("hidden");
 			}
-			this.__directionOverlays[3].setLayoutProperties({right: 1, top:"45%"});
+			
+			//this.__directionOverlays[3].setLayoutProperties({right: 1, top:"45%"});
+			
 			if (this.__brushMesh) this.__brushMesh.visible = false;
 			this.render();
 		},
@@ -974,7 +979,7 @@ qx.Class.define("desk.SliceView",
 			this.__viewOn = true;
 			var controls = this.getControls();
 			if (this.__rightContainer.getVisibility() === "hidden") {
-				this.__directionOverlays[3].setLayoutProperties({right: 32, top: "45%"});
+				this.__directionOverlays[3].setLayoutProperties({right: "8%", top: "45%"});
 				this.__rightContainer.setVisibility("visible");
 			}
 
@@ -1196,7 +1201,7 @@ qx.Class.define("desk.SliceView",
 				{left: "50%", top:"1%"},
 				{left: "1%", top:"45%"},
 				{left: "50%", bottom:"1%"},
-				{right: "8%", top:"45%"}
+				{right: 45, top:"45%"}
 			].map(function (position, index) {
 				var label = new qx.ui.basic.Label(labels[index]).set(settings);
 				this.add(label, position);
@@ -1238,7 +1243,7 @@ qx.Class.define("desk.SliceView",
 
 			var slider = this.__slider = new qx.ui.form.Slider().set (
 				{minimum : 0, maximum : 100, value : 0,	width :30,
-					opacity : 0.75, backgroundColor : desk.VolumeSlice.COLORS[this.__orientation],
+					opacity : 1, backgroundColor : desk.VolumeSlice.COLORS[this.__orientation],
 					orientation : "vertical"
 			});
 			slider.addListener('mousedown', function () {

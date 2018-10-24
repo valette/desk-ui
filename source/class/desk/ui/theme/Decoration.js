@@ -47,6 +47,6 @@ qx.Theme.define("desk.ui.theme.Decoration",
 		  {
 			  color: "black"
 		  }
-		},
+		}
   }
 });
