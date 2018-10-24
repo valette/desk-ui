@@ -3,7 +3,7 @@
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Remi AGIER",
   "main": "script.js",
-  "version": "0.0.0",
+  "version": "2.0.0",
   "devDependencies": {
     "electron": ">=1.7.9",
     "electron-builder": "^20.22.0"

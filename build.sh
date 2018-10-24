@@ -7,5 +7,9 @@ cp source/script/bundle.js build/script/bundle.js
 cp source/script/STLLoader.js build/script/STLLoader.js
 cp -r source/resource/ build
 python generate.py build
-electron-packager --overwrite --icon=icone_eduanat2.ico --azar=true --version=0.1.0 --app-version=0.1.0 --all build/ EduAnat2
-for i in ./EduAnat2-*; do zip -rqy9 "${i%/}.zip" "$i"; done
+electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch ia32 --platform win32 build/ EduAnat2
+electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch ia32 --platform linux build/ EduAnat2
+electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch x64 --platform linux build/ EduAnat2
+electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch x64 --platform mac build/ EduAnat2
+for i in ./EduAnat2-*; do zip -rqy "${i%/}.zip" "$i"; done
+electron-builder build --config ../builder-effective-config.yaml

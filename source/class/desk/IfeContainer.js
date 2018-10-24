@@ -332,9 +332,9 @@ qx.Class.define("desk.IfeContainer", {
 
 
         createAbout : function () {
-            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v0.1.0", "resource/ife/about.png").set({decorator: null});
+            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v2.0.0", "resource/ife/about.png").set({decorator: null});
 
-            var win = new qx.ui.window.Window(this.tr("A propos de ")+" EduAnat2 v0.1.0");
+            var win = new qx.ui.window.Window(this.tr("A propos de ")+" EduAnat2 v2.0.0");
             win.set({
                 width : 500,
                 height : 600,

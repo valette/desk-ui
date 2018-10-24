@@ -251,7 +251,7 @@ qx.Class.define("desk.FuncLayer", {
               that.hackShaders(volumeSlice, that.__meshesFunc);
               that.__seuilSlider.set({
                   minimum: Math.floor(prop.scalarBounds[0] * 100),
-                  maximum: Math.floor(prop.scalarBounds[1] * 100),
+                  maximum: Math.floor(prop.scalarBounds[1] * 99),
                   singleStep: 1,
                   value: Math.floor((prop.scalarBounds[0] + prop.scalarBounds[1]) * 50)
               })
@@ -411,7 +411,7 @@ qx.Class.define("desk.FuncLayer", {
                   value: 200
               });
               shader.extraShaders.push([
-                  'if ( ( value >= thresholdMax ) || ( value <= thresholdMin ) || ( value == 0.0 ) ) {',
+                  'if ( /*( value > thresholdMax ) ||*/ ( value < thresholdMin ) || ( value == 0.0 ) ) {',
                   'discard;',
                   '} else {',
                   'float range = thresholdMax - thresholdMin;',
