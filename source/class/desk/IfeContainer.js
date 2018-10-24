@@ -5,6 +5,7 @@
  * @ignore (chroma*)
  * @ignore (require*)
  * @ignore (performance*)
+  * @ignore (_*)
  */
 
 
@@ -22,12 +23,16 @@ qx.Class.define("desk.IfeContainer", {
 
 	    this.__sideViewer = sideViewer;
 	    
-	    if (sideViewer) {
-	      this.__backgroundColor = "rgb(248, 252, 247)";
-	    } else {
-	      this.__backgroundColor = "rgb(252, 247, 248)";
-	    }
+	    //if (sideViewer) {
+	    ///  this.__backgroundColor = "rgb(248, 252, 247)";
+	    //} else {
+	    //  this.__backgroundColor = "rgb(252, 247, 248)";
+	    //}
 
+
+	    this.__backgroundColor = "rgb(249, 250, 248)";
+	      
+	      
 	    var layout = new qx.ui.layout.HBox();
         layout.setSpacing(1);
 
@@ -46,7 +51,7 @@ qx.Class.define("desk.IfeContainer", {
     },
 
     properties: {
-		  mainViewer : { init : null},
+		  mainViewer : { init : null}
     },
 
     members: {
@@ -205,24 +210,88 @@ qx.Class.define("desk.IfeContainer", {
 
             //container.add(new qx.ui.core.Widget().set({height:1, backgroundColor:"gray"}));
             
-            var burger = this.__burger = new qx.ui.basic.Image("resource/ife/menu.png");
+            var burger = this.__burger = new qx.ui.basic.Image("resource/ife/menu_left.png");
             burger.setAlignX("right");
             burger.setCursor("pointer");
+            var tooltip = new qx.ui.tooltip.ToolTip("Réduire le menu");
+            burger.setToolTip(tooltip);
+            
             container.add(burger);
             var menuVisible = true;
             var phantom = new qx.ui.core.Widget();
-                      phantom.setHeight(42);
+            
+            phantom.setHeight(32);
+            
+            //that.__sideViewer.isVisible()
+            
+            burger.addListener("click", function () {
+                if (menuVisible) 
+                { //Hide menu
+                  menuVisible = false;
+                  burger.getToolTip().setLabel("Afficher le menu");
+                  
+                  if (that.__sideViewer.isVisible())
+                  { //compare mode
+                    burger.setSource("resource/ife/menu_top.png");
+                    that.__menu.exclude();
+                    that.__sideViewer.getChildren()[1].exclude();
+                    that.add(burger);
+                    that.__sideViewer.add(phantom);
+                  }
+                  else 
+                  { //single mode
+                    burger.setSource("resource/ife/menu_right.png");  
+                    that.__menu.exclude();
+                    that.addAt(burger, 0); 
+                  }
+                }
+                else 
+                { // Show menu
+                  menuVisible = true;
+                  burger.getToolTip().setLabel("Réduire le menu");
+                  if (that.__sideViewer.isVisible())
+                  { //compare mode
+                    burger.setSource("resource/ife/menu_bottom.png");
+                    that.getChildren()[1].show();
+                    that.remove(burger);
+                    that.getChildren()[1].add(burger);
+                    that.__sideViewer.getChildren()[1].show();
+                    that.__sideViewer.remove(phantom);
+                  }
+                  else
+                  { //single mode
+                    burger.setSource("resource/ife/menu_left.png");
+                    that.__menu.show();
+                    that.remove(burger);
+                    that.__menu.addAt(burger, 0);
+                  }
+                }
+                
+                
+                
+            });
+            
+            
+            
+            
+            
+            
+            
+            /*
+            
+            
             burger.addListener("click", function () {
                 if (menuVisible) {
+                    burger.getToolTip().setLabel("Afficher le menu");
                     if (!that.__sideViewer) {
                       that.getChildren()[1].exclude();
                       that.add(burger);
                       that.getMainViewer().getChildren()[1].exclude();
-                      
-
+                      burger.setSource("resource/ife/menu_top.png");                      
                       that.getMainViewer().add(phantom);
                       
                     } else {
+                      burger.setSource("resource/ife/menu_right.png");                      
                       that.__menu.exclude();
                       that.addAt(burger, 0);
                     }
@@ -230,13 +299,16 @@ qx.Class.define("desk.IfeContainer", {
                     menuVisible = false;
                 } else {
                     menuVisible = true;
+                    burger.getToolTip().setLabel("Réduire le menu");
                     if (!that.__sideViewer) {
+                      burger.setSource("resource/ife/menu_bottom.png");
                       that.getChildren()[1].show();
                       that.remove(burger);
                       that.getChildren()[1].add(burger);
                       that.getMainViewer().getChildren()[1].show();
                       that.getMainViewer().remove(phantom);
                     } else {
+                      burger.setSource("resource/ife/menu_left.png");
                       that.__menu.show();
                       that.remove(burger);
                       that.__menu.addAt(burger, 0);
@@ -244,6 +316,8 @@ qx.Class.define("desk.IfeContainer", {
                     burger.setPadding(0);
                 }
             });
+            
+            */
             
             container.add(new qx.ui.core.Spacer(), {flex: 1});
 
@@ -478,7 +552,7 @@ qx.Class.define("desk.IfeContainer", {
             }, function(err, volume) {
                 that.__volumeAnat = volume;
                 volume.setUserData("path", filesList[0]);
-
+/*
                 that.__anatButtonMeta.exclude();
                 that.loadMeta(volume, function (err, meta) {
                   if (err === null) { //show info button
@@ -488,7 +562,7 @@ qx.Class.define("desk.IfeContainer", {
                     that.__anatButtonMeta.exclude();
                   }
                 });
-
+*/
 
                 var volSlice = that.__MPR.getVolumeSlices(volume);
                 var meshes = that.__meshViewer.attachVolumeSlices(volSlice);
@@ -775,16 +849,26 @@ qx.Class.define("desk.IfeContainer", {
 
             container.add(buttonOpenFunc);
 
+            /* Button Close all */
+            var buttonCloseAll = this.__buttonCloseAll = new qx.ui.form.Button(this.tr("Fermer cette image"), 'resource/ife/close.png');
+            buttonCloseAll.getChildControl("label").setAllowGrowX(true);
+            buttonCloseAll.getChildControl("label").setTextAlign("left");
+            buttonCloseAll.addListener("execute", this.removeAll.bind(this));
+            buttonCloseAll.setEnabled(false);
+            container.add(buttonCloseAll);
+
+
+
             /* Button compare */
             if (that.__sideViewer) {
-                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux IRM"), 'resource/ife/compare.png');
+                var buttonCompare = new qx.ui.form.Button(this.tr("Comparer deux images"), 'resource/ife/compare.png');
                 buttonCompare.getChildControl("label").setAllowGrowX(true);
                 buttonCompare.getChildControl("label").setTextAlign("left");
             
                 buttonCompare.addListener("execute", function () {
                     if (that.__sideViewer.isVisible()) {
                         that.__sideViewer.exclude();
-                        buttonCompare.setLabel(that.tr("Comparer deux IRM"));
+                        buttonCompare.setLabel(that.tr("Comparer deux images"));
                         //that.unlink();
 
                         that.switchMenu(true);
@@ -803,49 +887,6 @@ qx.Class.define("desk.IfeContainer", {
 
                 container.add(buttonCompare);
             }
-            else {
-            /*
-              var button = new qx.ui.form.Button(this.tr("Masquer le menu"));
-              var showContainer;
-              button.addListener("click", function() {
-                  var target = that.getChildren()[1];
-                  if (target.isVisible()) {
-                      target.exclude();
-
-                      that.getMainViewer().getChildren()[1].exclude();
-                      
-                      showContainer = new qx.ui.container.Composite(new qx.ui.layout.Canvas());
-
-                      that.add(showContainer);
-                      var showButton = new qx.ui.form.Button(this.tr("Afficher le menu"));
-                      showContainer.add(showButton, {bottom: 0, right: 0});
-                      
-                      var phantom = new qx.ui.core.Widget();
-                      phantom.setHeight(29);
-                      that.getMainViewer().add(phantom);
-                      
-                      showButton.addListener("click", function() {
-                        target.show();
-                        that.getMainViewer().getChildren()[1].show();
-                        that.remove(showContainer);
-                        that.getMainViewer().remove(phantom);
-                      });
-                  }
-              });
-              
-              container.add(button);
-              */
-            }
-
-
-            /* Button Close all */
-            var buttonCloseAll = this.__buttonCloseAll = new qx.ui.form.Button(this.tr("Tout fermer"), 'resource/ife/close_small.png');
-            buttonCloseAll.getChildControl("label").setAllowGrowX(true);
-            buttonCloseAll.getChildControl("label").setTextAlign("left");
-            buttonCloseAll.addListener("execute", this.removeAll.bind(this));
-            buttonCloseAll.setEnabled(false);
-            container.add(buttonCloseAll);
-
 
             return container;
 
@@ -857,9 +898,7 @@ qx.Class.define("desk.IfeContainer", {
 
             this.remove(this.__menu);
 
-            //if (!vertical) this.remove(this.__collapseButton); //remove collapse
-
-            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:205, backgroundColor: this.__backgroundColor});
+            var menu = this.__menu = new qx.ui.container.Composite(vertical ? new qx.ui.layout.VBox() : new qx.ui.layout.HBox()).set({height:210, backgroundColor: this.__backgroundColor});
             menu.add(new qx.ui.core.Spacer(), {flex: 1});
             menu.add(this.__subMenuButtons);
 
@@ -868,11 +907,13 @@ qx.Class.define("desk.IfeContainer", {
                 menu.setPadding(5);
                 
                 menu.addAt(this.__burger, 0);
+                this.__burger.setSource("resource/ife/menu_left.png");
                 parent = new qx.ui.container.Scroll().set({});
                 target = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:20}));
                 parent.add(target, {flex: 1});
             }
             else { //compare mode
+                this.__burger.setSource("resource/ife/menu_bottom.png");
                 parent = new qx.ui.container.Scroll().set({ maxHeight: 200 });
                 target = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:10}));
 
@@ -893,14 +934,16 @@ qx.Class.define("desk.IfeContainer", {
 
             this.addAt(menu, vertical?0:1);
 
-            if (vertical) {
-              //this.addAt(this.__collapseButton, 1);
+            if (vertical) 
+            {
               menu.add(this.createAbout());
+              this.__burger.setAlignY("top");
             }
-            else if (!this.__sideViewer) {
+            else if (this.__sideViewer) 
+            {
+              this.__burger.setAlignY("middle");
               menu.add(this.__burger);
             }
-
         },
 
 
@@ -924,7 +967,7 @@ qx.Class.define("desk.IfeContainer", {
 
                 titleContainer.add(new qx.ui.core.Spacer(), {flex: 1});
 
-
+/*
                 var button_meta = this.__anatButtonMeta = new qx.ui.form.Button(null, 'resource/ife/info_small.png').set({
                     decorator: null
                 });
@@ -932,7 +975,7 @@ qx.Class.define("desk.IfeContainer", {
                 button_meta.addListener("execute", function() {
                     that.showMeta(that.__volumeAnat);
                 });
-
+*/
 
             container.add(titleContainer);
 
@@ -954,7 +997,8 @@ qx.Class.define("desk.IfeContainer", {
             contrastSlider.set({
                 minimum: -40,
                 maximum: 40,
-                singleStep: 1
+                singleStep: 1,
+                backgroundColor:"white"
             });
             contrastSlider.addListener("changeValue", function(e) {
                 var value = Math.pow(10, e.getData() / 40);
@@ -976,7 +1020,8 @@ qx.Class.define("desk.IfeContainer", {
                 minimum: 0,
                 maximum: 100,
                 singleStep: 1,
-                value : 50
+                value : 50,
+                backgroundColor:"white"
             });
             brightnessSlider.addListener("changeValue", function(e) {
                 var value = e.getData() / 100;
@@ -1022,7 +1067,7 @@ qx.Class.define("desk.IfeContainer", {
             
             var contributeurs = [];
             
-            for(i = 0;i < contributeursNodeList.length; i++)
+            for(var i = 0;i < contributeursNodeList.length; i++)
             {
                 contributeurs.push(contributeursNodeList[i].getElementsByTagName("entity")[0].childNodes[0].nodeValue);
             }

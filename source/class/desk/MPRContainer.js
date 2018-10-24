@@ -5,6 +5,7 @@
 * @ignore (async.eachSeries)
 * @ignore (_.indexOf)
 * @ignore (WorkerSlicer)
+* @ignore (require*)
 */
 qx.Class.define("desk.MPRContainer",
 {
@@ -119,6 +120,7 @@ qx.Class.define("desk.MPRContainer",
 		__gridCoords :null,
 		__viewsNames : ["Axial", "Sagittal", "Coronal"],
 		__nbUsedOrientations : null,
+		__screenshootButton : null,
 
 		/**
 		* visualizes the output of an action whenever it is updated
@@ -485,12 +487,47 @@ qx.Class.define("desk.MPRContainer",
 		 * @param orientation {Number} : viewer orientation to maximize
 		 */
 		 maximizeViewer : function (orientation) {
+		  var that = this;
 			this.__maximizeButtons[orientation].setIcon('resource/ife/reduce.png');
 			var sliceView = this.__viewers[orientation];
 			this.__gridContainer.setVisibility("excluded");
 			this.__fullscreenContainer.add(sliceView, {flex : 1});
 			this.__fullscreenContainer.setVisibility("visible");
 			this.fireDataEvent("switchFullScreen", true);
+			
+			var screenshot = this.__screenshootButton = new qx.ui.form.Button(null, "resource/ife/screenshot.png");
+			screenshot.set({opacity: 0.75, padding: 2});
+			
+      screenshot.addListener("execute", function () {
+        var el = that.getContentElement().getDomElement(); 
+        var style = window.getComputedStyle(el);
+        
+        var rect = { 
+          x: parseInt(style.getPropertyValue('left'), 10), 
+          y: parseInt(style.getPropertyValue('top'), 10), 
+          height: parseInt(style.getPropertyValue('height'), 10), 
+          width: parseInt(style.getPropertyValue('width'), 10) };
+
+        console.log(rect);
+
+        var remote = require('electron').remote;
+        var webContents = remote.getCurrentWebContents();
+        webContents.capturePage(rect, function (image) {
+          console.log(arguments.length);
+          var dialog = remote.dialog;
+          var fn = dialog.showSaveDialog({
+            defaultPath: 'capture.png',
+            filters : [{name: 'Image', extensions: ['png']}]
+          });
+          if (fn && fn !== null)
+            remote.require('fs').writeFile(fn, image.toPng());
+        });
+      });
+
+
+			
+			
+      sliceView.getRightContainer().addAt(screenshot, 2);
 		},
 
 		/**
@@ -503,6 +540,12 @@ qx.Class.define("desk.MPRContainer",
 			}
 			this.__gridContainer.setVisibility("visible");
 			this.__applyViewsLayout(this.getViewsLayout());
+			
+			if (this.__screenshootButton !== null) {
+			  this.__screenshootButton.destroy();
+			  this.__screenshootButton = null;
+			}
+			
 			this.fireDataEvent("switchFullScreen", false);
 		},
 

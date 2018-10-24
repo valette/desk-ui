@@ -32,7 +32,9 @@ window.setTimeout(function () {
 
     //var container = new qx.ui.container.Composite(new qx.ui.layout.HBox());
     var container = new qx.ui.splitpane.Pane("horizontal");
-    console.log(qxRoot);
+    console.log(container);
+    container.getChildControl("splitter").setBackgroundColor("#C0C0C0");
+    
     qxRoot.add(container, {width:"100%", height:"100%"});
 //    qxRoot.add(container, {top:0, left:0, bottom:0, right:0, width:"100%", height:"100%"});
     var sideViewer = new desk.IfeContainer();

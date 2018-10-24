@@ -71,7 +71,7 @@ qx.Class.define("desk.FuncLayer", {
               }));
 
               titleContainer.add(new qx.ui.core.Spacer(), {flex: 1});
-              
+/*
               var button_meta = this.__funcButtonMeta = new qx.ui.form.Button(null, 'resource/ife/info_small.png').set({
                   decorator: null
               });
@@ -79,10 +79,13 @@ qx.Class.define("desk.FuncLayer", {
               button_meta.addListener("execute", function() {
                   that.showMeta(that.volumeFunc);
               });
-
+*/
               var button_hide = new qx.ui.form.Button(null, 'resource/ife/show.png').set({
                   decorator: null
               });
+              
+              var tooltip = new qx.ui.tooltip.ToolTip("Masquer");
+              button_hide.setToolTip(tooltip);
               
               console.log(button_hide);
               titleContainer.add(button_hide);
@@ -91,17 +94,19 @@ qx.Class.define("desk.FuncLayer", {
                 if (imageVisible) {
                   imageVisible = false;
                   that.__MPR.setVolumeOpacity(that.volumeFunc, 0);
-                  button_hide.__childControls.icon.setSource('resource/ife/hide.png');
+                  button_hide.getChildControl('icon').setSource('resource/ife/hide.png');
+                  button_hide.getToolTip().setLabel("Démasquer");
                 }
                 else {
                   imageVisible = true;
                   that.__MPR.setVolumeOpacity(that.volumeFunc, 0.7);
-                  button_hide.__childControls.icon.setSource('resource/ife/show.png');
+                  button_hide.getChildControl('icon').setSource('resource/ife/show.png');
+                  button_hide.getToolTip().setLabel("Masquer");
                 }
               });
 
 
-              var button_close = new qx.ui.form.Button(null, 'resource/ife/close_small_small.png').set({
+              var button_close = new qx.ui.form.Button(null, 'resource/ife/close_small.png').set({
                   decorator: null
               });
               titleContainer.add(button_close);
@@ -121,6 +126,7 @@ qx.Class.define("desk.FuncLayer", {
           var seuilLabel = new qx.ui.basic.Label(this.tr("Seuil") + " : <b></b>").set({rich:true});
           this.add(seuilLabel);
           var seuilSlider = this.__seuilSlider = new qx.ui.form.Slider();
+          seuilSlider.setBackgroundColor("white");
 
           seuilSlider.addListener("changeValue", function(e) {
 		          var val = (seuilSlider.getValue()-seuilSlider.getMinimum())/(seuilSlider.getMaximum()-seuilSlider.getMinimum())*100;
@@ -229,7 +235,7 @@ qx.Class.define("desk.FuncLayer", {
               var prop = volume.getUserData("workerSlicer").properties;
               that.volumeFunc = volume;
               volume.setUserData("path", filesList[0]);
-
+/*
               that.__funcButtonMeta.exclude();
               that.loadMeta(volume, function (err, meta) {
                 if (err === null) { //show info button
@@ -239,7 +245,7 @@ qx.Class.define("desk.FuncLayer", {
                   that.__funcButtonMeta.exclude();
                 }
               });
-
+*/
               that.__meshesFunc = that.__meshViewer.attachVolumeSlices(that.__MPR.getVolumeSlices(volume));
               that.__IRMFuncName.setValue(name.split(".")[0]);
 
@@ -301,9 +307,14 @@ qx.Class.define("desk.FuncLayer", {
             var title                 = general.getElementsByTagName("title")[0].childNodes[0].childNodes[0].nodeValue;
             var description           = this.nl2br(general.getElementsByTagName("description")[0].childNodes[0].childNodes[0].nodeValue.trim() );
             var contributeursNodeList = lom.getElementsByTagName("lifeCycle")[0].getElementsByTagName("contribute");
-            var contributeurs         = [];
-            for(i = 0;i < contributeursNodeList.length; i++)
+            
+            var contributeurs = [];
+            
+            for(var i = 0;i < contributeursNodeList.length; i++)
+            {
                 contributeurs.push(contributeursNodeList[i].getElementsByTagName("entity")[0].childNodes[0].nodeValue);
+            }
+            
             var txt = "<h2>"+title+"</h2>"
               + "<h4>Description</h4>" + description + "<br>"
               + "<h4>Contributeurs : </h4>"
@@ -471,7 +482,7 @@ qx.Class.define("desk.FuncLayer", {
 
       lutImage: function(generator /*, arguments pass to chroma.scale */) {
           var canvas = document.createElement('canvas');
-          canvas.width = this.__widthMenu;
+          canvas.width = this.__widthMenu-5;
           canvas.height = 16;
           var ctx = canvas.getContext("2d");
           var imgData = new ImageData(this.__widthMenu, 1);
