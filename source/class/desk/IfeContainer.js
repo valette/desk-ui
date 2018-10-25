@@ -406,24 +406,62 @@ qx.Class.define("desk.IfeContainer", {
 
 
         createAbout : function () {
-            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v2.0.0", "resource/ife/about.png").set({decorator: null});
+            var button = new qx.ui.form.Button(this.tr("A propos de ")+" EduAnat2 v2.0", "resource/ife/about.png").set({decorator: null});
 
-            var win = new qx.ui.window.Window(this.tr("A propos de ")+" EduAnat2 v2.0.0");
+            var win = new qx.ui.window.Window(this.tr("A propos de ")+" EduAnat2 v2.0");
             win.set({
-                width : 500,
+                width : 750,
                 height : 600,
                 alwaysOnTop : true,
                 showMinimize : false,
                 showMaximize : false,
                 centerOnAppear : true,
-                modal : true,
+                //modal : true,
                 movable : false,
                 allowMaximize : false,
                 allowMinimize : false,
+                allowClose : true,
                 resizable : false
             });
 
             win.setLayout(new qx.ui.layout.VBox(10));
+
+            var scroll = new qx.ui.container.Scroll().set({maxHeight:500});
+            scrollContainer = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:20}));
+            scroll.add(scrollContainer);
+            win.add(scroll);
+              
+            scrollContainer.add( new qx.ui.basic.Label([
+                "<h3>EduAnat2</h3><em>Version 2.0 novembre 2018</em><br>",
+                "EduAnat2 est un visualiseur 3D conçu pour enseigner les neurosciences et l’anatomie. EduAnat2 utilise la banque d’images AnaPeda spécialement développée pour des usages pédagogiques.",
+                "",
+                "<u>Avertissement :</u> ",
+                "EduAnat2 est uniquement destiné à un usage pédagogique. Il n’est pas destiné à un usage médical ou auto médical. Nous déclinons toute responsabilité en cas d'utilisation incorrecte du logiciel.",
+                "",
+                "<u>Contributeurs :</u> ",
+                "Rémi Agier",
+                "Sandrine Beaudin",
+                "Julien Cartier",
+                "Philippe Cosentino",
+                "Philippe Daubias",
+                "Françoise Morel-Deville",
+                "Emmanuel Seiglan",
+                "Catherine Simand",
+                "Sébastien Valette",
+                "",
+                "<u>Soutiens :</u>",
+                "EduAnat2 a reçu le soutien financier  des LabEx Cortex et LabEx Primes de l’Université de Lyon, de l’Institut français de l’éducation et de l’Ecole normale supérieure de Lyon.",
+                "",
+                "<u>Information de licence :</u>",
+                "Eduanat2 est basé sur l'infrastructure DESK (<a href=\"www.creatis.insa-lyon.fr/~valette/desk.html\">www.creatis.insa-lyon.fr/~valette/desk.html</a>) dont le code source est distribué sous licence CeCILL-B (BSD-compatible).",
+                "",
+                "<a>Informations pédagogiques :</a>",
+                "<a href=\"http://acces.ens-lyon.fr/acces/thematiques/neurosciences/outils-numeriques\">http://acces.ens-lyon.fr/acces/thematiques/neurosciences/outils-numeriques",
+                "",
+              ].join('<br>') ).set({
+                rich : true
+            }) );
+            
             var layout = new qx.ui.layout.HBox();
             layout.setSpacing(5);
             var logos = new qx.ui.container.Composite(layout);
@@ -448,15 +486,9 @@ qx.Class.define("desk.IfeContainer", {
             
             
             
-            win.add(logos);
+            scrollContainer.add(logos);
 
-            win.add( new qx.ui.basic.Label([
-                "Mentions légales :",
-                ""
-              ].join('<br>') ).set({
-                rich : true,
-                width: 460
-            }) );
+            
             
             
                         // "ok" button to close the window
@@ -774,29 +806,21 @@ qx.Class.define("desk.IfeContainer", {
             
             screenshot.addListener("execute", function () {
               var el = MPR.getContentElement().getDomElement(); 
-              var style = window.getComputedStyle(el);
 
-              console.log(el);
-              
-              var rect = { 
-                x: parseInt(style.getPropertyValue('left'), 10), 
-                y: parseInt(style.getPropertyValue('top'), 10), 
-                height: parseInt(style.getPropertyValue('height'), 10), 
-                width: parseInt(style.getPropertyValue('width'), 10) };
-
-              console.log(rect);
+              var rect = el.getBoundingClientRect();
+              rect.y = rect.top;
+              rect.x = rect.left;
 
               var remote = require('electron').remote;
               var webContents = remote.getCurrentWebContents();
               webContents.capturePage(rect, function (image) {
-                console.log(arguments.length);
                 var dialog = remote.dialog;
                 var fn = dialog.showSaveDialog({
                   defaultPath: 'capture.png',
                   filters : [{name: 'Image', extensions: ['png']}]
                 });
                 if (fn && fn !== null)
-                  remote.require('fs').writeFile(fn, image.toPng());
+                  remote.require('fs').writeFile(fn, image.toPNG());
               });
             });
 
@@ -875,6 +899,7 @@ qx.Class.define("desk.IfeContainer", {
                         that.__sideViewer.switchMenu(true);
 
                     } else {
+                        that.__sideViewer.__MPR.resetMaximize();
                         that.__sideViewer.show();
                         buttonCompare.setLabel(that.tr("Fermer la comparaison"));
                         //that.link(that.__sideViewer);
@@ -1122,6 +1147,8 @@ qx.Class.define("desk.IfeContainer", {
 
             this.__MPR.removeAllVolumes();
             this.__MPR.resetMaximize();
+            if (this.__sideViewer)
+              this.__sideViewer.__MPR.resetMaximize();
             this.__meshViewer.removeAllMeshes();
 
             this.__IRMAnatName.setValue("");

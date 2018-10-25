@@ -1,8 +1,8 @@
 {
   "name": "EduAnat2",
   "productName": "EduAnat2",
-  "description": "HTML front-end for visualization (3D objects and medical images)",
-  "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
+  "description": "EduAnat2",
+  "author": "Remi AGIER <remi@aigen.fr> (http://www.aigen.fr), Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
   "license": "CECILL-B",
   "version": "2.0.0",
   "repository": {
@@ -40,7 +40,9 @@
     "uglify-js": ">0.0.0",
     "uploadmgr": "https://github.com/johnspackman/UploadMgr",
     "webworkify": ">0.0.0",
-    "xterm": ">0.0.0"
+    "xterm": ">0.0.0",
+    "electron": ">=1.7.9",
+    "electron-builder": "^20.22.0"
   },
   "engines": {
     "node": ">=4.0.0"

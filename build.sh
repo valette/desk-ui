@@ -10,6 +10,6 @@ python generate.py build
 electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch ia32 --platform win32 build/ EduAnat2
 electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch ia32 --platform linux build/ EduAnat2
 electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch x64 --platform linux build/ EduAnat2
-electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch x64 --platform mac build/ EduAnat2
-for i in ./EduAnat2-*; do zip -rqy "${i%/}.zip" "$i"; done
-electron-builder build --config ../builder-effective-config.yaml
+electron-packager --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 --arch x64 --platform darwin build/ EduAnat2
+for i in ./EduAnat2-*; do zip -rqy "dist/${i%/}.zip" "$i"; done
+electron-builder build -wl --config builder-effective-config.yaml

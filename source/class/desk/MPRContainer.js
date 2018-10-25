@@ -500,27 +500,21 @@ qx.Class.define("desk.MPRContainer",
 			
       screenshot.addListener("execute", function () {
         var el = that.getContentElement().getDomElement(); 
-        var style = window.getComputedStyle(el);
         
-        var rect = { 
-          x: parseInt(style.getPropertyValue('left'), 10), 
-          y: parseInt(style.getPropertyValue('top'), 10), 
-          height: parseInt(style.getPropertyValue('height'), 10), 
-          width: parseInt(style.getPropertyValue('width'), 10) };
-
-        console.log(rect);
-
+        var rect = el.getBoundingClientRect();
+        rect.y = rect.top;
+        rect.x = rect.left;
+        
         var remote = require('electron').remote;
         var webContents = remote.getCurrentWebContents();
         webContents.capturePage(rect, function (image) {
-          console.log(arguments.length);
           var dialog = remote.dialog;
           var fn = dialog.showSaveDialog({
             defaultPath: 'capture.png',
             filters : [{name: 'Image', extensions: ['png']}]
           });
           if (fn && fn !== null)
-            remote.require('fs').writeFile(fn, image.toPng());
+            remote.require('fs').writeFile(fn, image.toPNG());
         });
       });
 
