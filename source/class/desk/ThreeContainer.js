@@ -33,7 +33,13 @@ qx.Class.define("desk.ThreeContainer",
 			Array.isArray( opts.cameraUp ) ? this.__initialCameraUp.fromArray( opts.cameraUp ) : this.__initialCameraUp.copy( opts.cameraUp )
 		}
 
-		var threeCanvas = this.__threeCanvas = this.__garbageContainer.getChildren()[0] || new qx.ui.embed.Canvas();
+		if ( !desk.ThreeContainer.__garbageContainer) {
+			desk.ThreeContainer.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+		}
+
+		var threeCanvas = this.__threeCanvas = desk.ThreeContainer.__garbageContainer.getChildren()[0] 
+			|| new qx.ui.embed.Canvas();
+
 		threeCanvas.set({syncDimension : true, zIndex : 0});
 		var canvas = threeCanvas.getContentElement().getCanvas();
 
@@ -74,7 +80,7 @@ qx.Class.define("desk.ThreeContainer",
 
 	destruct : function(){
 		this.__threeCanvas.removeListenerById(this.__listenerId);
-		this.__garbageContainer.add(this.__threeCanvas);
+		desk.ThreeContainer.__garbageContainer.add(this.__threeCanvas);
 
 		var ctx = this.__threeCanvas.getContentElement().getCanvas().getContext("webgl");
 		// clean webgl context;
@@ -141,15 +147,11 @@ qx.Class.define("desk.ThreeContainer",
 		// TODO: This should NOT be needed but Firefox fails with 'hint'
 		while(ctx.getError());
 
-
 		//clean the scene
-		this._deleteMembers(this.__scene);
 		this.__scene = null;
 		this.__renderer.dispose();
-		this._deleteMembers(this.__renderer);
 		this.__renderer = null;
 		this.__threeCanvas = null;
-		this._deleteMembers(this.__camera);
 		this.__camera = null;
 		this._deleteMembers(this.__controls);
 		this.__controls = null;
@@ -172,6 +174,12 @@ qx.Class.define("desk.ThreeContainer",
 		 * fired after each render
 		 */
 		"render" : "qx.event.type.Event"
+	},
+
+	statics : {
+
+		__garbageContainer : null
+
 	},
 
 	members : {
@@ -200,7 +208,7 @@ qx.Class.define("desk.ThreeContainer",
 				link.render();
 			}, this);
 		},
-		__garbageContainer : new qx.ui.container.Composite(new qx.ui.layout.HBox()),
+
 		__listenerId : null,
 
 		/**
