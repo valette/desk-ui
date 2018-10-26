@@ -26,6 +26,7 @@ qx.Class.define("desk.Actions",
 	*/
 	construct : function() {
 		this.base(arguments);
+		this.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
 		if ( typeof desk_startup_script !== "string" ) {
 			if ( qx.bom.Cookie.get("homeURL" ) ) {
@@ -651,7 +652,7 @@ qx.Class.define("desk.Actions",
 			}
 		},
 
-		__garbageContainer : new qx.ui.container.Composite(new qx.ui.layout.HBox()),
+		__garbageContainer : null,
 
 		/**
 		* launches an action
