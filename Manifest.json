@@ -23,8 +23,9 @@
   
   "provides" : 
   {
-    "namespace"   : "desk.ui",
+    "namespace"   : "desk",
     "encoding"    : "utf-8",
+    "boot"       : "source/boot",
     "class"       : "source/class",
     "resource"    : "source/resource",
     "translation" : "source/translation",

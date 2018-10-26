@@ -1,0 +1,11 @@
+{
+  "libraries": [
+    {
+      "library_name": "UploadMgr",
+      "library_version": "trunk",
+      "repo_name": "johnspackman/UploadMgr",
+      "repo_tag": "v1.0.1",
+      "path": "contrib/johnspackman_UploadMgr_v1.0.1"
+    }
+  ]
+}

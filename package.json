@@ -19,7 +19,7 @@
     "brace": "0.11.1",
     "browserify": "16.2.3",
     "browserify-css": "0.14.0",
-    "c3": "0.6.7",
+    "c3": "0.6.8",
     "chalk": "2.4.1",
     "d3": "~5.7.0",
     "heap": "0.2.6",
@@ -30,6 +30,8 @@
     "numeric": "1.2.6",
     "operative": "0.4.6",
     "pretty-data": "0.40.0",
+    "qooxdoo-sdk": "6.0.0-alpha-20181015",
+    "qxcompiler": "0.2.15",
     "random-js": "1.0.8",
     "socket.io-client": "2.1.1",
     "three": "0.97.0",
@@ -37,7 +39,7 @@
     "uglify-es": "3.3.9",
     "uploadmgr": "git+https://github.com/johnspackman/UploadMgr.git",
     "webworkify": "1.5.0",
-    "xterm": "3.7.0"
+    "xterm": "3.8.0"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -48,11 +50,11 @@
     ]
   },
   "scripts": {
-    "browserify": "browserify source/browserified.js -r async -r bluebird -r chalk -r heap -r jstat -r lodash -r operative -r ttest -r ./source/desk-client.js:desk-client > source/script/bundle.js",
-    "uglify": "uglifyjs source/script/bundle.js --mangle -o build/script/bundle.js",
-    "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
+    "browserify": "browserify source/browserified.js -r async -r bluebird -r chalk -r heap -r jstat -r lodash -r operative -r ttest -r ./source/desk-client.js:desk-client > source-output/desk-ui/bundle.js",
+    "uglify": "uglifyjs source-output/desk-ui/bundle.js --mangle -o build/desk-ui/bundle.js",
+    "qooxdoo": "qx compile --target source && qx compile --target build && python generate.py api",
     "updateQooxdoo": "cd qooxdoo && git pull && cd ..",
-    "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
+    "clean": "rm -rf build && rm -rf api && rm -rf source-output",
     "build": "npm run clean && npm run qooxdoo && npm run bundle",
     "bundle": "npm run browserify && npm run uglify",
     "buildAddons": "node source/buildAddons.js",
