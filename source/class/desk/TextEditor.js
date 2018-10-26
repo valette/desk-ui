@@ -1,6 +1,7 @@
 /**
  * A simple text editor that can also execute javascript code
  * @lint ignoreDeprecated ( alert )
+ * @ignore( localStorage.* )
  */
 qx.Class.define("desk.TextEditor", 
 {
