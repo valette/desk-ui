@@ -48,7 +48,7 @@
     ]
   },
   "scripts": {
-    "browserify": "browserify source/browserified.js -r async -r chalk -r heap -r jstat -r lodash -r operative -r ttest -r ./source/desk-client.js:desk-client > source/script/bundle.js",
+    "browserify": "browserify source/browserified.js -r async -r bluebird -r chalk -r heap -r jstat -r lodash -r operative -r ttest -r ./source/desk-client.js:desk-client > source/script/bundle.js",
     "uglify": "uglifyjs source/script/bundle.js --mangle -o build/script/bundle.js",
     "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
     "updateQooxdoo": "cd qooxdoo && git pull && cd ..",

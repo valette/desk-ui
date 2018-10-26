@@ -135,6 +135,8 @@ qx.Class.define("desk.ui.Application",
 		 **************************************************************/
 		__promisifyAll : function () {
 
+			Promise.promisify = require('bluebird').promisify;
+
 			var toPromisify = [
 				"desk.Actions.execute",
 				"desk.Actions.killAction",

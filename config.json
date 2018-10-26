@@ -43,7 +43,7 @@
     "APPLICATION"  : "desk.ui",
     "QOOXDOO_PATH" : "qooxdoo",
     "QXTHEME"      : "desk.ui.theme.Theme",
-    "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*", "${APPLICATION}.test.*", "${APPLICATION}.simulation.*"],
+    "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*"],
     "LOCALES"      : [ "en" ],
     "CACHE"        : "cache",
     "ROOT"         : "."

@@ -3,7 +3,6 @@
  */
 EventEmitter = require('events');
 async     = require('async');
-Promise   = require('bluebird');
 numeric   = require('numeric');
 kdTree    = require('kdt');
 _         = require('lodash');
