@@ -15,6 +15,7 @@
  * @ignore (desk_startup_script)
  * @ignore (desk.auto)
  * @ignore (Promise)
+ * @ignore (require)
  * @ignore (Promise.*)
  */
 
@@ -58,8 +59,10 @@ qx.Class.define("desk.ui.Application",
 			this.__promisifyAll();
 			var actions = desk.Actions.getInstance()
 			desk.Actions.init(afterActionsInitialized);
+			var savedDesk = window.desk;
 
 			function afterActionsInitialized () {
+				if ( !window.desk.FileSystem ) window.desk = savedDesk; // #BUG this happens whith webpack
 				actions.debug("actions initialized!");
 				desk.auto = false;
 				// first try to automatically launch startup script if it exists
