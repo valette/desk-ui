@@ -54,11 +54,14 @@ var ace   = require('brace');
 			require("brace/ext/language_tools");
 
 var work  = require('webworkify');
-
+var CTMBlob = work(require('./ext/CTMWorker.js'), { bare : true } );
+var CTMWorkerURL = URL.createObjectURL( CTMBlob );
 THREE.CTMLoader.prototype.createWorker = function () {
-	return work(require('./ext/CTMWorker.js'));
+	return new Worker( CTMWorkerURL );
 }
 
+var VTKBlob = work(require('./ext/VTKWorker.js'), { bare : true } );
+var VTKWorkerURL = URL.createObjectURL( VTKBlob );
 THREE.VTKLoader.prototype.createWorker = function () {
-	return work(require('./ext/VTKWorker.js'));
+	return new Worker( VTKWorkerURL );
 }
