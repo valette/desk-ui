@@ -14,7 +14,6 @@ self.heap = self.Heap = require('heap');
 self.jsSHA            = require("jssha");
 self.kdTree           = require('kdt');
 self.numeric          = require('numeric');
-self.prettyData       = require('pretty-data').pd;
 self.randomJS         = require('random-js');
 self.THREE            =	require('three');
 	require('three/examples/js/controls/TransformControls.js');

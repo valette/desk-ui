@@ -28,7 +28,6 @@
     "lodash": "4.17.11",
     "numeric": "1.2.6",
     "operative": "0.4.6",
-    "pretty-data": "0.40.0",
     "random-js": "1.0.8",
     "socket.io-client": "2.1.1",
     "style-loader": "0.23.1",
