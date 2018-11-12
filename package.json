@@ -48,7 +48,7 @@
     "build": "npm run clean && npm run qooxdoo && npm run bundle",
     "buildAddons": "node source/buildAddons.js",
     "bundle": "webpack && npm run terser",
-    "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
+    "clean": "rm -rf build && rm -rf api && rm -rf source/script",
     "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
     "terser": "terser source/script/bundle.js --mangle -o build/script/bundle.js",
     "updateAll": "npm run updateQooxdoo && rm -rf node_modules && git pull && npm install && npm run build",
