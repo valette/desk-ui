@@ -11,11 +11,23 @@ electron.app.on('ready', () => {
 		icon: 'icone_eduanat2.png',
 		experimentalFeatures : true,
 		experimentalCanvasFeatures : true,
-		title:'EduAnat2'
+		title:'EduAnat2',
+		show:false
 	});
+
+	win.once('ready-to-show', () => {
+    win.show()
+  });
+  
+win.webContents.on('will-navigate', (event, url) => {
+  event.preventDefault()
+  shell.openExternal(url)
+});	
 
   var url = 'file://' + __dirname + '/index.html';
 	win.loadURL(url);
+
+
 
 	win.maximize();
   //win.webContents.openDevTools();
