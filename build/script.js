@@ -11,13 +11,37 @@ electron.app.on('ready', () => {
 		icon: 'icone_eduanat2.png',
 		experimentalFeatures : true,
 		experimentalCanvasFeatures : true,
-		title:'EduAnat2'
+		title:'EduAnat2',
+		show:false
 	});
 
   var url = 'file://' + __dirname + '/index.html';
 	win.loadURL(url);
+	
+	var splash = new electron.BrowserWindow({
+	  width: 410, 
+	  height: 402, 
+	  //transparent: true, 
+	  resizable:false,
+	  frame: false, 
+	  alwaysOnTop: true});
 
-	win.maximize();
+  splash.loadURL('file://' + __dirname + '/splash.html');
+
+
+  win.once('ready-to-show', () => {
+    win.maximize();
+  });
+
+  var ipcMain = require("electron").ipcMain;
+
+  ipcMain.once('qx-ready', function () {
+    setTimeout(function () {
+      splash.destroy();
+      win.show();
+    }, 200);
+  });
+
   //win.webContents.openDevTools();
 
 	win.on('close', () => {
