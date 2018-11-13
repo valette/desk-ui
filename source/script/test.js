@@ -46,5 +46,7 @@ window.setTimeout(function () {
     container.add(sideViewer);
     sideViewer.exclude();
 
+    const ipc = require("electron").ipcRenderer;
+    ipc.send('qx-ready');
 
 });
