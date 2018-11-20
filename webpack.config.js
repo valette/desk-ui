@@ -1,16 +1,10 @@
-var path = require('path');
 
 module.exports = {
   mode: 'development',
-  entry: path.resolve(__dirname, 'source/bundleIndex.js'),
-  optimization : {
-    namedModules : true
-  },
-
-  devtool : false,
+  entry: __dirname + '/source/bundleIndex.js',
 
   output: {
-    path: path.resolve(__dirname, 'source/script'),
+    path: __dirname + '/source/script',
     filename: 'bundle.js'
   },
 
