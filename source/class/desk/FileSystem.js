@@ -291,6 +291,16 @@ qx.Class.define("desk.FileSystem",
 		* @return {String} the file URL
 		*/
 		getFileURL : function (file) {
+
+			if ( file.startsWith( '/') ) {
+				var entries = file.split( "/" );
+				entries.shift();
+				var first = entries.shift();
+				if ( first !== "home" ) throw new Error( 'cannot acces to ' + file );
+				var second = entries.shift();
+				file = file.replace( '/' + first + '/' + second, "home" );
+			}
+
 			var actions = desk.FileSystem.getInstance();
 			return actions.__baseURL + file;
 		},
