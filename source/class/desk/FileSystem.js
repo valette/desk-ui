@@ -388,7 +388,7 @@ qx.Class.define("desk.FileSystem",
 				directory : path,
 				stdout  : true
 			}, function (err, message) {
-				callback.call(context, err, JSON.parse(message.stdout));
+				callback.call(context, err, !err ? JSON.parse(message.stdout) :  null );
 			});
 		},
 
