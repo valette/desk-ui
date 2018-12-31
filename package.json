@@ -37,7 +37,6 @@
     "terser": "3.11.0",
     "three": "0.99.0",
     "ttest": "1.1.0",
-    "uploadmgr": "git+https://github.com/johnspackman/UploadMgr.git",
     "url-loader": "1.1.2",
     "webpack": "4.27.1",
     "webpack-cli": "3.1.2",
@@ -53,7 +52,7 @@
     "bundle": "webpack && npm run terser",
     "clean": "rm -rf build && rm -rf api && rm -rf source-output",
     "qooxdoo": "qx compile --target source && qx compile --target build && python generate.py api",
-    "terser": "terser source/script/bundle.js --mangle -o build/script/bundle.js",
+    "terser": "terser source-output/desk-ui/bundle.js --mangle -o build/desk-ui/bundle.js",
     "updateAll": "npm run updateQooxdoo && rm -rf node_modules && git pull && npm install && npm run build",
     "updateQooxdoo": "cd qooxdoo && git pull && cd .."
   }

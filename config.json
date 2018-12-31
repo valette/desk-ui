@@ -47,23 +47,5 @@
     "LOCALES"      : [ "en" ],
     "CACHE"        : "cache",
     "ROOT"         : "."
-  },
-
-  "config-warnings" : 
-  {
-    "job-shadowing" : ["libraries"]
-  },
-
-  "jobs" :
-  {
-    "libraries" : 
-    {
-      "library" :
-      [
-        {
-          "manifest"   : "node_modules/uploadmgr/Manifest.json"
-        }
-      ]
-    }
   }
 }
