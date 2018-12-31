@@ -3,6 +3,7 @@
  * and display actions in progress
  * @asset(desk/desk.png)
  * @asset(qx/icon/${qx.icontheme}/16/categories/system.png) 
+ * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-close.png)
  * @ignore (require)
  * @ignore (io)
  * @ignore (_.*)
@@ -117,6 +118,14 @@ qx.Class.define("desk.Actions",
 
 		this.__socket.on("actions updated", this.__setSettings.bind(this));
 		this.__ongoingActions = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+		this.__clearErrorButton = new qx.ui.form.Button(null, "icon/16/actions/dialog-close.png");
+		this.__clearErrorButton.addListener( "click" , function () {
+			Object.entries( this.__runingActions ).forEach( function ( entry ) {
+				if ( entry[ 1 ].error ) this.killAction( entry[ 0 ] );
+			}, this );
+			this.__clearErrorButton.setVisibility( "excluded" );
+		}, this );
+		this.__clearErrorButton.setToolTipText("Clear errors");
 	},
 
 	statics : {
@@ -245,6 +254,7 @@ qx.Class.define("desk.Actions",
 		__runingActions : {},
 		__settings : null,
 		__ongoingActions : null,
+		__clearErrorButton : null,
 		__recordedActions : null,
 		__savedActionFile : 'cache/responses.json',
 		__firstReadFile : null,
@@ -582,6 +592,9 @@ qx.Class.define("desk.Actions",
 			this.__ongoingActions.set ({width : 200, zIndex : 1000000,
 				decorator : "statusbar", backgroundColor : "transparent"});
 			qx.core.Init.getApplication().getRoot().add(this.__ongoingActions, {top : 0, right : 100});
+			qx.core.Init.getApplication().getRoot().add(this.__clearErrorButton, {top : 0, right : 300});
+			this.__clearErrorButton.set ({visibility : "excluded", zIndex : 1000000 });
+
 		},
 
 		/**
@@ -636,9 +649,11 @@ qx.Class.define("desk.Actions",
 			} else if ( res.error  ) {
 
 				console.log( "Error : ", res );
+				if ( res.error.message ) console.log( res.error.message );
 				params.error = res.error;
 				var item = params.item;
-				if ( item ) item.setDecorator("tooltip-error")
+				if ( item ) item.setDecorator("tooltip-error");
+				this.__clearErrorButton.setVisibility( "visible" );
 
 			} else {
 
@@ -733,13 +748,13 @@ qx.Class.define("desk.Actions",
 				this.__socket.connect();
 			}
 
-			item.set( {
-
-				opacity : 0.7,
-				decorator : params.error ? "tooltip-error" : "button-hover"
-
-			} );
-
+			item.setOpacity( 0.7 );
+			if ( params.error ) {
+				this.__clearErrorButton.setVisibility( 'visible' );
+				item.setDecorator( "tooltip-error" );
+			} else {
+				item.setDecorator( "button-hover" );
+			}
 			params.item = item;
 			item.setUserData("params", params);
 			this.__ongoingActions.add(item);
