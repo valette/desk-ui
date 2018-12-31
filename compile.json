@@ -1,0 +1,33 @@
+{
+  "targets": [
+    {
+      "type": "source",
+      "outputPath": "source-output"
+    },
+    {
+      "type": "hybrid",
+      "outputPath": "hybrid-output"
+    },
+    {
+      "type": "build",
+      "outputPath": "build"
+    }
+  ],
+  "defaultTarget": "source",
+  "locales": ["en"],
+  "environment": { 
+      "qx.icontheme": "Tango"
+  },     
+  "applications": [
+    {
+      "class": "desk.ui.Application",
+      "theme": "desk.ui.theme.Theme",
+      "name": "desk-ui",
+      "writeIndexHtmlToRoot": true
+    }
+  ],
+  "libraries": [
+    "./qooxdoo/framework",
+    "."
+  ]
+}
