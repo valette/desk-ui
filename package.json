@@ -23,8 +23,10 @@
     "browserify": ">0.0.0",
     "browserify-css": ">0.0.0",
     "c3": ">0.0.0",
+    "concat": "^1.0.3",
     "d3": "3.5.17",
-    "electron": "^1.7.9",
+    "electron": ">=1.7.9",
+    "electron-builder": "^20.22.0",
     "heap": ">0.0.0",
     "jssha": ">0.0.0",
     "jstat": ">0.0.0",
@@ -40,9 +42,7 @@
     "uglify-js": ">0.0.0",
     "uploadmgr": "https://github.com/johnspackman/UploadMgr",
     "webworkify": ">0.0.0",
-    "xterm": ">0.0.0",
-    "electron": ">=1.7.9",
-    "electron-builder": "^20.22.0"
+    "xterm": ">0.0.0"
   },
   "engines": {
     "node": ">=4.0.0"
@@ -60,11 +60,6 @@
     "build_backup": "npm run clean && npm run qooxdoo && npm run browserify && npm run uglify",
     "build": "./build.sh",
     "buildAll": "npm run browserify && ./build.sh",
-    "package" : "electron-builder build -w --x64 --ia32 --config ../builder-effective-config.yaml --project build/"
+    "package": "electron-builder build -w --x64 --ia32 --config ../builder-effective-config.yaml --project build/"
   }
 }
-
-
-
-
-
