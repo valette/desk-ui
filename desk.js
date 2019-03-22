@@ -5,6 +5,7 @@ const electron = require('electron'),
 
 electron.app.commandLine.appendSwitch('ignore-gpu-blacklist', 'true');
 
+const shell = electron.shell;
 
 //require( 'electron-debug' )( { enabled : true, showDevTools : true } );
 
@@ -18,7 +19,12 @@ electron.app.on('ready', () => {
 		title:'EduAnat2',
 		show:false
 	});
-	
+
+
+win.webContents.on('will-navigate', (event, url) => {
+  event.preventDefault()
+  shell.openExternal(url)
+});	
 	
 
 	var url = 'file://' + __dirname + '/'

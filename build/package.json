@@ -2,8 +2,8 @@
   "name": "EduAnat2",
   "description": "EduAnat2",
   "author": {
-    "name" : "Remi AGIER",
-    "email" : "remi@aigen.fr"
+    "name" : "Aigen",
+    "email" : "contact@aigen.fr"
   },
   "main": "script.js",
   "version": "2.0.0",

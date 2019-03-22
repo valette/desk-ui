@@ -427,7 +427,7 @@ qx.Class.define("desk.IfeContainer", {
             win.setLayout(new qx.ui.layout.VBox(10));
 
             var scroll = new qx.ui.container.Scroll().set({maxHeight:500});
-            scrollContainer = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:20}));
+            var scrollContainer = new qx.ui.container.Composite(new qx.ui.layout.VBox().set({spacing:20}));
             scroll.add(scrollContainer);
             win.add(scroll);
               
@@ -453,7 +453,7 @@ qx.Class.define("desk.IfeContainer", {
                 "EduAnat2 a reçu le soutien financier  des LabEx Cortex et LabEx Primes de l’Université de Lyon, de l’Institut français de l’éducation et de l’Ecole normale supérieure de Lyon.",
                 "",
                 "<u>Information de licence :</u>",
-                "Eduanat2 est basé sur l'infrastructure DESK (<a href=\"www.creatis.insa-lyon.fr/~valette/desk.html\">www.creatis.insa-lyon.fr/~valette/desk.html</a>) dont le code source est distribué sous licence CeCILL-B (BSD-compatible).",
+                "Eduanat2 est basé sur l'infrastructure DESK (<a href=\"https://www.creatis.insa-lyon.fr/~valette/desk.html\">https://www.creatis.insa-lyon.fr/~valette/desk.html</a>) dont le code source est distribué sous licence CeCILL-B (BSD-compatible).",
                 "",
                 "<a>Informations pédagogiques :</a>",
                 "<a href=\"http://acces.ens-lyon.fr/acces/thematiques/neurosciences/outils-numeriques\">http://acces.ens-lyon.fr/acces/thematiques/neurosciences/outils-numeriques",
