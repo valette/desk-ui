@@ -2,7 +2,7 @@
 * @ignore(Uint8Array)
 * @lint ignoreDeprecated(alert)
 * @asset(desk/Contrast_Logo_petit.PNG)
-* @ignore (async.eachSeries)
+* @ignore (async.forEachSeries)
 * @ignore (_.indexOf)
 * @ignore (WorkerSlicer)
 * @ignore (require*)
@@ -702,7 +702,7 @@ qx.Class.define("desk.MPRContainer",
 
 
       var addVolumeToViewers = function () {
-        async.eachSeries(this.__viewers,
+        async.forEachSeries(this.__viewers,
           function (viewer, callback) {
             var tmp = volumeSlices[viewer.getOrientation()] = viewer.addVolume(
                 file, options, callback);

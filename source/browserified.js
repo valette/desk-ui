@@ -18,7 +18,9 @@ THREE     =	require('three');
 			require('./ext/TrackballControls2.js');
 			require('./ext/CTMLoader.js');
 			require('./ext/STLLoader.js');
-
+			
+Detector = require('./ext/Detector.js');
+			
 chroma = require('./ext/chroma.min.js');
 			
 			
@@ -56,8 +58,6 @@ var ace   = require('brace');
 			require('brace/theme/eclipse');
 			require('brace/ext/searchbox');
 			require("brace/ext/language_tools");
-
-Detector  = require('three/examples/js/Detector.js');
 
 var work  = require('webworkify');
 
