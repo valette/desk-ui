@@ -13,8 +13,8 @@
   "dependencies": {
     "concat-stream": "^1.6.2",
     "fs-extra": ">0.0.0",
-    "shelljs": ">0.0.0",
-    "yarn": "^1.7.0"
+    "qooxdoo-sdk": "^5.0.2",
+    "shelljs": ">0.0.0"
   },
   "devDependencies": {
     "async": ">0.0.0",
@@ -26,7 +26,8 @@
     "concat": "^1.0.3",
     "d3": "3.5.17",
     "electron": ">=1.7.9",
-    "electron-builder": "^20.22.0",
+    "electron-builder": "^20.39.0",
+    "electron-packager": "^13.1.1",
     "heap": ">0.0.0",
     "jssha": ">0.0.0",
     "jstat": ">0.0.0",
@@ -35,7 +36,7 @@
     "numeric": ">0.0.0",
     "operative": ">0.0.0",
     "pretty-data": ">0.0.0",
-    "qooxdoo": "git://github.com/qooxdoo/qooxdoo.git",
+    "qooxdoo": "https://github.com/qooxdoo/qooxdoo",
     "random-js": ">0.0.0",
     "socket.io-client": ">0.0.0",
     "three": ">0.0.0",
