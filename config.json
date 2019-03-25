@@ -41,7 +41,7 @@
   "let" :
   {
     "APPLICATION"  : "desk.ui",
-    "QOOXDOO_PATH" : "node_modules/qooxdoo",
+    "QOOXDOO_PATH" : "qooxdoo",
     "QXTHEME"      : "desk.ui.theme.Theme",
     "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*", "${APPLICATION}.test.*", "${APPLICATION}.simulation.*"],
     "LOCALES"      : [ "en", "fr" ],
