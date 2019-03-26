@@ -2,7 +2,7 @@ npm install
 
 rm -rf EduAnat2-*
 
-mkdir build
+mkdir dist
 
 node source/build-worker.js
 cp source/script/workerSlicer.class.js build/script/workerSlicer.class.js
