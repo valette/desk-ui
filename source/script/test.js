@@ -2,7 +2,7 @@ window.setTimeout(function () {
 	var qxRoot = qx.core.Init.getApplication().getRoot();
     //qx.locale.Manager.getInstance().setLocale("en");
 
-    if (!Detector.isWebGLAvailable()) {
+    if (!GLDetector.isWebGLAvailable()) {
       console.log("WebGLUnavalable");
         // create the window instance
         var win = new qx.ui.window.Window( qxRoot.tr("Erreur : WebGL non supporté") );
