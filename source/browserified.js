@@ -19,7 +19,7 @@ THREE     =	require('three');
 			require('./ext/CTMLoader.js');
 			require('./ext/STLLoader.js');
 			
-Detector = require('./ext/Detector.js');
+GLDetector = require('./ext/Detector.js');
 			
 chroma = require('./ext/chroma.min.js');
 			

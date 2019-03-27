@@ -9,12 +9,13 @@ cp source/script/workerSlicer.class.js build/script/workerSlicer.class.js
 cp source/script/workerSlicer.worker.min.js build/script/workerSlicer.worker.min.js
 
 cp source/script/test.js build/script/test.js
-cp source/script/bundle.js build/script/bundle.js
 cp source/script/STLLoader.js build/script/STLLoader.js
 cp -r source/resource/ build
 
 #browserify (without -g npm install)
 node node_modules/browserify/bin/cmd.js source/browserified.js -r async -r heap -r jstat -r lodash -r operative -r ./source/desk-client.js:desk-client > source/script/bundle.js
+
+cp source/script/bundle.js build/script/bundle.js
 
 python generate.py source && python generate.py build
 
