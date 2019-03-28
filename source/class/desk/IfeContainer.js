@@ -1197,7 +1197,7 @@ qx.Class.define("desk.IfeContainer", {
 
             context.font = Math.floor(height*0.6) + 'px Helvetica';
 
-            context.fillStyle = "red";
+            context.fillStyle = "deepskyblue";
             context.fillText(text, (canvas.width-width)/2, height*0.8);
             texture.needsUpdate = true;
 
