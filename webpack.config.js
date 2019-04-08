@@ -8,10 +8,6 @@ module.exports = {
     filename: 'bundle.js'
   },
 
-  node: {
-    fs: 'empty'
-  },
-
  resolve: {
     modules: [
       "node_modules",
