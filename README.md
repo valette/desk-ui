@@ -10,8 +10,8 @@ To build desk-ui on your computer, you need:
 
 ### How to build
 ```
-git clone --recurse-submodules https://github.com/ragier/desk-ui.git
-cd desk-ui
+git clone --recurse-submodules https://github.com/ragier/eduAnat2.git
+cd eduAnat2
 ./build.sh
 ```
 
