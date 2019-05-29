@@ -1788,6 +1788,7 @@ qx.Class.define("desk.SegTools",
 						});
 						list.remove(selectedChild);
 						this.__reloadSeedImage( sliceView );
+						this.__saveSeedsXML();
 					}
 				}
 			}
