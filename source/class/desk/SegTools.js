@@ -1172,6 +1172,7 @@ qx.Class.define("desk.SegTools",
 			editButton.addListener("execute", function () {
 				if (this.__editionWindow == null) {
 					this.__createEditionWindow();
+					this.__editionWindow.center();
 				}
 				this.__editionWindow.open();
 				this.__targetColorItem = labelAttributes;
