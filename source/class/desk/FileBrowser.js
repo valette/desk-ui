@@ -4,8 +4,6 @@
  * @ignore (async.each)
  * @lint ignoreDeprecated (alert)
  * @lint ignoreDeprecated (confirm)
- * @asset(desk/tris.png)
- * @asset(desk/img.png)
  * @asset(qx/icon/${qx.icontheme}/22/places/folder.png)
  * @asset(qx/icon/${qx.icontheme}/22/mimetypes/office-document.png)
  * @ignore (_.*)

@@ -23,9 +23,13 @@
   "applications": [
     {
       "class": "desk.ui.Application",
+      "resourcePath" : "resource",
       "theme": "desk.ui.theme.Theme",
       "name": "desk-ui",
-      "bootPath": "source/boot"
+      "bootPath": "source/boot",
+      "environment": {
+        "qx.icontheme": "Tango"
+      }
     },
     {
       "class": "qxl.apiviewer.Application",
