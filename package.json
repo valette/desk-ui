@@ -10,6 +10,7 @@
   },
   "main": "build/index.html",
   "dependencies": {
+    "@qooxdoo/compiler": "^1.0.0-beta.20190530-1110",
     "fs-extra": "8.0.1",
     "shelljs": "0.8.3"
   },
@@ -28,19 +29,17 @@
     "lodash": "4.17.11",
     "numeric": "1.2.6",
     "operative": "0.4.6",
-    "qooxdoo-sdk": "6.0.0-alpha-20181226-a3c2b0b",
-    "qxcompiler": "0.2.36",
-    "random-js": "2.0.0",
+    "random-js": "2.1.0",
     "socket.io-client": "2.2.0",
     "style-loader": "0.23.1",
     "terser": "4.0.0",
-    "three": "0.104.0",
+    "three": "0.105.1",
     "ttest": "1.1.0",
     "url-loader": "1.1.2",
     "webpack": "4.32.2",
     "webpack-cli": "3.3.2",
     "webworkify-webpack": "2.1.5",
-    "xterm": "3.13.2"
+    "xterm": "3.14.1"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -50,8 +49,8 @@
     "buildAddons": "node source/buildAddons.js",
     "bundle": "webpack && npm run terser",
     "clean": "rm -rf build && rm -rf api && rm -rf source-output",
-    "qooxdoo": "qx compile --target source && qx compile --target build && python generate.py api",
-    "terser": "terser source-output/bundle.js --mangle -o build/bundle.js",
+    "qooxdoo": "qx compile --target source && qx compile --target build",
+    "terser": "terser source-output/desk-ui/bundle.js --mangle -o build/desk-ui/bundle.js",
     "updateAll": "npm run updateQooxdoo && rm -rf node_modules && git pull && npm install && npm run build",
     "updateQooxdoo": "cd qooxdoo && git pull && cd .."
   }

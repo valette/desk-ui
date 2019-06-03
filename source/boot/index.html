@@ -39,6 +39,8 @@ window.onload = function(){
 
 //desk_startup_script = "path/to/my/script"
 </script>
-<script type="text/javascript" src="bundle.js"></script>
+<script type="text/javascript" src="${appPath}bundle.js"></script>
+${preBootJs}
+<script type="text/javascript" src="${appPath}boot.js"></script>
 </body>
 </html>

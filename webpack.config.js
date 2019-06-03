@@ -4,7 +4,7 @@ module.exports = {
   entry: __dirname + '/source/bundleIndex.js',
 
   output: {
-    path: __dirname + '/source-output',
+    path: __dirname + '/source-output/desk-ui',
     filename: 'bundle.js'
   },
 

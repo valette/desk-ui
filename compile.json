@@ -14,20 +14,42 @@
     }
   ],
   "defaultTarget": "source",
-  "locales": ["en"],
-  "environment": { 
-      "qx.icontheme": "Tango"
-  },     
+  "locales": [
+    "en"
+  ],
+  "environment": {
+    "qx.icontheme": "Tango"
+  },
   "applications": [
     {
       "class": "desk.ui.Application",
       "theme": "desk.ui.theme.Theme",
       "name": "desk-ui",
-      "writeIndexHtmlToRoot": true
+      "bootPath": "source/boot"
+    },
+    {
+      "class": "qxl.apiviewer.Application",
+      "theme": "qxl.apiviewer.Theme",
+      "name": "apiviewer",
+      "title": "Qooxdoo API Viewer",
+      "environment": {
+        "qx.icontheme": "Tango",
+        "excludeFromAPIViewer": [
+          "qxl.apiviewer.*"
+        ]
+      },
+      "include": [
+        "qx.*"
+      ],
+      "exclude": [
+        "qx.test.*",
+        "qx.module.Blocker",
+        "qx.module.Placement"
+      ]
     }
   ],
   "libraries": [
-    "./qooxdoo/framework",
     "."
-  ]
+  ],
+  "$schema": "https://raw.githubusercontent.com/qooxdoo/qooxdoo-compiler/master/resource/schema/v1/compile.json"
 }
