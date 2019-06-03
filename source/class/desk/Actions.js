@@ -340,8 +340,8 @@ qx.Class.define("desk.Actions",
 
 			var links = {
 				'THREE.js API' : 'https://threejs.org/docs/',
-				'desk-ui API' : desk.FileSystem.getFileURL('ui/api'),
-				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/source'),
+				'desk-ui API' : desk.FileSystem.getFileURL('ui/build/apiviewer'),
+				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/source-output'),
 				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master',
 				'Qooxdoo Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
 				'Qooxdoo Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
