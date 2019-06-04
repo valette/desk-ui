@@ -42,9 +42,13 @@ var js_files =  [
   //"../Papaya/src/js/surface/surface-vtk.js",
   "source/workerSlicer.manager.js"];
 
-concat(js_files, 'source/script/workerSlicer.worker.js');
+var output = js_files.map((f)=>{
+  return fs.readFileSync(f).toString();
+}).join(';')
+
+fs.writeFileSync("source/script/workerSlicer.worker.js",output, "utf8");
 
 fs.writeFileSync("source/script/workerSlicer.worker.min.js", UglifyJS.minify({
-    "source/script/workerSlicer.worker.js": fs.readFileSync("source/script/workerSlicer.worker.js", "utf8")
+    "source/script/workerSlicer.worker.js": output
 }).code, "utf8");
 

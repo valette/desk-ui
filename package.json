@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git://github.com/valette/desk-ui.git"
   },
-  "main": "build/index.html",
+  "main": "script.js",
   "dependencies": {
     "concat-stream": "^1.6.2"
   },
