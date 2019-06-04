@@ -5,8 +5,20 @@ rm -rf EduAnat2-*
 mkdir dist
 
 node source/build-worker.js
+
+mkdir build/
+cd build/
+mkdir script
+cd ..
+
+cp icon.* build
+
 cp source/script/workerSlicer.class.js build/script/workerSlicer.class.js
 cp source/script/workerSlicer.worker.min.js build/script/workerSlicer.worker.min.js
+cp splash.png build/splash.png
+cp splash.html build/splash.html
+cp icone_eduanat2.png build/icone_eduanat2.png
+cp script.js build/script.js
 
 cp source/script/test.js build/script/test.js
 cp source/script/STLLoader.js build/script/STLLoader.js

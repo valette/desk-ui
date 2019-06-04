@@ -13,7 +13,8 @@
   "dependencies": {
     "concat-stream": "^1.6.2",
     "fs-extra": ">0.0.0",
-    "shelljs": ">0.0.0"
+    "shelljs": ">0.0.0",
+    "electron": "2.0.8"
   },
   "devDependencies": {
     "async": ">0.0.0",
@@ -24,7 +25,6 @@
     "c3": ">0.0.0",
     "concat": "^1.0.3",
     "d3": "3.5.17",
-    "electron": ">=1.7.9",
     "electron-builder": "^20.39.0",
     "electron-packager": "^13.1.1",
     "heap": ">0.0.0",
