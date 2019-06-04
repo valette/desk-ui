@@ -11,12 +11,12 @@
   },
   "main": "build/index.html",
   "dependencies": {
-    "concat-stream": "^1.6.2",
-    "fs-extra": ">0.0.0",
-    "shelljs": ">0.0.0",
-    "electron": "2.0.8"
+    "concat-stream": "^1.6.2"
   },
   "devDependencies": {
+    "fs-extra": ">0.0.0",
+    "shelljs": ">0.0.0",
+    "electron": "2.0.8",
     "async": ">0.0.0",
     "bluebird": ">0.0.0",
     "brace": ">0.0.0",

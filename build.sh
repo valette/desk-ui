@@ -19,6 +19,8 @@ cp splash.png build/splash.png
 cp splash.html build/splash.html
 cp icone_eduanat2.png build/icone_eduanat2.png
 cp script.js build/script.js
+cp index.html build/index.html
+cp package.json build/package.json
 
 cp source/script/test.js build/script/test.js
 cp source/script/STLLoader.js build/script/STLLoader.js
@@ -32,7 +34,7 @@ cp source/script/bundle.js build/script/bundle.js
 python generate.py source && python generate.py build
 
 cd build
-npm install
+npm install  --production
 cd ..
 
 #Create flat build (folder : win32, win64, linux64, mac64)
