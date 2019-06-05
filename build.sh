@@ -14,7 +14,7 @@ cd ..
 cp icon.* build
 
 cp source/script/workerSlicer.class.js build/script/workerSlicer.class.js
-cp source/script/workerSlicer.worker.min.js build/script/workerSlicer.worker.min.js
+cp source/script/workerSlicer.worker.min.js build/script/workerSlicer.worker.js
 cp splash.png build/splash.png
 cp splash.html build/splash.html
 cp icone_eduanat2.png build/icone_eduanat2.png
