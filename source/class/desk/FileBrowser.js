@@ -4,8 +4,6 @@
  * @ignore (async.each)
  * @lint ignoreDeprecated (alert)
  * @lint ignoreDeprecated (confirm)
- * @asset(desk/tris.png)
- * @asset(desk/img.png)
  * @asset(qx/icon/${qx.icontheme}/22/places/folder.png)
  * @asset(qx/icon/${qx.icontheme}/22/mimetypes/office-document.png)
  * @ignore (_.*)
@@ -123,6 +121,8 @@ qx.Class.define("desk.FileBrowser",
 					case "jpg":
 					case "png":
 					case "hdr":
+					case "tif":
+					case "nii":
 						image = "desk/img.png";
 						break;
 					default:
@@ -487,6 +487,7 @@ qx.Class.define("desk.FileBrowser",
 			case "mhd":
 			case "nii":
 			case "hdr":
+			case "tif":
 				new desk.VolumeViewer(file);
 				break;
 			case "vol": 
@@ -513,6 +514,7 @@ qx.Class.define("desk.FileBrowser",
 			if (!node.getChildren) {
 				new desk.VolumeViewer(node.getFullName(), {
 					ooc : true,
+					format : 0,
 					nbOrientations : 1
 					});
 			} else {

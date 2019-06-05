@@ -1,6 +1,5 @@
 var fs = require('fs');
-var UglifyJS = require("uglify-js");
-var concat = require('concat');
+var Terser = require("terser");
 
 
 //Got list from https://github.com/rii-mango/Papaya-Builder/blob/master/src/edu/uthscsa/ric/papaya/builder/Builder.java
@@ -48,7 +47,7 @@ var output = js_files.map((f)=>{
 
 fs.writeFileSync("source/script/workerSlicer.worker.js",output, "utf8");
 
-fs.writeFileSync("source/script/workerSlicer.worker.min.js", UglifyJS.minify({
+fs.writeFileSync("source/script/workerSlicer.worker.min.js", Terser.minify({
     "source/script/workerSlicer.worker.js": output
 }).code, "utf8");
 

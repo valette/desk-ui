@@ -23,8 +23,8 @@ qx.Class.define("desk.Terminal",
 			var win = this.__window = new qx.ui.window.Window();
 			win.set({
 				layout : new qx.ui.layout.HBox(),
-				width : 685,
-				height : 390,
+				width : 739,
+				height : 456,
 				contentPadding : 0,
 				caption : 'Terminal'
 			});
@@ -98,31 +98,37 @@ qx.Class.define("desk.Terminal",
 
 		__init : function () {
 			this.__getSocket( '/xterm' ).emit('newTerminal', {name : '' + this.__rand});
-			this.__socket = this.__getSocket('/xterm' + this.__rand);
+			var socket = this.__socket = this.__getSocket('/xterm' + this.__rand);
 			this.__container = document.getElementById('' + this.__rand);
-			this.__term = new Terminal( { cursorBlink : true } );
-			this.__attach( this.__term, this.__socket );
-			this.__term.on( 'keydown', this.__onKeyDownForSelectNext.bind(this));
-			this.__term.open( this.__container, { focus : true } );
-			this.__term.on('paste', function (data, ev) {
-			this.__resize();
-			this.__term.write(data);
-		}.bind(this));
+			var term = this.__term = new Terminal( { csursorBlink : true } );
 
-		this.__resize();
-		this.addListener( 'appear', this.__resize, this );
-		this.addListener( 'resize', function () {
-			if ( this.__html.isVisible() ) {
+			term._getMessage = term.write.bind( term );
+			term._sendData = socket.send.bind( socket );
+
+			socket.addEventListener( 'message', term._getMessage );
+			term.on('data', term._sendData);
+
+			term.on( 'keydown', this.__onKeyDownForSelectNext.bind(this));
+			term.open( this.__container, { focus : true } ); // fixes https://github.com/xtermjs/xterm.js/issues/1194
+			term.setOption('cursorBlink', true );
+			term.on('paste', function (data, ev) {
 				this.__resize();
-			} 
-		}, this );
+				term.write(data);
+			}.bind(this));
+
+			this.__resize();
+			setTimeout( term.focus.bind( term ), 1 );
+			this.addListener( 'appear', this.__resize, this );
+			this.addListener( 'resize', function () {
+				if ( this.__html.isVisible() ) this.__resize();
+			}, this );
 		},
 
 		__resize : function () {
 			this.__container.children[0].focus();
 			var size = this.__html.getInnerSize();
-			var nCols = Math.floor( size.width / 8.5 );
-			var nRows = Math.floor( size.height / 15 );
+			var nCols = Math.floor( ( size.width - 15 ) / 9 );
+			var nRows = Math.floor( size.height / 17 );
 			if ( ( this.__nCols == nCols ) && ( this.__nRows === nRows) ) {
 				return;
 			}
@@ -130,11 +136,6 @@ qx.Class.define("desk.Terminal",
 			this.__nRows = nRows;
 			this.debug('resize : ', nCols, nRows);
 			this.__term.resize( nCols, nRows );
-			this.__term.children.forEach(function (child) {
-				var style = child.style;
-				style.fontSize = "14px";
-				style.lineHeight = "15px";
-			});
 			this.__socket.emit("resize", {nCols : nCols, nRows : nRows});
 		},
 
@@ -185,44 +186,6 @@ qx.Class.define("desk.Terminal",
 			var terminal = new desk.Terminal();
 			var element = this.__add(terminal);
 				element.getButton().execute();
-			}
-		},
-
-		__attach : function ( term, socket, bidirectional, buffered ) {
-			bidirectional = (typeof bidirectional == 'undefined') ? true : bidirectional;
-
-			term._flushBuffer = function () {
-				term.write(term._attachSocketBuffer);
-				term._attachSocketBuffer = null;
-				clearTimeout(term._attachSocketBufferTimer);
-				term._attachSocketBufferTimer = null;
-			};
-
-			term._pushToBuffer = function ( data ) {
-				if (term._attachSocketBuffer) {
-					term._attachSocketBuffer += data;
-				} else {
-					term._attachSocketBuffer = data;
-					setTimeout( term._flushBuffer, 10 );
-				}
-			};
-
-			term._getMessage = function ( data ) {
-				if ( buffered ) {
-					term._pushToBuffer( data );
-				} else {
-					term.write( data );
-				}
-			};
-
-			term._sendData = function ( data ) {
-				socket.send( data );
-			};
-
-			socket.addEventListener( 'message', term._getMessage );
-
-			if ( bidirectional ) {
-				term.on('data', term._sendData);
 			}
 		}
 	}

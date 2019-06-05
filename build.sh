@@ -1,37 +1,33 @@
 npm install
 
+rm -rf build
+rm -rf dist
 rm -rf EduAnat2-*
 
 mkdir dist
+mkdir build
 
+
+npm run qooxdoo
+npm run bundle
 node source/build-worker.js
 
-mkdir build/
-cd build/
-mkdir script
-cd ..
-
 cp icon.* build
+cp source/script/workerSlicer.class.js build/desk-ui
+cp source/script/workerSlicer.worker.js build/desk-ui
+cp source/script/workerSlicer.class.js source-output/desk-ui
+cp source/script/workerSlicer.worker.js source-output/desk-ui
+cp splash.png build
+cp splash.html build
+cp icone_eduanat2.png build
+cp script.js build
+cp package.json build
+cp -r source/resource/ife source-output/resource/ife
 
-cp source/script/workerSlicer.class.js build/script/workerSlicer.class.js
-cp source/script/workerSlicer.worker.min.js build/script/workerSlicer.worker.js
-cp splash.png build/splash.png
-cp splash.html build/splash.html
-cp icone_eduanat2.png build/icone_eduanat2.png
-cp script.js build/script.js
-cp index.html build/index.html
-cp package.json build/package.json
-
-cp source/script/test.js build/script/test.js
-cp source/script/STLLoader.js build/script/STLLoader.js
+cp source/script/test.js build/desk-ui
+cp source/script/test.js source-output/desk-ui
+cp source/script/STLLoader.js build/desk-ui
 cp -r source/resource/ build
-
-#browserify (without -g npm install)
-node node_modules/browserify/bin/cmd.js source/browserified.js -r async -r heap -r jstat -r lodash -r operative -r ./source/desk-client.js:desk-client > source/script/bundle.js
-
-cp source/script/bundle.js build/script/bundle.js
-
-python generate.py source && python generate.py build
 
 cd build
 npm install  --production

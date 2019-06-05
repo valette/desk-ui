@@ -37,11 +37,11 @@ window.onload = function(){
 	document.getElementById("loading").className = "loading-invisible";
 };
 
-desk_startup_script = "script/test.js"
+desk_startup_script = "desk-ui/test.js"
 </script>
-
-<script type="text/javascript" src="script/desk.ui.js"></script>
-<script type="text/javascript" src="script/bundle.js"></script>
-<script type="text/javascript" src="script/workerSlicer.class.js"></script>
+<script type="text/javascript" src="${appPath}/workerSlicer.class.js"></script>
+<script type="text/javascript" src="${appPath}bundle.js"></script>
+${preBootJs}
+<script type="text/javascript" src="${appPath}boot.js"></script>
 </body>
 </html>

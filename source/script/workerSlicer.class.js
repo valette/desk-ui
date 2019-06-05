@@ -1,7 +1,7 @@
 var WorkerSlicer = function (volume, opts) {
   this.volume = volume;
 
-  var scriptFile = "script/workerSlicer.worker.js";
+  var scriptFile = "desk-ui/workerSlicer.worker.js";
 
   if (!opts.noworker) {
     this.worker = new Worker(scriptFile);

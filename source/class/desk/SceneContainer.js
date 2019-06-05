@@ -151,7 +151,7 @@ qx.Class.define("desk.SceneContainer",
 		var concurrency = (navigator && 2 * navigator.hardwareConcurrency) || 4;
 		this.__queue = async.queue(this.__urlLoad.bind(this), concurrency);
 
-		this.__setData = _.throttle(this.__meshes.getDataModel().setData
+		this.__setData = _.debounce(this.__meshes.getDataModel().setData
 			.bind(this.__meshes.getDataModel()), 500);
 
 		if (file) {
@@ -273,6 +273,7 @@ qx.Class.define("desk.SceneContainer",
 			if (opt.updateCamera !== false) {
 				this.viewAll();
 			}
+			this.render();
 		},
 
 		/**
@@ -440,8 +441,9 @@ qx.Class.define("desk.SceneContainer",
 				this.__readFile(path + xmlName, meshParameters,
 					function () {callback();});
 			}.bind(this), function () {
+				this.viewAllSync();
 				callback(object);
-			});
+			}.bind(this));
 		},
 
 		/**
@@ -648,11 +650,11 @@ qx.Class.define("desk.SceneContainer",
 		__addDropSupport : function () {
 			this.setDroppable(true);
 			this.addListener("drop", function(e) {
-				if (e.supportsType("fileBrowser")) {
+				if (e.supportsType("volumeSlices")) {
+					this.attachVolumeSlices(e.getData("volumeSlices"));
+				} else if (e.supportsType("fileBrowser")) {
 					e.getData("fileBrowser").getSelectedFiles().
 						forEach(function (file) {this.addFile(file);}, this);
-				} else if (e.supportsType("volumeSlices")) {
-					this.attachVolumeSlices(e.getData("volumeSlices"));
 				}
 			}, this);
 			this.addListener('appear', function() {
@@ -1200,9 +1202,6 @@ qx.Class.define("desk.SceneContainer",
 					Object.keys(attributes).forEach(function (key) {
 						delete attributes[key].array;
 					});
-				}
-				if (mesh.geometry.index) {
-					delete mesh.geometry.index.array;
 				}
 			}
 

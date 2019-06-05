@@ -708,7 +708,7 @@ qx.Class.define("desk.IfeContainer", {
                   shininess: 50,
                   transparent : true,
                   opacity : 0.7,
-                  side: THREE.BackSide } );
+                  side: THREE.FrontSide } );
 
             var mesh = new THREE.Mesh( geometry, material );
             mesh.renderOrder = 4;
@@ -720,11 +720,11 @@ qx.Class.define("desk.IfeContainer", {
             mesh.position.set(offsetX, 0, 0);
 
 
-            mesh.flipSided = true;
+            //mesh.flipSided = true;
             //flip every vertex normal in mesh by multiplying normal by -1
-            for(var i = 0; i<mesh.geometry.attributes.normal.array.length; i++) {
-                mesh.geometry.attributes.normal.array[i] = -mesh.geometry.attributes.normal.array[i];
-            }
+          //  for(var i = 0; i<mesh.geometry.attributes.normal.array.length; i++) {
+          //      mesh.geometry.attributes.normal.array[i] = -mesh.geometry.attributes.normal.array[i];
+          //  }
 
             mesh.material.needsUpdate = true;
 
@@ -1207,6 +1207,8 @@ qx.Class.define("desk.IfeContainer", {
             mesh.position.copy(position); //.add( new THREE.Vector3(size * width/ height /2, size/2, 0 ) );
             mesh.scale.x = size * canvas.width/ height;
             mesh.scale.y = size;
+            mesh.transparent = true;
+            mesh.renderOrder = 10;
 
             return mesh;
         }

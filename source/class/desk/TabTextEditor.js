@@ -2,6 +2,7 @@
  * A text editor that can also execute javascript code
  * @lint ignoreDeprecated ( alert )
  * @lint ignoreDeprecated ( confirm )
+ * @ignore( localStorage.* )
  */
 qx.Class.define("desk.TabTextEditor",
 {

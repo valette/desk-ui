@@ -25,18 +25,20 @@ qx.Class.define("desk.Random",
 			seed = 1;
 		}
 
-		this.__random = randomJS(randomJS.engines.mt19937().seed(seed));
+		this.__engine = new randomJS.MersenneTwister19937().seed( seed );
+		this.__distribution = randomJS.real( 0, 1, false );
 	},
 
 	members : {
 		__random : null,
+		__engine : null,
 
 		/**
 		 * Returns a random number in the [0,1] range
 		 * @return {Float} random number
 		 */
 		random : function() {
-			return this.__random.real(0, 1, true);
+			return this.__distribution( this.__engine );
 		}
 	}
 });

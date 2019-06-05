@@ -1,9 +1,10 @@
 /**
 * A container which includes a THREE.js scene, camera, controls and renderer
  * @ignore(THREE.*)
- * @ignore(Detector.*)
+ * @ignore(WEBGL.*)
  * @ignore(requestAnimationFrame)
  * @ignore(Blob)
+ * @ignore(_.debounce)
  * @ignore(Uint8Array)
  * @lint ignoreDeprecated (alert)
 */
@@ -32,11 +33,17 @@ qx.Class.define("desk.ThreeContainer",
 			Array.isArray( opts.cameraUp ) ? this.__initialCameraUp.fromArray( opts.cameraUp ) : this.__initialCameraUp.copy( opts.cameraUp )
 		}
 
-		var threeCanvas = this.__threeCanvas = this.__garbageContainer.getChildren()[0] || new qx.ui.embed.Canvas();
+		if ( !desk.ThreeContainer.__garbageContainer) {
+			desk.ThreeContainer.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+		}
+
+		var threeCanvas = this.__threeCanvas = desk.ThreeContainer.__garbageContainer.getChildren()[0] 
+			|| new qx.ui.embed.Canvas();
+
 		threeCanvas.set({syncDimension : true, zIndex : 0});
 		var canvas = threeCanvas.getContentElement().getCanvas();
 
-		//if (!Detector.webgl) alert("Error! : webGL is not available! Check your configuration");
+		if (!WEBGL.isWebGLAvailable()) alert("Error! : webGL is not available! Check your configuration");
 
 		var scene = this.__scene = new THREE.Scene();
 		var camera = this.__camera = opts.orthographic ? new THREE.OrthographicCamera() : new THREE.PerspectiveCamera();
@@ -68,11 +75,16 @@ qx.Class.define("desk.ThreeContainer",
 		this.add(threeCanvas, {width : "100%", height : "100%"});
 		this.__resizeThreeCanvas();
 		this.__setupFullscreen();
+
+		this.viewAllSync = this.viewAll;
+		this.viewAll = _.debounce( this.viewAll, 20, { leading : true } );
+
+		this.tempVector3 = new THREE.Vector3();
 	},
 
 	destruct : function(){
 		this.__threeCanvas.removeListenerById(this.__listenerId);
-		this.__garbageContainer.add(this.__threeCanvas);
+		desk.ThreeContainer.__garbageContainer.add(this.__threeCanvas);
 
 		var ctx = this.__threeCanvas.getContentElement().getCanvas().getContext("webgl");
 		// clean webgl context;
@@ -139,14 +151,11 @@ qx.Class.define("desk.ThreeContainer",
 		// TODO: This should NOT be needed but Firefox fails with 'hint'
 		while(ctx.getError());
 
-
 		//clean the scene
-		this._deleteMembers(this.__scene);
 		this.__scene = null;
-		this._deleteMembers(this.__renderer);
+		this.__renderer.dispose();
 		this.__renderer = null;
 		this.__threeCanvas = null;
-		this._deleteMembers(this.__camera);
 		this.__camera = null;
 		this._deleteMembers(this.__controls);
 		this.__controls = null;
@@ -169,6 +178,12 @@ qx.Class.define("desk.ThreeContainer",
 		 * fired after each render
 		 */
 		"render" : "qx.event.type.Event"
+	},
+
+	statics : {
+
+		__garbageContainer : null
+
 	},
 
 	members : {
@@ -197,7 +212,7 @@ qx.Class.define("desk.ThreeContainer",
 				link.render();
 			}, this);
 		},
-		__garbageContainer : new qx.ui.container.Composite(new qx.ui.layout.HBox()),
+
 		__listenerId : null,
 
 		/**
@@ -239,6 +254,7 @@ qx.Class.define("desk.ThreeContainer",
 		 * @param thetaZ {Number} : angle on the Z axis
 		 */
 		rotateView : function ( thetaX, thetaY, thetaZ ) {
+			this.viewAll.flush();
 			var controls = this.getControls();
 			var backup = controls.enabled;
 			controls.enabled = true;
@@ -391,7 +407,10 @@ qx.Class.define("desk.ThreeContainer",
 		resetView : function () {
 			this.__boudingBoxDiagonalLength = 0;
 			this.viewAll();
+			this.viewAll.flush();
 		},
+
+		tempVector3 : null,
 
 		/**
 		* Sets the camera to view all objects in the scene
@@ -399,24 +418,24 @@ qx.Class.define("desk.ThreeContainer",
 		viewAll : function () {
 			var bbox = new THREE.Box3().setFromObject( this.__scene );
 
-			if (bbox.isEmpty()) {
+			if ( bbox.isEmpty() ) {
 				return;
 			}
 
+			var bbdl = bbox.getSize( this.tempVector3 ).length();
 			var camera = this.__camera;
 			var fovFactor = Math.tan(50 * Math.PI/180)/Math.tan(camera.fov * Math.PI/180);
 
-			var bbdl = bbox.getSize().length()*fovFactor;
 			var controls = this.__controls;
 
 			if (this.__boudingBoxDiagonalLength === 0) {
-				var center = bbox.getCenter();
+				var center = bbox.getCenter( this.tempVector3 );
 				this.__boudingBoxDiagonalLength = bbdl;
-				camera.position.copy(center);
+				camera.position.copy( center );
 				camera.position.sub(
 					this.__initialCameraFront.clone().multiplyScalar( bbdl ) );
 				camera.up.copy( this.__initialCameraUp );
-				controls.target.copy(center);
+				controls.target.copy( center );
 			} else {
 				var ratio = bbdl / this.__boudingBoxDiagonalLength;
 				this.__boudingBoxDiagonalLength = bbdl;

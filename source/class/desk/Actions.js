@@ -2,7 +2,8 @@
  * Singleton class which stores all available actions, handles launching
  * and display actions in progress
  * @asset(desk/desk.png)
- * @asset(qx/icon/${qx.icontheme}/16/categories/system.png)
+ * @asset(qx/icon/${qx.icontheme}/16/categories/system.png) 
+ * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-close.png)
  * @ignore (require)
  * @ignore (io)
  * @ignore (_.*)
@@ -26,13 +27,40 @@ qx.Class.define("desk.Actions",
 	*/
 	construct : function() {
 		this.base(arguments);
+		this.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
 		if ( typeof desk_startup_script !== "string" ) {
 			if ( qx.bom.Cookie.get("homeURL" ) ) {
 				// support for node.js
 				this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
 				this.__engine = "node";
+				this.__socket.on("action started", function (POST) {
+					var actions = desk.Actions.getInstance();
+					var params = actions.__runingActions[POST.handle] =
+						actions.__runingActions[POST.handle] || { POST : POST };
+					setTimeout(function () {
+						actions.__addActionToList( actions.__runingActions[POST.handle] );
+					}.bind( this ) , 2000 );
+				}, this );
 				this.__socket.on("action finished", this.__onActionEnd.bind(this));
+				this.__socket.on("disconnect", function () {
+					console.warn( 'disconnected from server' );
+					this.__socket.once( 'connect', function () {
+						console.warn( 'connected' );
+						desk.Actions.execute( { manage : 'list'}, function (err, res) {
+							var actions = res.ongoingActions
+							this.__ongoingActions.getChildren().slice().map( function ( item ) {
+								var params = item.getUserData( 'params' );
+								var action = actions[ params.POST.handle ];
+								if ( !action ) {
+									params.callback = function () {};
+									this.__onActionEnd( { handle : params.POST.handle } );
+								}
+
+							}.bind( this ) );
+						}.bind( this ) );
+					}.bind( this ) );
+				}.bind( this ) );
 				console.log("powered by node.js");
 				this.__socket.once( "connect", function () {
 					// add already running actions
@@ -70,11 +98,13 @@ qx.Class.define("desk.Actions",
 					this.__engine = "nw";
 				}
 				this.__loadSettings();
-			} catch (e) {}
+			} catch (e) {
+				console.log(e);
+			}
 		}
 
 		if (!this.__engine) {
-			desk.FileSystem.readFile(this.__savedActionsFile,
+			desk.FileSystem.readFile(this.__savedActionFile,
 				function (err, result) {
 					if (err || result === undefined) {
 						console.log("Error while reading actions cache");
@@ -89,6 +119,14 @@ qx.Class.define("desk.Actions",
 
 		this.__socket.on("actions updated", this.__setSettings.bind(this));
 		this.__ongoingActions = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+		this.__clearErrorButton = new qx.ui.form.Button(null, "icon/16/actions/dialog-close.png");
+		this.__clearErrorButton.addListener( "click" , function () {
+			Object.entries( this.__runingActions ).forEach( function ( entry ) {
+				if ( entry[ 1 ].error ) this.killAction( entry[ 0 ] );
+			}, this );
+			this.__clearErrorButton.setVisibility( "excluded" );
+		}, this );
+		this.__clearErrorButton.setToolTipText("Clear errors");
 	},
 
 	statics : {
@@ -130,7 +168,6 @@ qx.Class.define("desk.Actions",
 			if (actions.isForceUpdate()) params.force_update = true;
 
 			var parameters = {
-				actionFinished : false,
 				callback : callback || function () {},
 				context : context,
 				options : options,
@@ -160,9 +197,6 @@ qx.Class.define("desk.Actions",
 				}
 			} else {
 				actions.__execute(params);
-				setTimeout(function () {
-					actions.__addActionToList(parameters);
-				}, Math.max(1000, (_.size(actions.__runingActions) - 20) * 1000));
 			}
 
 			actions.__runingActions[params.handle] = parameters;
@@ -221,8 +255,9 @@ qx.Class.define("desk.Actions",
 		__runingActions : {},
 		__settings : null,
 		__ongoingActions : null,
+		__clearErrorButton : null,
 		__recordedActions : null,
-		__savedActionsFile : 'cache/responses.json',
+		__savedActionFile : 'cache/responses.json',
 		__firstReadFile : null,
 		__settingsButton : null,
 		__engine : false,
@@ -305,11 +340,12 @@ qx.Class.define("desk.Actions",
 			menu.add(new qx.ui.menu.Button("dev", null, null, devMenu));
 
 			var links = {
-				'API documentation' : desk.FileSystem.getFileURL('ui/api'),
-				'Debug mode' : desk.FileSystem.getFileURL('ui/source'),
-				'Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
-				'Demo browser' : 'http://www.qooxdoo.org/current/demobrowser',
-				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master'
+				'THREE.js API' : 'https://threejs.org/docs/',
+				'desk-ui API' : desk.FileSystem.getFileURL('ui/build/apiviewer'),
+				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/source-output'),
+				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master',
+				'Qooxdoo Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
+				'Qooxdoo Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
 			};
 
 			Object.keys( links ).forEach( function (key) {
@@ -411,7 +447,8 @@ qx.Class.define("desk.Actions",
 					files : recordedFiles
 				};
 				this.__recordedActions = null;
-				desk.FileSystem.writeFile(this.__savedActionsFile,
+				this.debug( 'saving action list to ' + this.__savedActionFile );
+				desk.FileSystem.writeFile(this.__savedActionFile,
 					JSON.stringify(records), function () {
 						alert(Object.keys(records.actions).length + " actions recorded\n"
 							+ Object.keys(records.files).length + " files recorded");
@@ -476,7 +513,8 @@ qx.Class.define("desk.Actions",
 			button.setToolTipText("To display server logs");
 			button.addListener('execute', function () {
 				function displayLog(data) {
-					log.log(data, 'yellow');
+					if ( typeof data === "object" ) data = JSON.stringify( data, null, "  " );
+					log.log( data + '\n', 'yellow');
 				}
 				var win = new qx.ui.window.Window('Server log').set(
 					{width : 600, height : 500, layout : new qx.ui.layout.HBox()});
@@ -506,7 +544,7 @@ qx.Class.define("desk.Actions",
 				var oldConsoleLog = console.log;
 				console.log = function (message) {
 					oldConsoleLog.apply(console, arguments);
-					log.log(message.toString());
+					log.log(message.toString() + '\n' );
 				};
 				var win = new qx.ui.window.Window('Console log').set(
 					{width : 600, height : 300, layout : new qx.ui.layout.HBox()});
@@ -556,6 +594,9 @@ qx.Class.define("desk.Actions",
 			this.__ongoingActions.set ({width : 200, zIndex : 1000000,
 				decorator : "statusbar", backgroundColor : "transparent"});
 			qx.core.Init.getApplication().getRoot().add(this.__ongoingActions, {top : 0, right : 100});
+			qx.core.Init.getApplication().getRoot().add(this.__clearErrorButton, {top : 0, right : 300});
+			this.__clearErrorButton.set ({visibility : "excluded", zIndex : 1000000 });
+
 		},
 
 		/**
@@ -603,36 +644,32 @@ qx.Class.define("desk.Actions",
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
-			if (res.error) {
+			if ( params.POST.manage ) {
+
+				delete this.__runingActions[ res.handle ];
+
+			} else if ( res.error  ) {
+
+				console.log( "Error : ", res );
+				if ( res.error.message ) console.log( res.error.message );
+				params.error = res.error;
 				var item = params.item;
-				if (!item) {
-					this.__addActionToList(params);
-					item = params.item;
-				}
-				item.setDecorator("tooltip-error");
-				console.log("Error : ");
-				console.log(res);
-				var toPrint;
-				if (typeof res.error === 'string') {
-					toPrint = prettyData.json('"' + res.error + '"');
-				} else {
-					toPrint = prettyData.json(res.error);
-				}
-				item.setToolTipText(toPrint.split('\n').join("<br>"));
+				if ( item ) item.setDecorator("tooltip-error");
+				this.__clearErrorButton.setVisibility( "visible" );
+
 			} else {
+
 				delete this.__runingActions[res.handle];
-				params.actionFinished = true;
-				if (params.item) {
-					this.__garbageContainer.add(params.item);
-				}
+				if (params.item) this.__garbageContainer.add(params.item);
+
 			}
 
 			if (params.callback) {
-				params.callback.call(params.context, res.error, res);
+				params.callback.call(params.context, res.killed || res.error, res);
 			}
 		},
 
-		__garbageContainer : new qx.ui.container.Composite(new qx.ui.layout.HBox()),
+		__garbageContainer : null,
 
 		/**
 		* launches an action
@@ -657,7 +694,7 @@ qx.Class.define("desk.Actions",
 		* @param params {Object} action parameters
 		*/
 		__addActionToList : function(params) {
-			if (params.item || params.actionFinished || params.POST.manage) {
+			if ( !params || params.POST.silent || params.POST.manage ) {
 				return;
 			}
 			if (this.__ongoingActions.getChildren().length > 20) {
@@ -695,7 +732,7 @@ qx.Class.define("desk.Actions",
 					desk.Actions.execute( { manage : 'list'}, function (err, res) {
 						Object.keys(res.ongoingActions).forEach( function ( handle2 ) {
 							if ( handle !== handle2 ) return;
-							new desk.FileTail( res.ongoingActions[handle].RPC.outputDirectory + "action.log" );
+							new desk.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
 						});
 					} );
 				} );
@@ -708,10 +745,22 @@ qx.Class.define("desk.Actions",
 				item.setContextMenu(menu);
 			}
 			item.setLabel(params.POST.action || params.POST.manage || "");
-			item.set({decorator : "button-hover", opacity : 0.7});
+			if ( params.POST.action && ( params.POST.action === "cpuLoad" ) ) {
+				item.setLabel( "Reconnecting to server ..." );
+				this.__socket.connect();
+			}
+
+			item.setOpacity( 0.7 );
+			if ( params.error ) {
+				this.__clearErrorButton.setVisibility( 'visible' );
+				item.setDecorator( "tooltip-error" );
+			} else {
+				item.setDecorator( "button-hover" );
+			}
 			params.item = item;
 			item.setUserData("params", params);
 			this.__ongoingActions.add(item);
+			return item;
 		},
 
 		/**
@@ -824,7 +873,7 @@ qx.Class.define("desk.Actions",
 			}
 			log.clear();
 			var content;
-			desk.FileSystem.readFile(this.__savedActionsFile, function (err, res) {
+			desk.FileSystem.readFile(this.__savedActionFile, function (err, res) {
 				content = JSON.parse(res) ;
 				if (err) content = {files : {} ,actions : {}};
 				var actions = content.actions;
@@ -867,17 +916,17 @@ qx.Class.define("desk.Actions",
 				log.log("Actions to copy : ");
 
 				Object.keys(actions).forEach(function (hash) {
-					log.log(actions[hash].outputDirectory, "blue");
+					log.log(actions[hash].outputDirectory + '\n', "blue");
 				});
 				if (Object.keys(actions).length === 0) {
-					log.log("none");
+					log.log("none\n");
 				}
 				log.log("Files to copy : ");
 				Object.keys(files).forEach(function (hash) {
-					log.log(files[hash]);
+					log.log(files[hash] + '\n');
 				});
 				if (Object.keys(files).length === 0) {
-					log.log("none");
+					log.log("none\n");
 				}
 			});
 		},
@@ -989,7 +1038,7 @@ qx.Class.define("desk.Actions",
 					self.debug("copying recorded actions");
 					desk.Actions.execute({
 						action : "copy",
-						source : self.__savedActionsFile,
+						source : self.__savedActionFile,
 						destination : installDir + "/cache"
 					}, callback);
 				},

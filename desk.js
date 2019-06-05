@@ -28,14 +28,15 @@ win.webContents.on('will-navigate', (event, url) => {
 	
 
 	var url = 'file://' + __dirname + '/'
-		+ (debug ? 'source' : 'build')
+		+ (debug ? 'source-output' : 'build')
 		+ '/index.html';
 		
 	console.log(url);
 	
 	win.loadURL(url);
 
-	if (debug) win.webContents.openDevTools();
+	//if (debug) 
+	win.webContents.openDevTools();
 	
 	win.maximize();
 	

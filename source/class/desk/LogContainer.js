@@ -1,36 +1,66 @@
 /**
  * A log container
+ * @ignore(Terminal)
+ * @ignore(require)
  */
-qx.Class.define("desk.LogContainer", 
-{
+qx.Class.define("desk.LogContainer", {
+
 	extend : qx.ui.embed.Html,
 
     /**
     * Constructor
     */
 	construct : function () {
+
 		this.base(arguments);
-		this.set({
-			font : "monospace",
-			padding: 3,
-			overflowX : "auto",
-			overflowY : "auto"
-		});
-		this.clear();
-		this.addListener("mousewheel", function (e) {
-			// this is to avoid this bug : http://tinyurl.com/pmqurpn
-			var element = this.getContentElement();
-			element.scrollToY(element.getScrollY() + 30 * e.getWheelDelta());
-		}, this);
+		this.__rand = Math.floor( 100000000 * Math.random());
+		this.setHtml( '<div id = "' + this.__rand + '"></div>' );
+		this.__terminal = new Terminal();
+		this.addListenerOnce( 'appear', this.__onAppear, this );
+		this.__chalk = new ( require( 'chalk' ).constructor )( { level: 3 } );
+
+	},
+
+	destruct : function () {
+
+		this.__terminal.destroy();
+
 	},
 
 members : {
+
+	__rand : null, // random number
+	__terminal : null,
+	__chalk : null,
+	__colors : {},
+
+	__onAppear : function () {
+
+		var container = document.getElementById( '' + this.__rand );
+		this.__terminal.open( container, { focus : true } );
+		this.addListener( 'resize', this.__onResize, this );
+		this.__onResize();
+
+	},
+
+	__onResize : function () {
+
+		var size = this.getInnerSize();
+		var nCols = Math.floor( ( size.width - 15 ) / 9 );
+		var nRows = Math.floor( size.height / 17 );
+		this.debug('resize : ', nCols, nRows);
+		this.__terminal.resize( nCols, nRows );
+		this.__terminal.refresh();
+
+	},
 
     /**
     * Clears the log contents
     */
     clear : function () {
-		this.setHtml('');
+
+		this.__terminal.clear();
+
 	},
 
     /**
@@ -38,22 +68,21 @@ members : {
     * @param message {String} message to display
     * @param color {String} optional message color
     */
-    log : function (message, color) {
-		if (!message) {
-			return;
-		}
-		color = color || "black";
+    log : function ( message, color ) {
 
-		this.setHtml(message.toString().replace(' ', '&nbsp')
-		    .split('\n')
-		    .filter(function (message) {
-					return message.trim().length > 0;
-				})
-			.reduce(function (lines, line) {
-					return lines + '<span style="color:' + color + '">' + line + '<br/></span>';
-				}, this.getHtml())
-		);
-		this.getContentElement().scrollToY(1000000, true); 
+		if ( color ) message = this.__chalk.keyword( color )( message );
+		var lines = message.split( '\n' );
+		var lastLine = lines.pop();
+
+		lines.forEach( function (line ) {
+
+			this.__terminal.writeln( line );
+
+		}, this );
+
+		this.__terminal.write( lastLine );
+		this.__terminal.scrollToBottom();
+
 	}
 }
 });

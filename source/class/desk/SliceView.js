@@ -18,6 +18,7 @@ qx.Class.define("desk.SliceView",
 	 */
 	construct : function(orientation, options) {
 		this.base(arguments);
+		this.getCamera().far = 10000;
 		this.__slices = [];
 		this.__orientation = orientation || 0;
 		this.options = options = options || {};
@@ -319,7 +320,7 @@ qx.Class.define("desk.SliceView",
 		 * @param slices {Array} array of slices to remove
 		*/
 		removeVolumes : function (slices) {
-			slices.forEach(this.removeVolume, this);
+			if (slices) slices.forEach(this.removeVolume, this);
 		},
 
 		__reorientationContainer : null,

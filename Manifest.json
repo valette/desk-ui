@@ -1,34 +1,31 @@
 {
-  "info" : 
-  {
-    "name" : "desk-ui",
-
-    "summary" : "desk-ui",
-    "description" : "A framework for web-based medical image processing.",
-    
-    "homepage" : "http://www.creatis.insa-lyon.fr/~valette",
-
-    "license" : "CECILL-B",
-    "authors" : 
-    [
+  "info": {
+    "name": "desk-ui",
+    "summary": "desk-ui",
+    "description": "A framework for web-based medical image processing.",
+    "homepage": "http://www.creatis.insa-lyon.fr/~valette",
+    "license": "CECILL-B",
+    "authors": [
       {
-        "name" : "Sebastien Valette",
-        "email" : "sebastien.valette@creatis.insa-lyon.fr"
+        "name": "Sebastien Valette",
+        "email": "sebastien.valette@creatis.insa-lyon.fr"
       }
     ],
-
-    "version" : "trunk",
-    "qooxdoo-versions": ["5.0"]
+    "version": "1.5.3"
   },
-  
-  "provides" : 
-  {
-    "namespace"   : "desk.ui",
-    "encoding"    : "utf-8",
-    "class"       : "source/class",
-    "resource"    : "source/resource",
-    "translation" : "source/translation",
-    "type"        : "application"
-  }
+  "provides": {
+    "namespace": "desk",
+    "encoding": "utf-8",
+    "class": "source/class",
+    "resource": "source/resource",
+    "translation": "source/translation"
+  },
+  "requires": {
+    "johnspackman/UploadMgr": "^1.0.4",
+    "qooxdoo/qxl.versionlabel": "^0.1.2",
+    "@qooxdoo/compiler": "^1.0.0-beta.20190530-1110",
+    "@qooxdoo/framework": "^6.0.0-alpha-20190511-1022",
+    "qooxdoo/qxl.apiviewer": "^0.1.19"
+  },
+  "$schema": "https://raw.githubusercontent.com/qooxdoo/qooxdoo-compiler/master/resource/schema/v1/Manifest.json"
 }
-

@@ -11,54 +11,55 @@
   },
   "main": "script.js",
   "dependencies": {
-    "concat-stream": "^1.6.2"
+    "bluebird": "3.5.5",
+    "concat-stream": "^1.6.2",
+    "fs-extra": "8.0.1",
+    "shelljs": "0.8.3"
   },
   "devDependencies": {
-    "fs-extra": ">0.0.0",
-    "shelljs": ">0.0.0",
+    "@qooxdoo/compiler": "^1.0.0-beta.20190530-1110",
+    "ace-builds": "1.4.4",
+    "acorn": "^6.1.1",
+    "async": "3.0.1",
+    "c3": "0.7.1",
+    "chalk": "2.4.2",
+    "css-loader": "2.1.1",
+    "d3": "5.9.2",
     "electron": "2.0.8",
-    "async": ">0.0.0",
-    "bluebird": ">0.0.0",
-    "brace": ">0.0.0",
-    "browserify": ">0.0.0",
-    "browserify-css": ">0.0.0",
-    "c3": ">0.0.0",
-    "concat": "^1.0.3",
-    "d3": "3.5.17",
     "electron-builder": "^20.39.0",
+    "electron-debug": "^3.0.0",
     "electron-packager": "^13.1.1",
-    "heap": ">0.0.0",
-    "jssha": ">0.0.0",
-    "jstat": ">0.0.0",
-    "kdt": ">0.0.0",
-    "lodash": ">0.0.0",
-    "numeric": ">0.0.0",
-    "operative": ">0.0.0",
-    "pretty-data": ">0.0.0",
-    "random-js": ">0.0.0",
-    "socket.io-client": ">0.0.0",
-    "three": "0.85.2",
-    "uglify-js": ">0.0.0",
-    "uploadmgr": "https://github.com/johnspackman/UploadMgr",
-    "webworkify": ">0.0.0",
-    "xterm": ">0.0.0"
+    "heap": "0.2.6",
+    "jssha": "2.3.1",
+    "jstat": "1.7.1",
+    "kdt": "0.1.0",
+    "lodash": "4.17.11",
+    "numeric": "1.2.6",
+    "operative": "0.4.6",
+    "random-js": "2.1.0",
+    "socket.io-client": "2.2.0",
+    "style-loader": "0.23.1",
+    "terser": "4.0.0",
+    "three": "0.105.1",
+    "ttest": "1.1.0",
+    "url-loader": "1.1.2",
+    "webpack": "4.32.2",
+    "webpack-cli": "3.3.2",
+    "webworkify-webpack": "2.1.5",
+    "xterm": "3.14.1"
   },
   "engines": {
-    "node": ">=4.0.0"
-  },
-  "browserify": {
-    "transform": [
-      "browserify-css"
-    ]
+    "node": ">=8.0.0"
   },
   "scripts": {
-    "browserify": "browserify source/browserified.js -r async -r heap -r jstat -r lodash -r operative -r ./source/desk-client.js:desk-client > source/script/bundle.js",
-    "uglify": "uglifyjs source/script/bundle.js --mangle -b beautify=false,ascii_only=true -o build/script/bundle.js",
-    "qooxdoo": "python generate.py source && python generate.py build && python generate.py api",
-    "clean": "rm -rf build && rm -rf api && rm -rf source/script/desk.ui.*",
-    "build_backup": "npm run clean && npm run qooxdoo && npm run browserify && npm run uglify",
-    "build": "./build.sh",
-    "buildAll": "npm run browserify && ./build.sh",
-    "package": "electron-builder build -w --x64 --ia32 --config ../builder-effective-config.yaml --project build/"
+    "build": "npm run clean && npm run qooxdoo && npm run bundle",
+    "buildAddons": "node source/buildAddons.js",
+    "bundle": "webpack && npm run terser",
+    "clean": "rm -rf source-output && rm -rf build && rm -rf dist && rm -rf EduAnat2-*",
+    "compile": "qx compile --target source && qx compile --target build",
+    "qooxdoo": "qx package install && npm run compile",
+    "terser": "terser source-output/desk-ui/bundle.js --mangle -o build/desk-ui/bundle.js",
+    "updateAll": "npm run updateQooxdoo && rm -rf node_modules && git pull && npm install && npm run build",
+    "updateQooxdoo": "cd qooxdoo && git pull && cd .."
   }
 }

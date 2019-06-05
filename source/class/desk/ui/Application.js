@@ -15,6 +15,7 @@
  * @ignore (desk_startup_script)
  * @ignore (desk.auto)
  * @ignore (Promise)
+ * @ignore (require)
  * @ignore (Promise.*)
  */
 
@@ -60,11 +61,14 @@ qx.Class.define("desk.ui.Application",
 			}
 
 			this.__promisifyAll();
-			//var actions = desk.Actions.getInstance()
-			//desk.Actions.init(afterActionsInitialized);
-			afterActionsInitialized();
+
+			var actions = desk.Actions.getInstance()
+//			desk.Actions.init(afterActionsInitialized);
+			var savedDesk = window.desk;
+afterActionsInitialized();
 			function afterActionsInitialized () {
-				//actions.debug("actions initialized!");
+				if ( !window.desk.FileSystem ) window.desk = savedDesk; // #BUG this happens whith webpack
+				actions.debug("actions initialized!");
 				desk.auto = false;
 				// first try to automatically launch startup script if it exists
 				if (getParameter("noauto")) {
@@ -138,6 +142,8 @@ qx.Class.define("desk.ui.Application",
 		 * argument, create a function returning a promise
 		 **************************************************************/
 		__promisifyAll : function () {
+
+			Promise.promisify = require('bluebird').promisify;
 
 			var toPromisify = [
 				"desk.Actions.execute",

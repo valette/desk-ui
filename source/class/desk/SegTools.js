@@ -40,7 +40,7 @@ qx.Class.define("desk.SegTools",
 			allowMaximize: false,
 			showClose: true,
 			movable : true,
-			resizable : [ false, false, false, false ]
+			height : 600
 
 		} );
 
@@ -130,6 +130,7 @@ qx.Class.define("desk.SegTools",
 		__paintContainer : null,
 		__bottomContainer : null,
 		__colorsContainer : null,
+		__opacityContainer : null,
 
 		__segmentationButton : null,
 		__segmentationAction : null,
@@ -327,8 +328,10 @@ qx.Class.define("desk.SegTools",
 
 			}, this );
 
-			var opacityLabel = new qx.ui.basic.Label("Opacity :");
-			this.__paintContainer.add(opacityLabel);
+			this.__opacityContainer = new qx.ui.container.Composite(
+				new qx.ui.layout.HBox(spacing));
+
+			this.__opacityContainer.add(new qx.ui.basic.Label( "Seed opacity :" ) );
 
             var opacitySlider = new qx.ui.form.Slider().set( { value : 100 } );
 
@@ -342,8 +345,8 @@ qx.Class.define("desk.SegTools",
 
 			}, this);
 
-            this.__paintContainer.add( opacitySlider, { flex : 1 } );
-
+            this.__opacityContainer.add( opacitySlider, { flex : 1 } );
+			paintPage.addAt( this.__opacityContainer, 1 );
 			paintPage.add( this.__bottomContainer );
 			paintPage.addAt( this.__getSeedsTypeSelectBox(), 0 );
 		},
@@ -1169,6 +1172,7 @@ qx.Class.define("desk.SegTools",
 			editButton.addListener("execute", function () {
 				if (this.__editionWindow == null) {
 					this.__createEditionWindow();
+					this.__editionWindow.center();
 				}
 				this.__editionWindow.open();
 				this.__targetColorItem = labelAttributes;
@@ -1785,6 +1789,7 @@ qx.Class.define("desk.SegTools",
 						});
 						list.remove(selectedChild);
 						this.__reloadSeedImage( sliceView );
+						this.__saveSeedsXML();
 					}
 				}
 			}

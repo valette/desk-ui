@@ -1,8 +1,8 @@
 /**
 * @ignore(Uint8Array)
 * @lint ignoreDeprecated(alert)
-* @asset(desk/Contrast_Logo_petit.PNG)
-* @ignore (async.forEachSeries)
+* @asset(desk/contrast.png)
+* @ignore (async.eachSeries)
 * @ignore (_.indexOf)
 * @ignore (WorkerSlicer)
 * @ignore (require*)
@@ -770,7 +770,7 @@ qx.Class.define("desk.MPRContainer",
 			},this);
 
 			////Create brightness/contrast fixing
-			var brightnessButton = new qx.ui.form.Button(null, "desk/Contrast_Logo_petit.PNG");
+			var brightnessButton = new qx.ui.form.Button(null, "desk/contrast.png");
 			brightnessButton.set({toolTipText : "Click and drag to change brightnes, right-click to reset brightness"});
 
 			var x, y;

@@ -256,8 +256,8 @@ qx.Class.define("desk.VolumeSlice",
 
 		FRAGMENTSHADERENDOOC : [
 			"//ooc",
-			"color = mix(color, rawData[0], imageType);",
-			"float correctedPixelValue = (color + brightness) * contrast;",
+			"float color = mix(value, rawBytes[0], imageType);",
+			"float correctedPixelValue = color * contrast + brightness;",
 			"vec4 correctedColor=vec4(correctedPixelValue);",
 			"correctedColor[3]=opacity;",
 			"float clampedValue=clamp(correctedPixelValue * lutRatio, 0.0, 1.0);",
