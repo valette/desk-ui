@@ -36,7 +36,6 @@ To build desk-ui on your computer, you need:
 ```
 git clone https://github.com/valette/desk-ui
 cd desk-ui
-git clone https://github.com/qooxdoo/qooxdoo
 npm install
 npm run build
 ```
