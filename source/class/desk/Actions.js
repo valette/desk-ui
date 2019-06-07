@@ -16,7 +16,7 @@
  * @require(desk.LogContainer)
  * @require(desk.Random)
  */
-qx.Class.define("desk.Actions", 
+qx.Class.define("desk.Actions",
 {
 	extend : qx.core.Object,
 
@@ -106,8 +106,9 @@ qx.Class.define("desk.Actions",
 		if (!this.__engine) {
 			desk.FileSystem.readFile(this.__savedActionFile,
 				function (err, result) {
-					if (err) {
+					if (err || result === undefined) {
 						console.log("Error while reading actions cache");
+						return;
 					}
 					result = JSON.parse(result);
 					this.__recordedActions = result.actions;
@@ -226,21 +227,21 @@ qx.Class.define("desk.Actions",
 		* @return {Object} action parameters as a JSON object
 		*/
 		getAction : function (name) {
-			return desk.Actions.getInstance().getAction(name);
+			return desk.Actions.getInstance() && desk.Actions.getInstance().getAction(name);
 		}
 	},
 
 	properties : {
 		/**
 		* Defines whether RPC cache is avoided (default : false);
-		*/	
+		*/
 		forceUpdate : { init : false, check: "Boolean", event : "changeForceUpdate"}
 	},
 
 	events : {
 		/**
 		* Fired when the actions list is ready
-		*/	
+		*/
 		"changeReady" : "qx.event.type.Event",
 
 		/**
@@ -561,7 +562,7 @@ qx.Class.define("desk.Actions",
 		/**
 		* Returns the complete settings object
 		* @return {Object} settings
-		*/	
+		*/
 		getSettings : function () {
 			return JSON.parse(JSON.stringify(this.__settings));
 		},
@@ -570,13 +571,14 @@ qx.Class.define("desk.Actions",
 		* Returns the JSON object defining a specific action
 		* @param name {String} the action name
 		* @return {Object} action parameters as a JSON object
-		*/	
+		*/
 		getAction : function (name) {
-			var action = this.__settings.actions[name];
+
+			var action = this.__settings && this.__settings.actions[name];
 			return action ? JSON.parse(JSON.stringify(action)) : null;
 		},
 
-		
+
 		/**
 		* Returns the container which lists all ongoing actions
 		* @return {qx.ui.form.List} actions menu
@@ -718,12 +720,12 @@ qx.Class.define("desk.Actions",
 					}
 					Object.keys(this.__runingActions).forEach(_.ary(this.killAction, 1), this);
 				}, this);
-				
+
 				var properties = new qx.ui.menu.Button('Properties');
 				properties.addListener('execute', function () {
 					console.log(item.getUserData("params"));
 				}, this);
-				
+
 				var tail = new qx.ui.menu.Button('Console output');
 				tail.addListener('execute', function () {
 					var handle = item.getUserData("params").POST.handle;
@@ -854,7 +856,7 @@ qx.Class.define("desk.Actions",
 			var win = this.__statifyWindow;
 			if (!win) {
 				win = this.__statifyWindow = new qx.ui.window.Window("Statify");
-				win.set({layout : new qx.ui.layout.VBox(), 
+				win.set({layout : new qx.ui.layout.VBox(),
 					height :400, width : 500, showClose : false});
 				this.__statifyLog = new desk.LogContainer();
 				win.add(this.__statifyLog, {flex :1});

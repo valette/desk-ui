@@ -12,6 +12,7 @@ self.THREE            =	require('three');
 	require('./ext/VTKLoader.js');
 	require('./ext/TrackballControls2.js');
 	require('./ext/CTMLoader.js');
+	require('./ext/STLLoader.js');
 
 self.bluebird = self.Promise = require('bluebird');
 self.chalk            = require('chalk');

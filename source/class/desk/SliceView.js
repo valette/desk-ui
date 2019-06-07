@@ -1,12 +1,12 @@
 /**
 * A container used to display volume slices.
-* 
+*
 * @ignore(THREE.*)
 * @ignore(Uint8Array)
 * @ignore(_.*)
 */
 
-qx.Class.define("desk.SliceView", 
+qx.Class.define("desk.SliceView",
 {
 	extend : desk.ThreeContainer,
 	include : desk.LinkMixin,
@@ -21,8 +21,10 @@ qx.Class.define("desk.SliceView",
 		this.getCamera().far = 10000;
 		this.__slices = [];
 		this.__orientation = orientation || 0;
-		options = options || {};
+		this.options = options = options || {};
 		this.__textColor = options.textColor || "yellow";
+		this.__alwaysDisplaySlider = options.alwaysDisplaySlider || false;
+		this.__zoomOnWheel = options.zoomOnWheel || false;
 		this.__createUI();
 		this.__initUndo();
 		this.addListener("mousedown", this.__onMouseDown, this);
@@ -39,7 +41,7 @@ qx.Class.define("desk.SliceView",
 		this.unlink();
 		//clean the scene
 		qx.util.DisposeUtil.destroyContainer(this.__rightContainer);
-		
+
 		if (this.__drawingCanvas) {this.__drawingCanvas.dispose();}
 
 		if (this.__brushCanvas) {this.__brushCanvas.dispose();}
@@ -147,10 +149,14 @@ qx.Class.define("desk.SliceView",
 		__brushMesh : null,
 
 		__crossMeshes : [],
-		
+
 		__drawingCanvasModified : false,
 
 		__textColor : null,
+
+		__alwaysDisplaySlider : null,
+
+		__zoomOnWheel : null,
 
 		/**
 		 * Returns the 2D projection on slice of the 3D input position
@@ -327,7 +333,7 @@ qx.Class.define("desk.SliceView",
 			this.getLinks().forEach(function (link) {
 				if(link.isOrientationChangesOperateOnCamera()) {
 					var camera = link.getCamera();
-					var controls = link.getControls(); 
+					var controls = link.getControls();
 					var dir = controls.target.clone();
 					dir.sub(camera.position);
 					var up = camera.up;
@@ -382,7 +388,7 @@ qx.Class.define("desk.SliceView",
 		getOverLays : function() {
 			return this.__directionOverlays;
 		},
-		
+
 		/**
 		 * returns the UI container containing orientation controls
 		 * @return {qx.ui.container.Composite} orientation container
@@ -444,7 +450,10 @@ qx.Class.define("desk.SliceView",
 		__createCrossMeshes : function (volumeSlice) {
 			var coord = volumeSlice.get2DCornersCoordinates();
 			var material = new THREE.LineBasicMaterial({color : 0x4169FF,
-				linewidth : 2, opacity : 0.5, transparent : true});
+				linewidth : 2, opacity : 0.5, transparent : true,
+			  polygonOffset: true,
+        polygonOffsetFactor: -2.0,
+        polygonOffsetUnits: -10.0});
 
 			this.__crossMeshes.forEach(function (mesh) {
 				this.getScene().remove(mesh);
@@ -453,8 +462,8 @@ qx.Class.define("desk.SliceView",
 
 			function v(x,y,z) {return new THREE.Vector3(x,y,z)}
 			this.__crossMeshes =  [
-				[v(coord[0], 0, 0), v(coord[2], 0, 0)],
-				[v(0, coord[1], 0), v(0, coord[5], 0)]
+				[v(coord[0], 0, 1), v(coord[2], 0, 1)],
+				[v(0, coord[1], 1), v(0, coord[5], 1)]
 			].map(function (coords) {
 				var geometry = new THREE.Geometry();
 				geometry.vertices.push(coords[0], coords[1]);
@@ -477,7 +486,7 @@ qx.Class.define("desk.SliceView",
 			var coordinates = volumeSlice.get2DCornersCoordinates();
 			var dimensions = volumeSlice.get2DDimensions();
 
-			this.__coordinatesRatio = 
+			this.__coordinatesRatio =
 				[(coordinates[2] - coordinates[0]) / dimensions[0],
 				(coordinates[5] - coordinates[3]) / dimensions[1]];
 
@@ -495,7 +504,7 @@ qx.Class.define("desk.SliceView",
 			texture.generateMipmaps = false;
 			texture.needsUpdate = true;
 			texture.magFilter = texture.minFilter = THREE.NearestFilter;
-			
+
 			var material = new THREE.MeshBasicMaterial({map:texture, transparent: true});
 			material.side = THREE.DoubleSide;
 
@@ -725,7 +734,9 @@ qx.Class.define("desk.SliceView",
 		__initFromVolume : function ( slice ) {
 			this.__initDrawingDone = false;
 			this.__slider.setMaximum(slice.getNumberOfSlices() - 1);
-			this.__slider.setVisibility(slice.getNumberOfSlices() === 1 ? "hidden" : "visible");
+			if (!this.__alwaysDisplaySlider) {
+				this.__slider.setVisibility(slice.getNumberOfSlices() === 1 ? "hidden" : "visible");
+			}
 
 			var camera = this.getCamera();
 			var position = camera.position;
@@ -747,13 +758,25 @@ qx.Class.define("desk.SliceView",
 
 			this.__createCrossMeshes(slice);
 
-			if (this.__orientation < 2) {this.flip(1);}
-			if (this.__orientation == 1) {this.flip(0);}
+			if (this.__orientation == 1) {
+				this.flip(1);
+				this.rotate(1);
+				this.flip(0);//
+			}
+
+			//this.flip(0);
+
+
+			//if (this.__orientation == 0) this.flip(1);
+
 
 			this.__position[0] = undefined; // to force cross position update
+
+			//Set at the middle
 			this.setCrossPosition(slice.getDimensions().map(function (dim) {
 				return dim === 1 ? 0 : Math.round(dim / 2);
 			}));
+
 		},
 
 		/** adds a volume to the view
@@ -789,7 +812,7 @@ qx.Class.define("desk.SliceView",
 			return slice;
 		},
 
-		/** 
+		/**
 		 * Sets the cross position given mouse event
 		 * @param event {qx.event.type.Mouse} mouse event
 		 */
@@ -809,7 +832,7 @@ qx.Class.define("desk.SliceView",
 
 		__position : [],
 
-		/** 
+		/**
 		 * Return the cross position i.e. i,j,k coordinates
 		 * @return {Array} ijk coordinates
 		 */
@@ -817,7 +840,7 @@ qx.Class.define("desk.SliceView",
 			return this.__position;
 		},
 
-		/** 
+		/**
 		 * Return the cross position i.e. x, y, z float coordinates
 		 * @return {THREE.Vector3} xyz coordinates
 		 */
@@ -828,7 +851,7 @@ qx.Class.define("desk.SliceView",
 			}, this));
 		},
 
-		/** 
+		/**
 		 * Sets the cross position i.e. i,j,k coordinates
 		 * @param pos {Array} ijk coordinates
 		 */
@@ -861,7 +884,7 @@ qx.Class.define("desk.SliceView",
 		},
 
 		/**
-		* interactionMode : 
+		* interactionMode :
 		* -1 : nothing
 		* 0 : left click
 		* 1 : zoom
@@ -871,7 +894,7 @@ qx.Class.define("desk.SliceView",
 		* */
 		__interactionMode : -1,
 
-		/** 
+		/**
 		 * fired at each mouse down event
 		 * @param e {qx.event.type.Mouse} mouse event
 		 */
@@ -932,20 +955,24 @@ qx.Class.define("desk.SliceView",
 			}
 		},
 
-		/** 
+		/**
 		 * fired at each mouse out event
 		 * @param event {qx.event.type.Mouse} mouse event
 		 */
 		__onMouseOut : function (event) {
 			if (this.__sliderInUse) {return;}
 			this.__viewOn = false;
-			this.__rightContainer.setVisibility("hidden");
-			this.__directionOverlays[3].setLayoutProperties({right: 1, top:"45%"});
+			if (!this.__alwaysDisplaySlider) {
+				this.__rightContainer.setVisibility("hidden");
+			}
+			
+			//this.__directionOverlays[3].setLayoutProperties({right: 1, top:"45%"});
+			
 			if (this.__brushMesh) this.__brushMesh.visible = false;
 			this.render();
 		},
 
-		/** 
+		/**
 		 * fired at each mouse move event
 		 * @param event {qx.event.type.Mouse} mouse event
 		 */
@@ -953,7 +980,7 @@ qx.Class.define("desk.SliceView",
 			this.__viewOn = true;
 			var controls = this.getControls();
 			if (this.__rightContainer.getVisibility() === "hidden") {
-				this.__directionOverlays[3].setLayoutProperties({right: 32, top: "45%"});
+				this.__directionOverlays[3].setLayoutProperties({right: "8%", top: "45%"});
 				this.__rightContainer.setVisibility("visible");
 			}
 
@@ -1017,7 +1044,7 @@ qx.Class.define("desk.SliceView",
 			this.capture();
 		},
 
-		/** 
+		/**
 		 * fired at each mouse up event
 		 * @param event {qx.event.type.Mouse} mouse event
 		 */
@@ -1040,16 +1067,28 @@ qx.Class.define("desk.SliceView",
 			this.__interactionMode = -1;
 		},
 
-		/** 
+		/**
 		 * fired at each mouse wheel event
 		 * @param event {qx.event.type.MouseWheel} mouse event
 		 */
 		__onMouseWheel : function (event) {
 			var delta = event.getWheelDelta() < 0 ? -1 : 1;
-			var slider = this.__slider;
 
-			slider.setValue(Math.min(slider.getMaximum(), Math.max(
-				slider.getValue() + delta, slider.getMinimum())));
+			if (this.__zoomOnWheel) {
+				this.getControls().zoomFactor(delta*0.02);
+				this.render();
+
+				var z = this.getCamera().position.z;
+				this.setCameraZ(z);
+
+				this.propagateCameraToLinks();
+
+			} else {
+				var slider = this.__slider;
+
+				slider.setValue(Math.min(slider.getMaximum(), Math.max(
+					slider.getValue() + delta, slider.getMinimum())));
+				}
 		},
 
 		__intersection : null,
@@ -1058,8 +1097,8 @@ qx.Class.define("desk.SliceView",
 		__2DSpacing : null,
 		__origin : null,
 		__spacing : null,
-		
-		/** 
+
+		/**
 		 * returns the position from the mouse event
 		 * @param event {qx.event.type.Mouse} mouse event
 		 * @return {Object} coordinates  : ijk and xyz
@@ -1077,7 +1116,7 @@ qx.Class.define("desk.SliceView",
 					y : coordinates.y,
 					z : this.__origin[2] + this.__spacing[2] * slice
 				};
-				
+
 			case 1 :
 				return {
 					i : slice,
@@ -1099,8 +1138,8 @@ qx.Class.define("desk.SliceView",
 				};
 			}
 		},
-		
-		/** 
+
+		/**
 		 * returns the 2D position on slice
 		 * @param event {qx.event.type.Mouse} mouse event
 		 * @return {Object} coordinates  : ij and xy
@@ -1132,7 +1171,7 @@ qx.Class.define("desk.SliceView",
 			return {i :intxc, j :intyc, x:xinter, y:yinter};
 		},
 
-		/** 
+		/**
 		 * creates the UI
 		 */
 		__createUI : function () {
@@ -1141,7 +1180,7 @@ qx.Class.define("desk.SliceView",
 			});
 
 			this.getRenderer().setClearColor( 0x000000, 1 );
-			
+
 			var font = new qx.bom.Font(16, ["Arial"]);
 			font.setBold(true);
 			var settings = {textColor : this.__textColor,
@@ -1149,29 +1188,63 @@ qx.Class.define("desk.SliceView",
 			qx.util.DisposeUtil.disposeTriggeredBy(font, this);
 
 			var labels = [
-				["A", "L", "P", "R"],
-				["A", "S", "P", "I"],
-				["S", "L", "I", "R"]][this.__orientation];
+				["Ve", "Ga", "Do", "Dr"],
+				["Av", "Ve", "Ar", "Do"],
+				["Av", "Ga", "Ar", "Dr"]][this.__orientation];
+
+		  var name = [
+		    "Axial",
+		    "Sagittal",
+		    "Coronal"
+		  ][this.__orientation];
 
 			var directionOverlays = this.__directionOverlays = [
 				{left: "50%", top:"1%"},
 				{left: "1%", top:"45%"},
 				{left: "50%", bottom:"1%"},
-				{right: "1%", top:"45%"}
+				{right: 45, top:"45%"}
 			].map(function (position, index) {
 				var label = new qx.ui.basic.Label(labels[index]).set(settings);
 				this.add(label, position);
 				return label;
 			}, this);
 
-			var label = this.__sliceLabel = new qx.ui.basic.Label("0");
-			label.set({textAlign: "center", width : 40, font : font,
+			var nameLabel = new qx.ui.basic.Label(name);
+			nameLabel.set({font : font, opacity : 0.75,
 				textColor : this.__textColor});
-			this.add(label, {top :0, left :0});
+			this.add(nameLabel, {bottom :5, left :10});
+
+
+			var label = this.__sliceLabel = new qx.ui.form.TextField("0");
+			
+			
+			label.set({textAlign: "center", width : 37, font : font,
+				textColor : this.__textColor, backgroundColor:"transparent", filter:/[0-9]/});
+		  
+		  label.addListener("mousedown", function(event) {
+		    event.stopPropagation();
+		  });
+		  
+		  window.loopGuard = false;  
+		  
+		  label.addListener('changeValue', function () {
+		    if (!qx.ui.core.FocusHandler.getInstance().isActive(label)) return;
+		    
+		    label.blur();
+		    
+				var slice = this.getFirstSlice();
+				if (!slice) return;
+				
+				if (window.loopGuard !== true) {
+				  window.loopGuard = true;
+				  this.setSlice(slice.getNumberOfSlices() - 1 - parseInt(label.getValue()) );
+				  window.loopGuard = false;
+				}
+		  }, this);
 
 			var slider = this.__slider = new qx.ui.form.Slider().set (
 				{minimum : 0, maximum : 100, value : 0,	width :30,
-					opacity : 0.5, backgroundColor : "transparent",
+					opacity : 1, backgroundColor : desk.VolumeSlice.COLORS[this.__orientation],
 					orientation : "vertical"
 			});
 			slider.addListener('mousedown', function () {
@@ -1186,14 +1259,48 @@ qx.Class.define("desk.SliceView",
 				this.setSlice(slice.getNumberOfSlices() - 1 - e.getData());
 			}, this);
 
-			var container = this.__rightContainer = 
+			slider.addListener("mouseover",function(e){
+				slider.focus();
+			}, this);
+
+			slider.addListener('mousewheel', function(e) { e.stopPropagation()});
+
+			if (this.options.maxZoom)
+			  this.getControls().setMaxZoom(this.options.maxZoom)
+			if (this.options.minZoom)
+			  this.getControls().setMinZoom(this.options.minZoom)
+
+			this.addListener("keypress", function (evt) {
+			  var delta = 0;
+        if (evt.getKeyIdentifier() == "Down") {
+          delta = -1;
+        } else if (evt.getKeyIdentifier() == "Up") {
+          delta = 1;
+        }
+        else
+          return;
+          
+        var slice = this.getFirstSlice();
+        
+        if (!slice) return;
+        this.setSlice(slice.getSlice()+delta);
+      });
+
+			var container = this.__rightContainer =
 				new qx.ui.container.Composite(new qx.ui.layout.VBox());
+			container.add(new qx.ui.core.Spacer(25, 25));
 			container.add(slider, {flex : 1});
-			container.setVisibility("hidden");
+
+			if (!this.__alwaysDisplaySlider) {
+				container.setVisibility("hidden");
+			}
+
 			container.addListener('mousedown', function (event) {
 				event.stopPropagation();
 			}, this);
 			this.add(container, {right : 0, top : 0, height : "100%"});
+			
+			this.add(label, {top :0, right :0});
 		},
 
 		// this member is true only when user is manipulating the slider
@@ -1201,12 +1308,11 @@ qx.Class.define("desk.SliceView",
 
 		__sliceLabel : null,
 
-		/** 
+		/**
 		 * fired at each slice change
 		 * @param sliceId {Integer} the new slice id
 		 */
 		__applyChangeSlice : function (sliceId) {
-			this.__sliceLabel.setValue(sliceId + "");
 			// something fishy here : getNumberOfSlices should never be 0 but it is sometimes...
 			var slice = this.getFirstSlice();
 			if (!slice) {
@@ -1214,6 +1320,9 @@ qx.Class.define("desk.SliceView",
 			}
 
 			var value = slice.getNumberOfSlices() - 1 - sliceId;
+
+			this.__sliceLabel.setValue(value + "");
+
 			this.__slider.setValue(Math.max(this.__slider.getMinimum(),
 				Math.min(value, this.__slider.getMaximum())));
 
@@ -1227,7 +1336,7 @@ qx.Class.define("desk.SliceView",
 		__redoData : null,
 		__doingIndex : null,
 
-		/** 
+		/**
 		 * fired each time ctrl-z is used
 		 * @param event {qx.event.type.KeyInput} keyboard event
 		 */
@@ -1251,7 +1360,7 @@ qx.Class.define("desk.SliceView",
 			this.updateDrawingCanvas();
 		},
 
-		/** 
+		/**
 		 * fired each time ctrl-y is used
 		 * @param event {qx.event.type.KeyInput} keyboard event
 		 */
@@ -1274,7 +1383,7 @@ qx.Class.define("desk.SliceView",
 			else {this.__doingIndex--;}
 		},
 
-		/** 
+		/**
 		 * Setups undo framework
 		 */
 		__initUndo : function () {
@@ -1292,7 +1401,7 @@ qx.Class.define("desk.SliceView",
 			qx.util.DisposeUtil.disposeTriggeredBy(redoCommand, this);
 		},
 
-		/** 
+		/**
 		 * Saves current drawing image to the stack
 		 */
 		__saveDrawingToUndoStack : function () {

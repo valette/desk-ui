@@ -8,7 +8,7 @@
  * @ignore(Uint8Array)
  * @lint ignoreDeprecated (alert)
 */
-qx.Class.define("desk.ThreeContainer", 
+qx.Class.define("desk.ThreeContainer",
 {
 	extend : qx.ui.container.Composite,
 	include : desk.LinkMixin,
@@ -50,6 +50,10 @@ qx.Class.define("desk.ThreeContainer",
 		var controls = this.__controls = new THREE.TrackballControls2(camera, canvas);
 		controls.zoomSpeed = 6;
 		scene.add(camera);
+
+		if (opts.cameraFov) {
+		  camera.fov = opts.cameraFov;
+		}
 
 		// lights
 		var dirLight = new THREE.DirectionalLight( 0x888888 );
@@ -375,7 +379,7 @@ qx.Class.define("desk.ThreeContainer",
 		* Returns the viewpoint
 		* @return {Object} the viewpoint
 		*/
-		getViewpoint : function () {			
+		getViewpoint : function () {
 			return {
 				controls : this.__controls.getState(),
 				camera : this.__camera,
@@ -420,6 +424,8 @@ qx.Class.define("desk.ThreeContainer",
 
 			var bbdl = bbox.getSize( this.tempVector3 ).length();
 			var camera = this.__camera;
+			var fovFactor = Math.tan(50 * Math.PI/180)/Math.tan(camera.fov * Math.PI/180);
+
 			var controls = this.__controls;
 
 			if (this.__boudingBoxDiagonalLength === 0) {
@@ -540,5 +546,5 @@ qx.Class.define("desk.ThreeContainer",
 		__controls : null,
 		__renderer : null
 	}
-	
+
 });

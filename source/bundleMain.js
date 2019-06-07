@@ -4,8 +4,9 @@ import jsWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-javascript.
 import jsonWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-json.js";
 import htmlWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-html.js";
 
-require('./ext/WebGL.js');
+self.GLDetector = require('./ext/WebGL.js');
 self.Terminal = require( 'xterm' ).Terminal;
+self.chroma = require('./ext/chroma.min.js');
 
 require ('xterm/src/xterm.css');
 
@@ -46,7 +47,7 @@ THREE.VTKLoader.prototype.createWorker = function () {
 	return work(require.resolve('./ext/VTKWorker.js'), { all : true } );
 }
 
-self.require = function (module) {
+if ( !self.require ) self.require = function ( module ) {
 	if (module === 'desk-client' ) return self.desk;
 	if ( self[ module ] ) return self[ module ];
 	throw new Error( 'module ' + module + ' not found!' ).stack;

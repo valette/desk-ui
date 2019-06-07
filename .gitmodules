@@ -1,0 +1,6 @@
+[submodule "Papaya"]
+	path = Papaya
+	url = https://github.com/ragier/Papaya.git
+[submodule "qooxdoo"]
+	path = qooxdoo
+	url = https://github.com/qooxdoo/qooxdoo

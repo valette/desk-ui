@@ -25,11 +25,11 @@ div.loading-visible{
 </style>
 <link rel="icon" type="image/png" href="resource/desk/desk.png"/>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>desk</title>
+  <title>EduAnat2</title>
 </head>
 <body>
 <div id="loading" class="loading-visible">
-  <p>Loading, please wait...</p>
+  <p>Chargement en cours, veuillez patienter...</p>
 </div>
 
 <script type="text/javascript">
@@ -37,8 +37,9 @@ window.onload = function(){
 	document.getElementById("loading").className = "loading-invisible";
 };
 
-//desk_startup_script = "path/to/my/script"
+desk_startup_script = "desk-ui/test.js"
 </script>
+<script type="text/javascript" src="${appPath}/workerSlicer.class.js"></script>
 <script type="text/javascript" src="${appPath}bundle.js"></script>
 ${preBootJs}
 <script type="text/javascript" src="${appPath}boot.js"></script>
