@@ -3,7 +3,6 @@ directories:
   buildResources: build
   app: build
 appId: com.ife.eduanat2
-electronVersion: 2.0.8
 compression: maximum
 productName: Eduanat2
 win:

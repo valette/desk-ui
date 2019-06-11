@@ -143,7 +143,7 @@ afterActionsInitialized();
 		 **************************************************************/
 		__promisifyAll : function () {
 
-			Promise.promisify = require('bluebird').promisify;
+			Promise.promisify = bluebird.promisify;
 
 			var toPromisify = [
 				"desk.Actions.execute",

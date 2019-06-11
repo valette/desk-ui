@@ -12,7 +12,7 @@
   "main": "script.js",
   "dependencies": {
     "bluebird": "3.5.5",
-    "concat-stream": "^1.6.2",
+    "concat-stream": "^2.0.0",
     "fs-extra": "8.0.1",
     "shelljs": "0.8.3"
   },
@@ -25,13 +25,13 @@
     "chalk": "2.4.2",
     "css-loader": "2.1.1",
     "d3": "5.9.2",
-    "electron": "2.0.8",
+    "electron": "4.2.4",
     "electron-builder": "^20.39.0",
     "electron-debug": "^3.0.0",
     "electron-packager": "^13.1.1",
     "heap": "0.2.6",
     "jssha": "2.3.1",
-    "jstat": "1.7.1",
+    "jstat": "1.8.3",
     "kdt": "0.1.0",
     "lodash": "4.17.11",
     "numeric": "1.2.6",
@@ -40,26 +40,29 @@
     "socket.io-client": "2.2.0",
     "style-loader": "0.23.1",
     "terser": "4.0.0",
-    "three": "0.105.1",
+    "three": "0.105.2",
     "ttest": "1.1.0",
-    "url-loader": "1.1.2",
-    "webpack": "4.32.2",
-    "webpack-cli": "3.3.2",
+    "url-loader": "2.0.0",
+    "webpack": "4.33.0",
+    "webpack-cli": "3.3.4",
     "webworkify-webpack": "2.1.5",
-    "xterm": "3.14.1"
+    "xterm": "3.14.2"
   },
   "engines": {
     "node": ">=8.0.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run qooxdoo && npm run bundle",
+    "build": "npm run clean && npm run qooxdoo && npm run bundle && ./extra.sh && npm run package",
     "buildAddons": "node source/buildAddons.js",
     "bundle": "webpack && npm run terser",
     "clean": "rm -rf source-output && rm -rf build && rm -rf dist && rm -rf EduAnat2-*",
     "compile": "qx compile --target source && qx compile --target build",
+    "package": "npm run package-app && npm run package-deb-exe",
+    "package-app": "electron-packager --all --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 build/ EduAnat2",
+    "package-deb-exe": "electron-builder build -wl --config builder-effective-config.yaml",
     "qooxdoo": "qx package install && npm run compile",
     "terser": "terser source-output/desk-ui/bundle.js --mangle -o build/desk-ui/bundle.js",
-    "updateAll": "npm run updateQooxdoo && rm -rf node_modules && git pull && npm install && npm run build",
-    "updateQooxdoo": "cd qooxdoo && git pull && cd .."
+    "updateAll": "rm -rf node_modules && git pull && npm install && npm run build",
+    "zip": "for i in ./EduAnat2-*; do zip -rqy \"dist/${i%/}.zip\" \"$i\"; done"
   }
 }
