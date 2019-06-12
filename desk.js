@@ -16,6 +16,7 @@ electron.app.on('ready', () => {
 		icon: (debug ? 'source' : 'build')+'/icone_eduanat2.png',
 		experimentalFeatures : true,
 		experimentalCanvasFeatures : true,
+		webPreferences: { nodeIntegration: true },
 		title:'EduAnat2',
 		show:false
 	});
