@@ -49,14 +49,14 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run qooxdoo && npm run bundle && ./extra.sh && npm run package && npm run zip",
+    "build": "npm run clean && npm run qooxdoo && npm run bundle && ./extra.sh && npm run package",
     "buildAddons": "node source/buildAddons.js",
     "bundle": "webpack && npm run terser",
     "clean": "rm -rf source-output && rm -rf build && rm -rf dist && rm -rf EduAnat2-*",
     "compile": "qx compile --target source && qx compile --target build",
-    "package": "npm run package-app && npm run package-deb-exe",
-    "package-app": "electron-packager --all --overwrite --icon=icon.ico --azar=true build/ EduAnat2",
-    "package-deb-exe": "electron-builder build -wl --config builder-effective-config.yaml",
+    "package": "npm run package-bin && npm run package-exe-deb-rpm && npm run zip",
+    "package-bin": "electron-packager --all --overwrite --icon=icon.ico --azar=true build/ EduAnat2",
+    "package-exe-deb-rpm": "electron-builder build -wl --config builder-effective-config.yaml",
     "qooxdoo": "qx package install && npm run compile",
     "terser": "terser source-output/desk-ui/bundle.js --mangle -o build/desk-ui/bundle.js",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build",

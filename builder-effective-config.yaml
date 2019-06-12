@@ -27,5 +27,8 @@ linux:
   category : Education
   target:
     - deb
-deb: 
+    - rpm
+deb:
+  packageCategory: Education
+rpm:
   packageCategory: Education
