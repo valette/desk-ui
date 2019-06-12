@@ -5,14 +5,13 @@ EduAnat2
 To build desk-ui on your computer, you need:
 * git
 * node.js
-* npm
-
 
 ### How to build
 ```
-git clone --recurse-submodules https://github.com/ragier/eduAnat2.git
-cd eduAnat2
-./build.sh
+git clone --recurse-submodules https://github.com/valette/desk-ui.git -b eduAnat2-merged
+cd desk-ui
+npm install
+npm run build
 ```
 
 ### License ###
