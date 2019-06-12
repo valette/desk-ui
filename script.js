@@ -3,6 +3,7 @@
 const electron = require('electron');
 
 electron.app.commandLine.appendSwitch('ignore-gpu-blacklist', 'true');
+electron.Menu.setApplicationMenu( null );
 
 var win;
 
@@ -16,6 +17,7 @@ electron.app.on('ready', () => {
 		show:false
 	});
 
+	win.setMenu( null );
 	win.once('ready-to-show', () => {
     win.show()
   });

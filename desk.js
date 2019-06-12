@@ -4,6 +4,7 @@ const electron = require('electron'),
       debug = process.argv[2] === "debug";
 
 electron.app.commandLine.appendSwitch('ignore-gpu-blacklist', 'true');
+if ( debug ) electron.Menu.setApplicationMenu( null );
 
 const shell = electron.shell;
 
@@ -21,6 +22,8 @@ electron.app.on('ready', () => {
 		show:false
 	});
 
+	// win.setMenu( null ); //this does not work///
+
 
 win.webContents.on('will-navigate', (event, url) => {
   event.preventDefault()
@@ -36,8 +39,7 @@ win.webContents.on('will-navigate', (event, url) => {
 	
 	win.loadURL(url);
 
-	//if (debug) 
-	win.webContents.openDevTools();
+	if (debug) win.webContents.openDevTools();
 	
 	win.maximize();
 	
