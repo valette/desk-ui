@@ -11,23 +11,20 @@
   },
   "main": "script.js",
   "dependencies": {
-    "bluebird": "3.5.5",
-    "concat-stream": "^2.0.0",
-    "fs-extra": "8.0.1",
-    "shelljs": "0.8.3"
+    "concat-stream": "^2.0.0"
   },
   "devDependencies": {
     "@qooxdoo/compiler": "^1.0.0-beta.20190530-1110",
     "ace-builds": "1.4.4",
     "acorn": "^6.1.1",
     "async": "3.0.1",
+    "bluebird": "3.5.5",
     "c3": "0.7.1",
     "chalk": "2.4.2",
     "css-loader": "3.0.0",
     "d3": "5.9.2",
     "electron": "5.0.3",
     "electron-builder": "^20.39.0",
-    "electron-debug": "^3.0.0",
     "electron-packager": "^13.1.1",
     "heap": "0.2.6",
     "jssha": "2.3.1",
@@ -52,13 +49,13 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run qooxdoo && npm run bundle && ./extra.sh && npm run package",
+    "build": "npm run clean && npm run qooxdoo && npm run bundle && ./extra.sh && npm run package && npm run zip",
     "buildAddons": "node source/buildAddons.js",
     "bundle": "webpack && npm run terser",
     "clean": "rm -rf source-output && rm -rf build && rm -rf dist && rm -rf EduAnat2-*",
     "compile": "qx compile --target source && qx compile --target build",
     "package": "npm run package-app && npm run package-deb-exe",
-    "package-app": "electron-packager --all --overwrite --icon=icon.ico --azar=true --app-version=2.0.0 build/ EduAnat2",
+    "package-app": "electron-packager --all --overwrite --icon=icon.ico --azar=true build/ EduAnat2",
     "package-deb-exe": "electron-builder build -wl --config builder-effective-config.yaml",
     "qooxdoo": "qx package install && npm run compile",
     "terser": "terser source-output/desk-ui/bundle.js --mangle -o build/desk-ui/bundle.js",
