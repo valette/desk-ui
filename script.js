@@ -12,27 +12,28 @@ electron.app.on('ready', () => {
 		experimentalFeatures : true,
 		experimentalCanvasFeatures : true,
 		title:'EduAnat2',
+		webPreferences: { nodeIntegration: true },
 		show:false
 	});
 
 	win.once('ready-to-show', () => {
     win.show()
   });
-  
+
 win.webContents.on('will-navigate', (event, url) => {
   event.preventDefault()
   shell.openExternal(url)
-});	
+});
 
   var url = 'file://' + __dirname + '/index.html';
 	win.loadURL(url);
-	
+
 	var splash = new electron.BrowserWindow({
-	  width: 410, 
-	  height: 402, 
-	  //transparent: true, 
+	  width: 410,
+	  height: 402,
+	  //transparent: true,
 	  resizable:false,
-	  frame: false, 
+	  frame: false,
 	  alwaysOnTop: true});
 
   splash.loadURL('file://' + __dirname + '/splash.html');
