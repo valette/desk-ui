@@ -174,6 +174,9 @@ qx.Class.define("desk.ui.Application",
 			} );
 
 			async.mapLimitAsync = function ( arr, limit, iterator ) {
+				console.warn( "async.mapLimitAsync is deprecated, use async.mapLimit" );
+				console.warn( new Error().stack );
+
 				return new Promise ( function ( resolve, reject ) {
 					async.mapLimit( arr, limit, async.asyncify( iterator ), function ( err, res ) {
 						if ( err ) {
@@ -186,6 +189,9 @@ qx.Class.define("desk.ui.Application",
 			};
 
 			async.eachLimitAsync = function ( arr, limit, iterator ) {
+				console.warn( "async.eachLimitAsync is deprecated, use async.eachLimit" );
+				console.warn( new Error().stack );
+
 				return new Promise ( function ( resolve, reject ) {
 					async.eachLimit( arr, limit, async.asyncify( iterator ), function ( err ) {
 						if ( err ) {
