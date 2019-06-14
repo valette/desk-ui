@@ -14,7 +14,7 @@
     "concat-stream": "2.0.0"
   },
   "devDependencies": {
-    "@qooxdoo/compiler": "1.0.0-beta.20190530-1110",
+    "@qooxdoo/compiler": "1.0.0-beta.20190614-1341",
     "ace-builds": "1.4.4",
     "acorn": "6.1.1",
     "async": "3.0.1",
@@ -25,11 +25,11 @@
     "css-loader": "3.0.0",
     "d3": "5.9.2",
     "electron": "5.0.3",
-    "electron-builder": "20.39.0",
+    "electron-builder": "20.43.0",
     "electron-packager": "13.1.1",
     "heap": "0.2.6",
     "jssha": "2.3.1",
-    "jstat": "1.8.3",
+    "jstat": "1.9.0",
     "kdt": "0.1.0",
     "lodash": "4.17.11",
     "numeric": "1.2.6",
@@ -42,7 +42,7 @@
     "three": "0.105.2",
     "ttest": "1.1.0",
     "url-loader": "2.0.0",
-    "webpack": "4.33.0",
+    "webpack": "4.34.0",
     "webpack-cli": "3.3.4",
     "webworkify-webpack": "2.1.5",
     "xterm": "3.14.2"

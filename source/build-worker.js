@@ -43,5 +43,5 @@ var output = js_files.map((f)=>{
   return fs.readFileSync(f).toString();
 }).join(';')
 
-fs.writeFileSync("source/script/workerSlicer.worker.js",output, "utf8");
+fs.writeFileSync("source/ext/workerSlicer.worker.js",output, "utf8");
 
