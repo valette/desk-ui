@@ -9,10 +9,10 @@ self.numeric          = require('numeric');
 self.randomJS         = require('random-js');
 self.THREE            =	require('three');
 	require('three/examples/js/controls/TransformControls.js');
+	require('three/examples/js/loaders/STLLoader.js');
 	require('./ext/VTKLoader.js');
 	require('./ext/TrackballControls2.js');
 	require('./ext/CTMLoader.js');
-	require('./ext/STLLoader.js');
 
 self.bluebird = self.Promise = require('bluebird');
 self.chalk            = require('chalk');
