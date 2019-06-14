@@ -1,6 +1,4 @@
 
-node source/build-worker.js
-
 cp icon.* build
 cp splash.* build
 cp script.js build

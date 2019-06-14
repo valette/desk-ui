@@ -51,7 +51,7 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run qooxdoo && npm run bundle && ./extra.sh && npm run package",
+    "build": "npm run clean && node source/build-worker.js && npm run qooxdoo && npm run bundle && ./extra.sh && npm run package",
     "buildAddons": "node source/buildAddons.js",
     "bundle": "webpack && npm run terser",
     "clean": "rm -rf qx* && rm -rf source-output && rm -rf build && rm -rf dist && rm -rf EduAnat2-*",
