@@ -15,7 +15,6 @@ cp -r source/resource/ife source-output/resource/ife
 
 cp source/script/test.js build/desk-ui
 cp source/script/test.js source-output/desk-ui
-cp source/script/STLLoader.js build/desk-ui
 cp -r source/resource/ build
 
 cd build
