@@ -1,6 +1,4 @@
 var fs = require('fs');
-var Terser = require("terser");
-
 
 //Got list from https://github.com/rii-mango/Papaya-Builder/blob/master/src/edu/uthscsa/ric/papaya/builder/Builder.java
 var js_files =  [
@@ -46,8 +44,4 @@ var output = js_files.map((f)=>{
 }).join(';')
 
 fs.writeFileSync("source/script/workerSlicer.worker.js",output, "utf8");
-
-fs.writeFileSync("source/script/workerSlicer.worker.min.js", Terser.minify({
-    "source/script/workerSlicer.worker.js": output
-}).code, "utf8");
 
