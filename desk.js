@@ -4,7 +4,7 @@ const electron = require('electron'),
       debug = process.argv[2] === "debug";
 
 electron.app.commandLine.appendSwitch('ignore-gpu-blacklist', 'true');
-if ( debug ) electron.Menu.setApplicationMenu( null );
+if ( !debug ) electron.Menu.setApplicationMenu( null );
 
 const shell = electron.shell;
 
