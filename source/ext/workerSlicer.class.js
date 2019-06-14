@@ -64,8 +64,11 @@ var WorkerSlicer = function (volume, opts) {
     var that = this;
 
 //	PapayaSlicer = require( 'source/script/workerSlicer.worker.js');
-    loadScript(scriptFile, function () {
+	require( 'source/script/workerSlicer.worker.js');
 
+//    loadScript(scriptFile, function () {
+next();
+function next() {
       var root = qx.core.Init.getApplication().getRoot();
 
       var win = new qx.ui.window.Window("Chargement de l'image");
@@ -164,7 +167,7 @@ var WorkerSlicer = function (volume, opts) {
 
 
         }
-    });
+    }//);
   }
 
   this.opts = opts;

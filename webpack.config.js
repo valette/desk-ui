@@ -18,6 +18,10 @@ module.exports = {
   module : {
     rules:[
       {
+        test: /\workerSlicer.worker.js$/,
+        use: [ { loader: 'script-loader' } ]
+      },
+      {
         test: /\.css$/,
         use: [ "style-loader", "css-loader"]
       }
