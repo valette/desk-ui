@@ -22,8 +22,7 @@
   },
   "requires": {
     "johnspackman/UploadMgr": "^1.0.4",
-    "qooxdoo/qxl.versionlabel": "^0.1.2",
-    "@qooxdoo/compiler": "^1.0.0-beta.20190530-1110",
+    "@qooxdoo/compiler": "^1.0.0-beta.20190614-1341",
     "@qooxdoo/framework": "^6.0.0-alpha-20190511-1022",
     "qooxdoo/qxl.apiviewer": "^0.1.19"
   },
