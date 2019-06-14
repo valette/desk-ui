@@ -46,7 +46,7 @@ THREE.VTKLoader.prototype.createWorker = function () {
 	return work(require.resolve('./ext/VTKWorker.js'), { all : true } );
 }
 
-self.require = function (module) {
+if ( !self.require ) self.require = function (module) {
 	if (module === 'desk-client' ) return self.desk;
 	if ( self[ module ] ) return self[ module ];
 	throw new Error( 'module ' + module + ' not found!' ).stack;
