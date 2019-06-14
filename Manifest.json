@@ -22,8 +22,8 @@
   },
   "requires": {
     "johnspackman/UploadMgr": "^1.0.4",
-    "@qooxdoo/compiler": "^1.0.0-beta.20190614-1341",
-    "@qooxdoo/framework": "^6.0.0-alpha-20190511-1022",
+    "@qooxdoo/compiler": "^1.0.0-beta.20190530-1110",
+    "@qooxdoo/framework": "^6.0.0-beta-20190614-2001",
     "qooxdoo/qxl.apiviewer": "^0.1.19"
   },
   "$schema": "https://raw.githubusercontent.com/qooxdoo/qooxdoo-compiler/master/resource/schema/v1/Manifest.json"
