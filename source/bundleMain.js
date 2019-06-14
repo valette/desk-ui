@@ -6,7 +6,7 @@ import htmlWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-html.js";
 
 self.GLDetector = require('./ext/WebGL.js');
 self.Terminal = require( 'xterm' ).Terminal;
-self.chroma = require('./ext/chroma.min.js');
+self.chroma = require( 'chroma-js' );
 
 require ('xterm/src/xterm.css');
 
