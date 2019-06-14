@@ -4,6 +4,7 @@ var WorkerSlicer = function (volume, opts) {
   var scriptFile = "desk-ui/workerSlicer.worker.js";
 
   if (!opts.noworker) {
+	  console.log("WWWOOORRKKKEERRR");
     this.worker = new Worker(scriptFile);
 
       var self = this;
@@ -42,6 +43,7 @@ var WorkerSlicer = function (volume, opts) {
   }
   else
   {
+	  console.log("NNNOOOOOOOWWWOOORRKKKEERRR");
     function loadScript(uri, callback) {
       var elem = document.createElement("script");
       elem.charset = "utf-8";
@@ -61,8 +63,8 @@ var WorkerSlicer = function (volume, opts) {
 
     var that = this;
 
+//	PapayaSlicer = require( 'source/script/workerSlicer.worker.js');
     loadScript(scriptFile, function () {
-
 
       var root = qx.core.Init.getApplication().getRoot();
 
@@ -218,3 +220,5 @@ WorkerSlicer.prototype.destroy = function () {
 
   this.callbacks = undefined;
 }
+
+module.exports = WorkerSlicer;
