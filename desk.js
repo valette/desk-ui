@@ -14,7 +14,7 @@ let win;
 
 electron.app.on('ready', () => {
 	win = new electron.BrowserWindow({
-		icon: (debug ? 'source' : 'build')+'/icone_eduanat2.png',
+		icon: (debug ? 'source' : 'build')+'/icon.png',
 		experimentalFeatures : true,
 		experimentalCanvasFeatures : true,
 		webPreferences: { nodeIntegration: true },

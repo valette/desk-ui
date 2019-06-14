@@ -9,7 +9,7 @@ var win;
 
 electron.app.on('ready', () => {
 	win = new electron.BrowserWindow({
-		icon: 'icone_eduanat2.png',
+		icon: 'icon.png',
 		experimentalFeatures : true,
 		experimentalCanvasFeatures : true,
 		title:'EduAnat2',
