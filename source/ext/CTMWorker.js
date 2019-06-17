@@ -12,7 +12,7 @@ module.exports = function () {
 			var stream = new CTM.Stream( event.data.data );
 			stream.offset = event.data.offsets[ i ];
 
-			files[ i ] = new CTM.File( stream );
+			files[ i ] = new CTM.File( stream, [ event.data.data.buffer ]);
 
 		}
 
