@@ -1,76 +1,56 @@
 'use strict';
 
-const electron = require('electron');
+const electron = require( 'electron' ),
+      fs       = require( 'fs' );
 
+const debug = process.argv[2] === "debug";
 electron.app.commandLine.appendSwitch('ignore-gpu-blacklist', 'true');
 electron.Menu.setApplicationMenu( null );
 
-var win;
-
 electron.app.on('ready', () => {
-	win = new electron.BrowserWindow({
+
+	const win = new electron.BrowserWindow( {
+
 		icon: 'icon.png',
-		experimentalFeatures : true,
-		experimentalCanvasFeatures : true,
 		title:'EduAnat2',
 		webPreferences: { nodeIntegration: true },
 		show:false
-	});
 
-	win.setMenu( null );
-	win.once('ready-to-show', () => {
-    win.show()
-  });
+	} );
 
-win.webContents.on('will-navigate', (event, url) => {
-  event.preventDefault()
-  shell.openExternal(url)
-});
+	const begin = 'file://' + __dirname + '/';
+	const url = !fs.existsSync( __dirname + "/build" ) ? begin + 'index.html'
+		: begin +  ( debug ? 'source-output' : 'build' ) + '/index.html';
 
-  var url = 'file://' + __dirname + '/index.html';
-	win.loadURL(url);
+	win.loadURL( url );
 
-	var splash = new electron.BrowserWindow({
-	  width: 410,
-	  height: 402,
-	  //transparent: true,
-	  resizable:false,
-	  frame: false,
-	  alwaysOnTop: true});
+	const splash = new electron.BrowserWindow( {
 
-  splash.loadURL('file://' + __dirname + '/splash.html');
+		width: 410,
+		height: 402,
+		resizable:false,
+		frame: false,
+		alwaysOnTop: true
 
+	} );
 
-  win.once('ready-to-show', () => {
-    win.maximize();
-  });
+	splash.loadURL('file://' + __dirname + '/splash.html');
 
-  var ipcMain = require("electron").ipcMain;
+	require("electron").ipcMain.once('qx-ready', function () {
 
-  ipcMain.once('qx-ready', function () {
-    setTimeout(function () {
-      splash.destroy();
-      win.show();
-    }, 200);
-  });
+		splash.destroy();
+		win.show();
+		setTimeout( win.maximize.bind( win ), 200 );
+		if ( debug ) win.webContents.openDevTools();
 
-  //win.webContents.openDevTools();
+	} );
 
-	win.on('close', () => {
-		process.exit();
-	});
-})
+} )
 .on('window-all-closed', () => {
+
 	// On OS X it is common for applications and their menu bar
 	// to stay active until the user quits explicitly with Cmd + Q
-	if (process.platform !== 'darwin') {
-		electron.app.quit();
-	}
-})
-.on('activate', () => {
-	// On OS X it's common to re-create a window in the app when the
-	// dock icon is clicked and there are no other windows open.
-	if (win === null) {
-		createWindow();
-	}
-});
+	if ( process.platform !== 'darwin' ) electron.app.quit();
+
+} )
+

@@ -149,9 +149,8 @@ afterActionsInitialized();
 				container.add(mainViewer);
 				container.add(sideViewer);
 				sideViewer.exclude();
+				require("electron").ipcRenderer.send('qx-ready');
 
-				const ipc = require("electron").ipcRenderer;
-				ipc.send('qx-ready');
 				//actions.buildUI();
 				//new desk.FileBrowser(getParameter("rootDir"), {standalone : true});
 			}
