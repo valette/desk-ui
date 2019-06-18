@@ -8,7 +8,7 @@ To build desk-ui on your computer, you need:
 
 ### How to build
 ```
-git clone --recurse-submodules https://github.com/valette/desk-ui.git -b eduAnat2-merged
+git clone https://github.com/valette/desk-ui.git -b eduAnat2-merged
 cd desk-ui
 npm install
 npm run build
