@@ -110,12 +110,14 @@ qx.Class.define("desk.Action",
 		* @param parentAction {desk.Action} action to link to
 		* @param fileName {string} name of the output file from parentAction
 		*/
-		connect : function (parameterName, parentAction, fileName) {
-			if (parentAction !== this) {
-				this.__connections.push({action : parentAction,
-					parameter : parameterName, file : fileName			
-				});
-			}
+		connect : function ( parameter, action, file ) {
+
+			if ( action === this ) return;
+			this.__connections.push( { action, parameter, file } );
+			const params = {};
+			params[ parameter ] = "dummy";
+			this.setParameters( params, true );
+
 		},
 
 		/**
@@ -124,32 +126,25 @@ qx.Class.define("desk.Action",
  		* @param loadJSON {bool} determines whether saved json 
  		* parameters file will be loaded from the output directory (default : true)
 		*/
-		setOutputDirectory : function (directory, loadJSON) {
-			if ( directory.charAt( directory.length - 1 ) != '/' ) {
-				directory += '/';
-			}
+		setOutputDirectory : async function ( directory, loadJSON ) {
 
+			if ( !directory.endsWith ( '/' ) ) directory += '/';
 			this.__outputDir = directory;
 
-            if ((loadJSON === false) || (directory === "cache/")){
+			if ( ( loadJSON === false ) || ( directory === "cache/" ) ) {
+
 				this.fireEvent("changeOutputDirectory");
 				return;
+
 			}
-			var jsonFile = this.getOutputDirectory() + 'action.json';
-			desk.FileSystem.exists(jsonFile, function (err, exists) {
-				if (!exists) return;
-				desk.FileSystem.readFile(jsonFile,
-					function(err, result) {
-						if (err) {
-							return;
-						}
-						this.setParameters(JSON.parse(result));
-						if (this.__tabView) {
-							this.__addOutputTab();
-						}
-						this.fireEvent("changeOutputDirectory");
-				}, this);
-			}, this);
+
+			const jsonFile = this.getOutputDirectory() + 'action.json';
+			if ( !( await desk.FileSystem.existsAsync (jsonFile ) ) ) return;
+			const result = await desk.FileSystem.readFileAsync( jsonFile );
+			this.setParameters( JSON.parse( result ) );
+			if ( this.__tabView ) this.__addOutputTab();
+			this.fireEvent("changeOutputDirectory");
+
         },
 
 		/**
@@ -186,7 +181,7 @@ qx.Class.define("desk.Action",
 		* @param parameters {Object} parameters as JSON object
 		* @param hide {Boolean} hide/don't hide provided parameter forms
 		*/
-		setParameters : function (parameters, hide) {
+		setParameters : function ( parameters, hide ) {
 
 			if (typeof parameters.output_directory === "string") {
 
@@ -223,6 +218,7 @@ qx.Class.define("desk.Action",
 
 		/**
 		* Triggers the action execution
+		* @param callback {Function} callback when done
 		*/
 		execute : function( callback ) {
 
@@ -345,7 +341,7 @@ qx.Class.define("desk.Action",
 
 
 			// update parameters from connections
-			for (let connection of this.__connections ) {
+			for ( let connection of this.__connections ) {
 
 				params[ connection.parameter ] =
 					connection.action.getOutputDirectory() +
