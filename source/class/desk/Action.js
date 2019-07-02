@@ -187,30 +187,55 @@ qx.Class.define("desk.Action",
 		* @param hide {Boolean} hide/don't hide provided parameter forms
 		*/
 		setParameters : function (parameters, hide) {
+
 			if (typeof parameters.output_directory === "string") {
+
 				this.__outputDir = parameters.output_directory;
-				this.__addOutputTab();
+				if ( this.__tabView ) this.__addOutputTab();
+
 			}
-            Object.keys(parameters).forEach(function (key) {
-                var form = this.getForm(key);
-                if (!form) {
-					return
-				}
-				form.setValue(parameters[key].toString());
-				if (hide === undefined) {
-					return;
-				}
-				var visibility = hide ? "excluded" : "visible";
-				form.setVisibility(visibility);
-				form.getUserData("label").setVisibility(visibility);
-            }, this);
+
+			for ( let [ key, value ] of Object.entries( parameters ) ) {
+
+				const form = this.getForm( key );
+				if ( !form ) continue
+				form.setValue( value.toString() );
+				if ( hide === undefined ) continue;
+				const visibility = hide ? "excluded" : "visible";
+				form.setVisibility( visibility );
+				form.getUserData( "label" ).setVisibility( visibility );
+
+			}
+
         },
+
+		/**
+		* (DEPRECATED) Triggers the action execution
+		*/
+		executeAction : function() {
+
+			console.warn("desk.Action.executeAction() is deprecated, use execute() instead")
+			console.log(new Error().stack);
+
+			this.__manager.validate();
+
+		},
 
 		/**
 		* Triggers the action execution
 		*/
-		executeAction : function() {
+		execute : function( callback ) {
+
+			this.addListenerOnce( "actionUpdated", function ( event ) {
+
+				const res = event.getData().response;
+				if ( res.error ) return callback( res.error );
+				callback( null, res );
+
+			} );
+
 			this.__manager.validate();
+
 		},
 
 		/**
@@ -285,62 +310,62 @@ qx.Class.define("desk.Action",
 		/**
 		* Fired whenever the execute button has been pressed
 		*/
-		__afterValidation : function () {
+		__afterValidation : async function () {
+
 			// check the validation status
 			if (!this.__manager.getValid()) {
+
 				alert(this.__manager.getInvalidMessages().join("\n"));
 				return;
+
 			}
 
-			var params = {"action" : this.__name};
+			const params = { "action" : this.__name };
+
 			// add all parameters
-			this.__manager.getItems().forEach(function (item) {
-				var value = item.getValue();
-				if ((typeof value === 'string') && value.length) {
-					params[item.getUserData("name")] = value;
+			for ( let item of this.__manager.getItems() ) {
+
+				const value = item.getValue();
+
+				if ( ( typeof value === 'string' ) && value.length ) {
+
+					params[ item.getUserData( "name" ) ] = value;
+
 				}
-			});
+
+			}
 
 			// update parent Actions
-			this.__update.setEnabled(false);
+			this.__update.setEnabled( false );
 			this.__update.setLabel("Updating Parents...");
 
-			async.each(
-				_.uniq(this.__connections.map(function (connection) {
-					return connection.action;
-				})),
- 
-				function (action, callback) {
-					action.addListenerOnce("actionUpdated", function (event) {
-						callback();
-					});
-					action.executeAction();
-				},
+			await Promise.all( 
+				_.uniq( this.__connections.map( conn => conn.action ) )
+				.map( action => action.executeAsync() ) );
 
-				function (err) {
-					// update parameters from connections
-					this.__connections.forEach(function (connection) {
-						params[connection.parameter] =
-							connection.action.getOutputDirectory() +
-								desk.FileSystem.getFileName(connection.file);
-					});
 
-					this.__update.setLabel("Processing...");
+			// update parameters from connections
+			for (let connection of this.__connections ) {
 
-					if (this.__outputDir) {
-						params.output_directory = this.__outputDir;
-						if (this.__outputDir.substring(0,6) === "cache/") {
-							params.output_directory = "cache/";
-						}
-					}
+				params[ connection.parameter ] =
+					connection.action.getOutputDirectory() +
+						desk.FileSystem.getFileName( connection.file );
 
-					// add the value of the "force update" checkbox
-					params.force_update = this.__forceUpdate.getValue();
-					this.__status.setValue("Processing...");
+			}
 
-					this.__executeAction(params);
-				}.bind(this)
-			);
+			this.__update.setLabel("Processing...");
+
+			if ( this.__outputDir && !this.__outputDir.startsWith( "cache/" ) ) {
+
+				params.output_directory = this.__outputDir;
+
+			}
+
+			// add the value of the "force update" checkbox
+			params.force_update = this.__forceUpdate.getValue();
+			this.__status.setValue("Processing...");
+			this.__executeAction( params );
+
 		},
 
 		/**
@@ -411,12 +436,16 @@ qx.Class.define("desk.Action",
 		* @param res {Ojbect} action response
 		*/
 		__afterExecute : function (id, res) {
-			this.__update.setEnabled(true);
-			this.__update.setLabel("Update");
+
+			this.__update.setEnabled( true );
+			this.__update.setLabel( "Update" );
+
 			if ( !this.__action.voidAction  &&  ( ( this.__outputDir === null ) ||
-					(this.__outputDir.substring(0, 6) === "cache/") ||
-					(this.__outputDir.substring(0, 8) === "actions/") ) ) {
+					this.__outputDir.startsWith( "cache/" ) ||
+					this.__outputDir.startsWith( "actions/") ) ) {
+
 				this.setOutputDirectory(res.outputDirectory);
+
 			}
 
 			this.__status.setValue(res.status);

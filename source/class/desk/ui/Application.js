@@ -157,6 +157,7 @@ qx.Class.define("desk.ui.Application",
 			];
 
 			var membersToPromisify = [
+				"desk.Action.execute",
 				"desk.MPRContainer.addVolume",
 				"desk.SceneContainer.addFile",
 				"desk.SceneContainer.addVolume",
