@@ -358,9 +358,9 @@ qx.Class.define("desk.Action",
 		__afterValidation : async function () {
 
 			// check the validation status
-			if (!this.__manager.getValid()) {
+			if ( !this.__manager.getValid() ) {
 
-				alert(this.__manager.getInvalidMessages().join("\n"));
+				alert( this.__manager.getInvalidMessages().join( "\n" ) );
 				return;
 
 			}
@@ -382,9 +382,9 @@ qx.Class.define("desk.Action",
 
 			// update parent Actions
 			this.__update.setEnabled( false );
-			this.__update.setLabel("Updating Parents...");
+			this.__update.setLabel( "Updating Parents..." );
 
-			await Promise.all( 
+			await Promise.all(
 				_.uniq( this.__connections.map( conn => conn.action ) )
 				.map( action => action.executeAsync() ) );
 
@@ -398,89 +398,62 @@ qx.Class.define("desk.Action",
 
 			}
 
-			this.__update.setLabel("Processing...");
+			this.__update.setLabel( "Processing..." );
 
-			if ( this.__outputDir && !this.__outputDir.startsWith( "cache/" ) ) {
-
+			if ( this.__outputDir && !this.__outputDir.startsWith( "cache/" ) )
 				params.output_directory = this.__outputDir;
-
-			}
 
 			// add the value of the "force update" checkbox
 			params.force_update = this.__forceUpdate.getValue();
-			this.__status.setValue("Processing...");
-			this.__executeAction( params );
-
-		},
-
-		/**
-		* Executes the action
-		* @param params {Object} action parameters
-		*/
-		__executeAction : function (params) {
-			var id = this.__actionsCounter;
-			this.__actionsCounter++;
-
-			var logTab, log, started;
+			this.__status.setValue( "Processing..." );
+			const id = this.__actionsCounter++;
+			let log, started;
+			const options = {};
 
 			if ( ( this.__standalone === true ) && ( this.__action.voidAction !== true ) ) {
-				logTab = this.getLogTab();
+
+				const logTab = this.getLogTab();
 				logTab.getButton().execute();
 				log = logTab.getChildren()[0];
 				log.clear();
-				var options = {
-					listener : function (message) {
-						if (message.type === "outputDirectory") {
-							return;
-						}
 
-						if (!started) {
-							started = true;
-							log.log("Starting\n", "yellow");
-						}
-						var color;
-						switch (message.type) {
-							case "stdout" : 
-								color = 'white';
-								break;
-							case "stderr" : 
-								color = 'red';
-								break;
-							default : return;
-						}
-						log.log(message.data, color);
-					}
+				options.listener = function ( message ) {
+
+					if ( message.type === "outputDirectory" ) return;
+					if ( !started ) log.log( "Starting\n", "yellow" );
+					started = true;
+					const color = message.type == "stdout" ? "white" : "red";
+					log.log( message.data, color );
+
 				};
+
 			}
 
-			desk.Actions.execute(params, options, function (err, res) {
-				if (started) {
-					log.log("Finished\n", "yellow");
-				} else if ( log && (res.status === 'CACHED')) {
-					log.log("Replaying cached output :\n", "green");
-					desk.FileSystem.readFile(res.outputDirectory + "/action.log", function (err, stdout) {
-						stdout.split('/n').forEach(function (line) {
-							log.log(line, 'white');
-						});
-						desk.FileSystem.readFile(res.outputDirectory + "/action.err", function (err, stderr) {
-							stderr.split('/n').forEach(function (line) {
-								log.log(line, 'red');
-							});
-						});
-						log.log("Cache replay ended\n", "green");
-					});
-				}
-				this.__afterExecute(id, res);
-			}, this);
-			this.fireDataEvent("actionTriggered", {id : id, params : params});
-		},
+			this.fireDataEvent( "actionTriggered", { id, params } );
+			const response = await desk.Actions.executeAsync( params, options );
 
-		/**
-		* callback launched when the action has been performed
-		* @param id {Int} the action id
-		* @param res {Ojbect} action response
-		*/
-		__afterExecute : function (id, res) {
+			if ( started ) {
+
+				log.log( "Finished\n", "yellow" );
+
+			} else if ( log && ( response.status === 'CACHED' ) ) {
+
+				log.log( "Replaying cached output :\n", "green" );
+				const stdout = await desk.FileSystem.readFileAsync(
+					response.outputDirectory + "/action.log" );
+
+				for( let line of stdout.split( '/n' ) )
+					log.log(line, 'white' );
+
+				const stderr= await desk.FileSystem.readFileAsync(
+					response.outputDirectory + "/action.err" );
+
+				for( let line of stderr.split( '/n' ) )
+					log.log(line, 'red' );
+
+				log.log( "Cache replay ended\n", "green" );
+
+			}
 
 			this.__update.setEnabled( true );
 			this.__update.setLabel( "Update" );
@@ -489,25 +462,26 @@ qx.Class.define("desk.Action",
 					this.__outputDir.startsWith( "cache/" ) ||
 					this.__outputDir.startsWith( "actions/") ) ) {
 
-				this.setOutputDirectory(res.outputDirectory);
+				this.setOutputDirectory( response.outputDirectory );
 
 			}
 
-			this.__status.setValue( res.status );
-			if ( res.error || res.killed ) return;
-			this.fireDataEvent("actionUpdated", {id : id, response : res});
+			this.__status.setValue( response.status );
+			if ( response.error || response.killed ) return;
+			this.fireDataEvent("actionUpdated", { id, response } );
 
 		},
 
 		/**
 		* Returns the form containing the desired parameter
-		* @param  parameter {String} the parameter name
+		* @name  parameter {String} the parameter name
 		* @return {qx.ui.form.TextField} the input form
 		*/
-		getForm : function (parameter) {
-			return _.find(this.__manager.getItems(), function (item) {
-				return item.getUserData("name") === parameter;
-			});
+		getForm : function ( name ) {
+
+			for ( let item of this.__manager.getItems() )
+				if ( item.getUserData( "name" ) === name ) return item;
+
 		},
 
 		/**
