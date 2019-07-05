@@ -1,7 +1,7 @@
 /**
  * A container to launch RPC actions and edit parameters
  * @lint ignoreDeprecated (alert)
- * @ignore (async.each)
+ * @ignore (Promise.all)
  * @ignore (_.*)
  */
 qx.Class.define("desk.Action", 
@@ -114,9 +114,29 @@ qx.Class.define("desk.Action",
 
 			if ( action === this ) return;
 			this.__connections.push( { action, parameter, file } );
-			const params = {};
-			params[ parameter ] = "dummy";
-			this.setParameters( params, true );
+			this.setParameterVisibility( parameter, false );
+
+		},
+
+		/**
+		* Disconnects a parameter to an output file from an other action
+		* @param parameterName {String} name of the parameter to set
+		* @param parentAction {desk.Action} action to link to
+		* @param fileName {string} name of the output file from parentAction
+		*/
+		disconnect : function ( parameter, action, file ) {
+
+			this.__connections = this.__connections.filter( c => {
+
+				if ( ( c.parameter == parameter ) && ( c.action == action )
+					&& ( c.file == file ) ) {
+
+					this.setParameterVisibility( parameter, true );
+					return false;
+
+				} else return true;
+
+			} );
 
 		},
 
@@ -183,24 +203,48 @@ qx.Class.define("desk.Action",
 		*/
 		setParameters : function ( parameters, hide ) {
 
-			if (typeof parameters.output_directory === "string") {
+			for ( let [ param, value ] of Object.entries( parameters ) )
+				this.setParameter( param, value, hide );
 
-				this.__outputDir = parameters.output_directory;
+        },
+
+        /**
+		* Defines UI input parameter
+		* @param parameter {String} parameter
+		* @param value {String} hide parameter in UI
+		* @param hide {Boolean} hide/don't hide provided parameter forms
+		*/
+		setParameter : function ( parameter, value, hide ) {
+
+			if ( parameter == "output_directory") {
+
+				this.__outputDir = value;
 				if ( this.__tabView ) this.__addOutputTab();
 
 			}
 
-			for ( let [ key, value ] of Object.entries( parameters ) ) {
+			const form = this.getForm( parameter );
+			if ( !form ) return;
+			form.setValue( value.toString() );
+			if ( hide === undefined ) return;
+			this.setParameterVisibility( parameter, !hide );
 
-				const form = this.getForm( key );
-				if ( !form ) continue
-				form.setValue( value.toString() );
-				if ( hide === undefined ) continue;
-				const visibility = hide ? "excluded" : "visible";
-				form.setVisibility( visibility );
-				form.getUserData( "label" ).setVisibility( visibility );
+        },
 
-			}
+        /**
+		* Defines UI input parameter visibility
+		* @param parameter {String} parameter
+		* @param value {String} hide parameter in UI
+		* @param hide {Boolean} hide/don't hide provided parameter forms
+		*/
+		setParameterVisibility : function ( parameter, visible ) {
+
+			const form = this.getForm( parameter );
+			if ( !form ) return;
+			if ( visible === undefined ) return;
+			const visibility = visible ? "visible" : "excluded";
+			form.setVisibility( visibility );
+			form.getUserData( "label" ).setVisibility( visibility );
 
         },
 
@@ -239,15 +283,20 @@ qx.Class.define("desk.Action",
 		* @return {qx.ui.tabview.TabView} the tabViex container
 		*/
 		getTabView : function () {
-			if (!this.__tabView) {
+
+			if ( !this.__tabView ) {
+
 				this.__tabView = new qx.ui.tabview.TabView ();
-				var page = new qx.ui.tabview.Page("Parameters");
-				page.setLayout(new qx.ui.layout.HBox());
-				page.add(this, {flex : 1});
-				this.__tabView.add(page);
-				this.addListenerOnce("actionUpdated", this.__addOutputTab, this);
+				var page = new qx.ui.tabview.Page( "Parameters" );
+				page.setLayout( new qx.ui.layout.HBox() );
+				page.add( this, { flex : 1 } );
+				this.__tabView.add( page );
+				this.addListenerOnce( "actionUpdated", this.__addOutputTab, this );
+
 			}
+
 			return this.__tabView;
+
 		},
 
 		/**
@@ -444,8 +493,10 @@ qx.Class.define("desk.Action",
 
 			}
 
-			this.__status.setValue(res.status);
+			this.__status.setValue( res.status );
+			if ( res.error || res.killed ) return;
 			this.fireDataEvent("actionUpdated", {id : id, response : res});
+
 		},
 
 		/**
