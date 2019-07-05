@@ -18,20 +18,17 @@ qx.Class.define("desk.Action",
 	* }
 	* </pre>
 	*/
-	construct : function (name, opt) {
+	construct : function ( name, opt ) {
+
 		opt = opt || {};
-		this.base(arguments);
-
-		this.__action = desk.Actions.getInstance().getAction(name);
-		qx.core.Assert.assert(_.isObject(this.__action), 'action "' + name +  '" not found');
+		this.base( arguments );
+		this.__action = desk.Actions.getInstance().getAction( name );
+		qx.core.Assert.assert( _.isObject( this.__action ), 'action "' + name +  '" not found');
 		this.__name = name;
-
-		if (opt.standalone) {
-			this.__standalone = true;
-		}
-
+		if ( opt.standalone ) this.__standalone = true;
 		this.__connections = [];
 		this.__buildUI();
+
 	},
 
 	properties : {
@@ -266,15 +263,15 @@ qx.Class.define("desk.Action",
 		*/
 		execute : function( callback ) {
 
+			if ( !this.__manager.validate() ) return callback( "Validation error" );
+
 			this.addListenerOnce( "actionUpdated", function ( event ) {
 
 				const res = event.getData().response;
 				if ( res.error ) return callback( res.error );
 				callback( null, res );
 
-			} );
-
-			this.__manager.validate();
+			}, this );
 
 		},
 
@@ -357,6 +354,33 @@ qx.Class.define("desk.Action",
 		*/
 		__afterValidation : async function () {
 
+			let response;
+
+			try {
+
+				response = await this.__afterValidationUnsafe();
+
+			} catch ( error ) {
+
+				this.__status.setValue( "Error" );
+				response = { response : { error } };
+
+			} finally {
+
+				this.__update.setEnabled( true );
+				this.__update.setLabel( "Update" );
+
+			}
+
+			this.fireDataEvent( "actionUpdated", response );
+
+		},
+
+		/**
+		* Fired whenever the execute button has been pressed
+		*/
+		__afterValidationUnsafe : async function () {
+
 			// check the validation status
 			if ( !this.__manager.getValid() ) {
 
@@ -431,6 +455,7 @@ qx.Class.define("desk.Action",
 
 			this.fireDataEvent( "actionTriggered", { id, params } );
 			const response = await desk.Actions.executeAsync( params, options );
+			this.__status.setValue( response.status );
 
 			if ( started ) {
 
@@ -455,9 +480,6 @@ qx.Class.define("desk.Action",
 
 			}
 
-			this.__update.setEnabled( true );
-			this.__update.setLabel( "Update" );
-
 			if ( !this.__action.voidAction  &&  ( ( this.__outputDir === null ) ||
 					this.__outputDir.startsWith( "cache/" ) ||
 					this.__outputDir.startsWith( "actions/") ) ) {
@@ -466,9 +488,7 @@ qx.Class.define("desk.Action",
 
 			}
 
-			this.__status.setValue( response.status );
-			if ( response.error || response.killed ) return;
-			this.fireDataEvent("actionUpdated", { id, response } );
+			return { id, response };
 
 		},
 
