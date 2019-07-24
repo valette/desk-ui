@@ -852,40 +852,59 @@ qx.Class.define("desk.MPRContainer",
 			},this);
 			menu.add(propertiesButton);
 
-			var colormapButton = new qx.ui.menu.Button("color map");
-			colormapButton.addListener("execute", function () {
-				this.__createColormapWindow(volumeListItem);
-				},this);
-			menu.add(colormapButton);
-
-
 			if(this.__standalone) {
 				if (desk.Actions.getInstance().getSettings().permissions) {
+
+					var segmentMenu = new qx.ui.menu.Menu();
+					menu.add(new qx.ui.menu.Button("segmentation", null, null, segmentMenu));
+
 					var segmentButton = new qx.ui.menu.Button("segment(GC)");
 					segmentButton.addListener("execute", function () {
 						new desk.SegTools(this, this.getVolumeFile(volumeListItem));
 					},this);
-					menu.add(segmentButton);
+					segmentMenu.add(segmentButton);
 
 					var segmentButtonGC = new qx.ui.menu.Button("segment");
 					segmentButtonGC.addListener("execute", function () {
 						new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 1});
 					},this);
-					menu.add(segmentButtonGC);
+					segmentMenu.add(segmentButtonGC);
 
 					var segmentButtonCVT = new qx.ui.menu.Button("segment (fast)");
 					segmentButtonCVT.addListener("execute", function () {
 						new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 3});
 					},this);
-					menu.add(segmentButtonCVT);
+					segmentMenu.add(segmentButtonCVT);
 
 					var editButton = new qx.ui.menu.Button("edit");
 					editButton.addListener("execute", function () {
 						new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 2});
 					},this);
-					menu.add(editButton);
+					segmentMenu.add(editButton);
 				}
 			}
+
+
+			var appearanceMenu = new qx.ui.menu.Menu();
+			menu.add(new qx.ui.menu.Button("appearance", null, null, appearanceMenu));
+
+			var colormapButton = new qx.ui.menu.Button("color map");
+			colormapButton.addListener("execute", function () {
+				this.__createColormapWindow(volumeListItem);
+				},this);
+			appearanceMenu.add(colormapButton);
+
+			var brightnessButton = new qx.ui.menu.Button("set brightness");
+			brightnessButton.addListener("execute", function () {
+				this.setBrightness( volumeListItem, parseFloat( prompt( "brightness?" ) ) );
+			},this);
+			appearanceMenu.add(brightnessButton);
+
+			var contrastButton = new qx.ui.menu.Button("set contrast");
+			contrastButton.addListener("execute", function () {
+				this.setContrast( volumeListItem, parseFloat( prompt( "contrast?" ) ) );
+			},this);
+			appearanceMenu.add(contrastButton);
 
 			var moveForwardButton = new qx.ui.menu.Button("move forward");
 			moveForwardButton.addListener("execute", function () {
@@ -902,7 +921,8 @@ qx.Class.define("desk.MPRContainer",
 				}
 				this.__reorderMeshes();
 				this.render();
-				},this);
+			},this);
+
 			menu.add(moveForwardButton);
 
 			var moveBackwardButton = new qx.ui.menu.Button("move backward");
