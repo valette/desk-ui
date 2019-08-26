@@ -137,7 +137,7 @@ qx.Class.define("desk.SceneContainer",
 		this.__meshes.setContextMenu(this.__getContextMenu());
 
 		if (THREE.CTMLoader) {
-			this.__ctmLoader = new THREE.CTMLoader(this.getRenderer().context);
+			this.__ctmLoader = new THREE.CTMLoader(this.getRenderer().getContext());
 		}
 		this.__vtkLoader = new THREE.VTKLoader();
 
