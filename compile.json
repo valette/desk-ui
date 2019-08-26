@@ -27,6 +27,7 @@
       "theme": "desk.ui.theme.Theme",
       "name": "desk-ui",
       "bootPath": "source/boot",
+      "default" : true,
       "environment": {
         "qx.icontheme": "Tango"
       }
