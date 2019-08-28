@@ -1,5 +1,5 @@
-LZMA = require( 'three/examples/js/libs/lzma.js' );
-CTM = require( 'three/examples/js/libs/ctm.js' );
+LZMA = require( './lzma.js' );
+CTM = require( './ctm.js' );
 
 module.exports = function () {
 

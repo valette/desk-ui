@@ -33,7 +33,7 @@
     "socket.io-client": "2.2.0",
     "style-loader": "1.0.0",
     "terser": "4.2.1",
-    "three": "0.107.0",
+    "three": "0.108.0",
     "ttest": "1.1.0",
     "url-loader": "2.1.0",
     "webpack": "4.39.3",
