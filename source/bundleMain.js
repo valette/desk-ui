@@ -7,7 +7,7 @@ import htmlWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-html.js";
 require('./ext/WebGL.js');
 self.Terminal = require( 'xterm' ).Terminal;
 
-require ('xterm/src/xterm.css');
+require ('xterm/css/xterm.css');
 
 function getCookie (name) {
   var match = document.cookie.match(new RegExp(name + '=([^;]+)'));
