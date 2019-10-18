@@ -157,7 +157,7 @@ THREE.CTMLoader.prototype.load = function ( url, callback, parameters ) {
 							scope._createGeometry( ctmFile, callback );
 
 							var e = Date.now();
-							console.log( "model load time [worker]: " + ( e - e1 ) + " ms, total: " + ( e - s ) );
+//							console.log( "model load time [worker]: " + ( e - e1 ) + " ms, total: " + ( e - s ) );
 
 						}
 
