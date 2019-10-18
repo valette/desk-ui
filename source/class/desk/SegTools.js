@@ -1,4 +1,5 @@
 /**
+* @ignore(confirm)
 * @ignore(Uint8Array)
 * @lint ignoreDeprecated(alert)
 * @lint ignoreDeprecated(confirm)

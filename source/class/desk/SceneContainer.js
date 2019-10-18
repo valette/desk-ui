@@ -6,6 +6,7 @@
 * @ignore(THREE.*)
 * @ignore(requestAnimationFrame)
 * @ignore(Detector)
+* @ignore(prompt)
 * @ignore(Uint8Array)
 * @lint ignoreDeprecated(alert)
 * @ignore(desk.MeshTools)
@@ -1332,12 +1333,3 @@ qx.Class.define("desk.SceneContainer",
 		}
 	}
 });
-
-window.addEventListener("dragover",function(e){
-  e = e || event;
-  e.preventDefault();
-},false);
-window.addEventListener("drop",function(e){
-  e = e || event;
-  e.preventDefault();
-},false);

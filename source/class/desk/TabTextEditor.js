@@ -1,5 +1,7 @@
 /**
  * A text editor that can also execute javascript code
+ * @ignore(confirm)
+ * @ignore(prompt)
  * @lint ignoreDeprecated ( alert )
  * @lint ignoreDeprecated ( confirm )
  * @ignore( localStorage.* )

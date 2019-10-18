@@ -2,6 +2,8 @@
  * A file browser, with customizable launch options
  * 
  * @ignore (async.each)
+ * @ignore (confirm)
+ * @ignore (prompt)
  * @lint ignoreDeprecated (alert)
  * @lint ignoreDeprecated (confirm)
  * @asset(qx/icon/${qx.icontheme}/22/places/folder.png)

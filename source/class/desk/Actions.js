@@ -8,11 +8,12 @@
  * @ignore (io)
  * @ignore (_.*)
  * @ignore (async.*)
+ * @ignore (confirm)
  * @ignore (jsSHA)
  * @ignore (prettyData.json)
+ * @ignore (prompt)
  * @ignore (desk_startup_script)
  * @lint ignoreDeprecated (alert)
- * @lint ignoreDeprecated (confirm)
  * @require(desk.LogContainer)
  * @require(desk.Random)
  */

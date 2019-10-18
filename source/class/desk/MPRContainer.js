@@ -4,6 +4,7 @@
 * @asset(desk/contrast.png)
 * @ignore (async.eachSeries)
 * @ignore (_.indexOf)
+* @ignore(prompt)
 */
 qx.Class.define("desk.MPRContainer", 
 {
