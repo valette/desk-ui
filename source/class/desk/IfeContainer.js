@@ -820,7 +820,7 @@ qx.Class.define("desk.IfeContainer", {
                   filters : [{name: 'Image', extensions: ['png']}]
                 });
                 if (fn && fn !== null)
-                  remote.require('fs').writeFile(fn, image.toPNG());
+                  remote.require('fs').writeFile(fn, image.toPNG(), function () {});
               });
             });
 
