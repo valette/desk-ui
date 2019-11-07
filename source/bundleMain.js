@@ -5,10 +5,7 @@ import jsonWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-json.js";
 import htmlWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-html.js";
 
 self.GLDetector = require('./ext/WebGL.js');
-self.Terminal = require( 'xterm' ).Terminal;
 self.chroma = require( 'chroma-js' );
-
-require ('xterm/src/xterm.css');
 
 function getCookie (name) {
   var match = document.cookie.match(new RegExp(name + '=([^;]+)'));

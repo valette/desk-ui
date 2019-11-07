@@ -544,9 +544,9 @@ qx.Class.define("desk.IfeContainer", {
 
         },
 
-        addAnatFile: function(evt) {
+        addAnatFile: async function(evt) {
             var dialog = require('electron').remote.dialog;
-            var filesList = dialog.showOpenDialog({
+            var win = await dialog.showOpenDialog({
               filters : [
                 {name: 'Anat Nifti Image', extensions: ['anat.nii.gz']},
                 {name: 'Nifti Image', extensions: ['nii.gz']},
@@ -556,9 +556,9 @@ qx.Class.define("desk.IfeContainer", {
               properties: ['openFile']
             });
 
-            if (!filesList || !filesList.length) return;
+			if ( win.canceled ) return;
+            var filesList = win.filePaths;
             var name = require("path").basename(filesList[0]);
-
             var that = this;
 
             if (name.substr(name.length -7) !== ".nii.gz") {
@@ -804,7 +804,7 @@ qx.Class.define("desk.IfeContainer", {
             
             
             
-            screenshot.addListener("execute", function () {
+            screenshot.addListener("execute", async function () {
               var el = MPR.getContentElement().getDomElement(); 
 
               var rect = el.getBoundingClientRect();
@@ -813,15 +813,15 @@ qx.Class.define("desk.IfeContainer", {
 
               var remote = require('electron').remote;
               var webContents = remote.getCurrentWebContents();
-              webContents.capturePage(rect, function (image) {
-                var dialog = remote.dialog;
-                var fn = dialog.showSaveDialog({
-                  defaultPath: 'capture.png',
-                  filters : [{name: 'Image', extensions: ['png']}]
-                });
-                if (fn && fn !== null)
-                  remote.require('fs').writeFile(fn, image.toPNG(), function () {});
+              var image = await webContents.capturePage(rect);
+              var dialog = remote.dialog;
+              var fn = await dialog.showSaveDialog({
+                defaultPath: 'capture.png',
+                filters : [{name: 'Image', extensions: ['png']}]
               });
+              if ( fn.canceled ) return;
+              console.log('yes');
+              remote.require('fs').writeFile(fn.filePath, image.toPNG(), function () {});
             });
 
             MPR.setCustomContainer(meshViewer);

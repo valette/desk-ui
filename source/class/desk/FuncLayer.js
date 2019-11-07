@@ -184,9 +184,9 @@ qx.Class.define("desk.FuncLayer", {
 
       },
 
-      addFuncFile: function(cbBefore, cbAfter) {
+      addFuncFile: async function(cbBefore, cbAfter) {
           var dialog = require('electron').remote.dialog;
-          var filesList = dialog.showOpenDialog({
+          var win = await dialog.showOpenDialog({
             filters : [
               {name: 'Fonc Nifti Image', extensions: ['fonc.nii.gz']},
               {name: 'Nifti Image', extensions: ['nii.gz']},
@@ -196,6 +196,7 @@ qx.Class.define("desk.FuncLayer", {
             properties: ['openFile']
           });
 
+          var filesList = win.filePaths;
           if (!filesList || !filesList.length) return;
           var name = require("path").basename(filesList[0]);
 
