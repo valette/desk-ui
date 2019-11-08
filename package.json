@@ -53,7 +53,7 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run buildApps run package",
+    "build": "npm run clean && npm run buildApps && npm run package",
     "buildApps": "node source/build-worker.js && npm run qooxdoo && npm run bundle && ./extra.sh",
     "buildAddons": "node source/buildAddons.js",
     "bundle": "webpack && npm run terser",
