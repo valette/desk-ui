@@ -1,9 +1,12 @@
 /**
+* @asset(desk/expand.png)
+* @asset(desk/reduce.png)
 * @ignore(Uint8Array)
 * @lint ignoreDeprecated(alert)
 * @asset(desk/contrast.png)
 * @ignore (async.eachSeries)
 * @ignore (_.indexOf)
+* @ignore(WorkerSlicer)
 * @ignore(prompt)
 */
 qx.Class.define("desk.MPRContainer", 
@@ -249,7 +252,8 @@ qx.Class.define("desk.MPRContainer",
 				sliceView.addListener("changeCrossPosition", this.__onChangeCrossPosition, this);
 				sliceView.addListener("changeCameraZ", this.__onChangeCameraZ, this);
 				this.__setupMaximize(sliceView);
-				var button = new qx.ui.form.Button("+").set({opacity: 0.5});
+				var button = new qx.ui.form.Button(null, 'resource/desk/expand.png')
+					.set({opacity: 0.75, padding: 2});
 				button.setUserData("sliceView", sliceView);
 				sliceView.setUserData("maximizeButton", button);
 				button.addListener("execute", this.__onMaximizeButtonClick, this);
@@ -276,7 +280,7 @@ qx.Class.define("desk.MPRContainer",
 		 * @param button {qx.ui.form.Button} button
 		 */
 		__toggleMaximize : function (button) {
-			if (button.getLabel() === "+") {
+			if (button.getIcon() === "resource/desk/expand.png") {
 				this.maximizeViewer(button.getUserData("sliceView").getOrientation());
 			} else {
 				this.resetMaximize();
@@ -483,12 +487,12 @@ qx.Class.define("desk.MPRContainer",
 		 * @param orientation {Number} : viewer orientation to maximize
 		 */
 		 maximizeViewer : function (orientation) {
-			this.__maximizeButtons[orientation].setLabel("-");
+			this.__maximizeButtons[orientation].setIcon('resource/desk/reduce.png');
 			var sliceView = this.__viewers[orientation];
 			this.__gridContainer.setVisibility("excluded");
 			this.__fullscreenContainer.add(sliceView, {flex : 1});
 			this.__fullscreenContainer.setVisibility("visible");
-			this.fireDataEvent("switchFullScreen", true);		
+			this.fireDataEvent("switchFullScreen", sliceView);
 		},
 
 		/**
@@ -497,11 +501,11 @@ qx.Class.define("desk.MPRContainer",
 		 resetMaximize : function () {
 			this.__fullscreenContainer.setVisibility("excluded");
 			for (var i = 0; i != this.__nbUsedOrientations; i++) {
-				this.__maximizeButtons[i].setLabel("+");
+				this.__maximizeButtons[i].setIcon('resource/desk/expand.png');
 			}
 			this.__gridContainer.setVisibility("visible");
 			this.__applyViewsLayout(this.getViewsLayout());
-			this.fireDataEvent("switchFullScreen", false);			
+			this.fireDataEvent("switchFullScreen", false);
 		},
 
 		/**
@@ -541,19 +545,32 @@ qx.Class.define("desk.MPRContainer",
         * @return {qx.ui.container.Composite}  volume item
 		*/
 		addVolume : function (file, options, callback, context) {
+
 			if (typeof options === "function") {
 				callback = options;
 				options = {};
 				context = callback;
 			}
-			callback = callback || function () {};
 
-			if (desk.FileSystem.getFileExtension(file) === "json") {
+			callback = callback || function () {};
+			var fileObject;
+
+
+			if (typeof file == "string" && desk.FileSystem.getFileExtension(file) === "json") {
+//			if (desk.FileSystem.getFileExtension(file) === "json") {
 				desk.FileSystem.readFile(file, function (err, viewpoints) {
 					this.setViewPoints(JSON.parse(viewpoints).viewpoints);
 				}, this);
 				return null;
+			} else if (typeof file == "string") {
+				fileObject = file;
+			} else if (file.constructor == File) {
+
+				fileObject = file;
+				file = file.name;
+				console.log("FileObject loading !");
 			}
+
 
 			var volumeSlices = [];
 
@@ -622,25 +639,53 @@ qx.Class.define("desk.MPRContainer",
             label.setTextAlign("left");
 			labelcontainer.add(label, {flex : 1});
 
-			async.eachSeries(this.__viewers,
-				function (viewer, callback) {
-					volumeSlices[viewer.getOrientation()] = viewer.addVolume(
-							file, options, callback);
+			var addVolumeToViewers = function () {
+				async.forEachSeries(this.__viewers,
+						function (viewer, callback) {
+						var tmp = volumeSlices[viewer.getOrientation()] = viewer.addVolume(
+						file, options, callback);
+						if (worker)
+						tmp.setWorker(worker);
+					},
+					function (err) {
+						if (options.visible !== undefined) {
+							hideShowCheckbox.setValue(options.visible);
+						}
+						//                                     scalarBounds = volumeSlice.getScalarBounds();
+						//                                     updateWindowLevel();
+						volume.setUserData("loadingInProgress", false);
+						if (volume.getUserData("toDelete")) {
+							this.removeVolume(volume);
+						}
+						this.__reorderMeshes();
+						callback.call(context, err, volume);
+					}.bind(this)
+				);
+			}.bind(this)
+
+			if (options.workerSlicer) {
+				var worker;
+
+				var slicerOpts = {
+				onprogress : function (text) {
+				//$('#progress').text(text);
+				//console.log(text);
 				},
-				function (err) {
-					if (options.visible !== undefined) {
-						hideShowCheckbox.setValue(options.visible);
-					}
-//					scalarBounds = volumeSlice.getScalarBounds();
-//					updateWindowLevel();
-					volume.setUserData("loadingInProgress", false);
-					if (volume.getUserData("toDelete")) {
-						this.removeVolume(volume);
-					}
-					this.__reorderMeshes();
-					callback.call(context, err, volume);
-				}.bind(this)
-			);
+				onload : function (properties) {
+					console.log("Load finished ! properties : ", properties);
+					addVolumeToViewers(worker);
+				},
+				local: fileObject.constructor == File || typeof fileObject == "string" ,
+					noworker : options.noworker
+				};
+				worker = new WorkerSlicer(fileObject, slicerOpts);
+
+				// Change options.workerSlicer from "true" to reference to worker slicerWorker,
+				// allow to pass it to viewers
+				options.workerSlicer = worker;
+				volume.setUserData("workerSlicer", worker);
+
+			} else addVolumeToViewers();
 
 			var settingsContainer = new qx.ui.container.Composite();
 			settingsContainer.setLayout(new qx.ui.layout.HBox());
@@ -1035,6 +1080,9 @@ qx.Class.define("desk.MPRContainer",
 				volume.setUserData("toDelete", true);
 			} else {
 				qx.util.DisposeUtil.destroyContainer(volume);
+				if (volume.getUserData("workerSlicer")) {
+					volume.getUserData("workerSlicer").destroy();
+				}
 			}
 		},
 

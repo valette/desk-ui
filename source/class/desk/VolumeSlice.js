@@ -28,7 +28,7 @@ qx.Class.define("desk.VolumeSlice",
 	construct : function(file, orientation, opts, callback, context) {
 		this.base(arguments);
 
-		if (!desk.Actions.getAction('slice_volume')) {
+		if ( !desk.Actions.getAction('slice_volume' ) && !opts.workerSlicer ) {
 			var message = "Error : action volume_slice is not installed. Please install binary addons to slice volumes."
 			alert(message);
 			throw new Error(message);
@@ -38,6 +38,10 @@ qx.Class.define("desk.VolumeSlice",
 			context = callback;
 			callback = opts;
 			opts = {};
+		}
+
+		if (opts.workerSlicer) {
+			opts.format = 0;
 		}
 
 		this.setOrientation(orientation);
@@ -70,34 +74,54 @@ qx.Class.define("desk.VolumeSlice",
 
 		this.__file = file;
 
-		var image = this.__image = new Image();
-		image.onload = function() {
-			clearTimeout(this.__timeout);
-			this.__materials.forEach(function (material) {
-				material.uniforms.imageType.value = this.__availableImageFormat;
-			}, this);
-			this.__texture.needsUpdate = true;
+		if ( !opts.workerSlicer)  {
 
-			if (this.__numberOfScalarComponents === 1) {
-				this.__contrastMultiplier = 1 / Math.abs(this.__scalarMax - this.__scalarMin);
-				this.__brightnessOffset = - this.__scalarMin * this.__contrastMultiplier;
-			}
-			this.setBrightnessAndContrast(this.__brightness, this.__contrast);
-		}.bind(this);
-		image.onerror = image.onabort = this.update.bind(this);
+			var image = this.__image = new Image();
+			image.onload = function() {
+				clearTimeout(this.__timeout);
+				this.__materials.forEach(function (material) {
+					material.uniforms.imageType.value = this.__availableImageFormat;
+				}, this);
+				this.__texture.needsUpdate = true;
+
+				if (this.__numberOfScalarComponents === 1) {
+					this.__contrastMultiplier = 1 / Math.abs(this.__scalarMax - this.__scalarMin);
+					this.__brightnessOffset = - this.__scalarMin * this.__contrastMultiplier;
+				}
+				this.setBrightnessAndContrast(this.__brightness, this.__contrast);
+			}.bind(this);
+			image.onerror = image.onabort = this.update.bind(this);
+		this.__texture = new THREE.Texture(image);
+
+		} else
+			this.__texture = new THREE.DataTexture();
 
 		var filter = opts.linearFilter ? THREE.LinearFilter : THREE.NearestFilter;
-		this.__texture = new THREE.Texture(image);
 		this.__texture.onUpdate = function () {
 			this.__texture.lastVersion = this.__texture.version;
 		}.bind(this);
 		this.__texture.lastVersion = 0;
 
 		this.__lookupTable = new THREE.DataTexture(this.__dummyLut, 2, 1, THREE.RGBAFormat);
-		[this.__lookupTable, this.__texture].forEach(function (texture) {
-			texture.generateMipmaps = false;
-			texture.magFilter = texture.minFilter = filter;
-		});
+
+		if ( !opts.workerSlicer)  {
+
+			[this.__lookupTable, this.__texture].forEach(function (texture) {
+				texture.generateMipmaps = false;
+				texture.magFilter = texture.minFilter = filter;
+			});
+
+		} else {
+
+			this.__texture.generateMipmaps = false;
+			this.__texture.magFilter = this.__texture.minFilter = THREE.LinearFilter;
+			this.__texture.type = THREE.FloatType;
+			this.__texture.format = THREE.LuminanceFormat;
+			this.__texture.flipY = true;
+			this.__lookupTable.generateMipmaps = false;
+			this.__lookupTable.magFilter = this.__lookupTable.minFilter = THREE.NearestFilter;
+
+		}
 
 		this.addListener("changeImageFormat", this.update, this);
 		this.addListener("changeSlice", this.__updateImage, this);
@@ -140,7 +164,8 @@ qx.Class.define("desk.VolumeSlice",
 	},
 
 	statics : {
-		COLORS : ["blue", "red", "yellow"],
+//		COLORS : ["blue", "red", "yellow"],
+		COLORS : ["#009FE3", "#CD1719", "#FFED00"],
 
 		VERTEXSHADER : [
 			"varying vec2 vUv;",
@@ -164,6 +189,19 @@ qx.Class.define("desk.VolumeSlice",
 			"uniform float imageType;",
 			"uniform float scalarMin;",
 			"uniform float scalarMax;",
+
+			"highp float easeInOutQuad(highp float t) {",
+			"    return t<.5 ? 2.0*t*t : -1.0+(4.0-2.0*t)*t;",
+			"}",
+
+			"highp float decode32(highp vec4 rgba) {",
+			"    highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;",
+			"    highp float Exponent = 2.0 * mod(rgba[0],128.0) + step(128.0,rgba[1]) - 127.0; ",
+			"    highp float Mantissa = mod(rgba[1],128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + float(0x800000);",
+			"    highp float Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 )); ",
+			"    return Result;",
+			"}",
+
 
 			"varying vec2 vUv;",
 			"void main() {",
@@ -200,6 +238,13 @@ qx.Class.define("desk.VolumeSlice",
 			"float Mantissa = mod(rawBytes[2],128.0)*65536.0 + rawBytes[1]*256.0 +rawBytes[0]+ 8388608.0;",
 			"float value = Sign * Mantissa * pow(2.0,Exponent - 23.0);"
 		].join("\n"),
+
+		FRAGMENTSHADERFLOATWORKER : [
+			"// for float with local worker",
+			"vec4 rawFloats = texture2D( texture, vUv );",
+			"float value = rawFloats.x;"
+		].join("\n"),
+
 
 		FRAGMENTSHADEREND : [
 			"if (imageType == 1.0) {",
@@ -260,6 +305,7 @@ qx.Class.define("desk.VolumeSlice",
 
 	members : {
 		__opts : null,
+		__worker : null,
 		__orientationNames : ['XY', 'ZY', 'XZ'],
 
 		__availableImageFormat : 1,
@@ -432,6 +478,36 @@ qx.Class.define("desk.VolumeSlice",
 		},
 
 		/**
+		* reloads the volume (workerSlicer version)
+		* @param callback {Function} callback when done
+		* @param context {Object} optional callback context
+		*/
+		__updateWorkerSlicer : function ( callback, context ) {
+
+			//Todo : get Image parameters
+			var prop = this.__opts.workerSlicer.properties;
+			this.__dimensions = prop.dimensions;
+			this.__origin = [0, 0, 0]; //prop.origin;
+			this.__spacing = prop.spacing;
+			this.__extent = prop.extent;
+			this.__scalarTypeString = prop.scalarTypeAsString;
+			this.__scalarType = prop.scalarType;
+			this.__numberOfScalarComponents = prop.numberOfScalarComponents;
+			this.__scalarMin = prop.scalarBounds[0];
+			this.__scalarMax = prop.scalarBounds[1];
+			this.__finalizeUpdate();
+			setTimeout( function () { callback.call(context); }, 0 );
+
+		},
+
+		setWorker : function ( worker ) {
+
+			this.__worker = worker;
+
+		},
+
+
+		/**
 		 * reloads the volume
 		 * @param callback {Function} callback when done
 		 * @param context {Object} optional callback context
@@ -455,6 +531,14 @@ qx.Class.define("desk.VolumeSlice",
 				params.action = "slice_volume";
 			    params.format = this.getImageFormat();
 			}
+
+			if ( this.__opts.workerSlicer ) {
+
+				this.__updateWorkerSlicer( callback, context );
+				return;
+
+			}
+
 		    desk.Actions.execute(params,
 				function (err, response) {
 					if (err) {
@@ -464,6 +548,7 @@ qx.Class.define("desk.VolumeSlice",
 					this.openXMLURL( desk.FileSystem.getFileURL( response.outputDirectory + "volume.xml" ),
 						callback, context);
 			}, this);
+
 		},
 
 		/**
@@ -656,7 +741,9 @@ qx.Class.define("desk.VolumeSlice",
 				middleShader = desk.VolumeSlice.FRAGMENTSHADERUSHORT;
 				break;
 			default:
-				middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOAT;
+				middleShader = this.__opts.workerSlicer?
+					desk.VolumeSlice.FRAGMENTSHADERFLOATWORKER:
+					desk.VolumeSlice.FRAGMENTSHADERFLOAT;
 				break;
 			}
 
@@ -721,7 +808,7 @@ qx.Class.define("desk.VolumeSlice",
 			}, this);
 
 			this.__setBrightnessAndContrast(this.__brightness, this.__contrast);
-			if (this.__image.complete) {
+			if ( !this.__image || this.__image.complete ) {
 				this.__texture.needsUpdate = true;
 			}
 			material.side = THREE.DoubleSide;
@@ -949,7 +1036,8 @@ qx.Class.define("desk.VolumeSlice",
 		 */
 		__updateImage : function () {
 			clearTimeout(this.__timeout);
-			this.__timeout = setTimeout(this.__updateImage.bind(this), 10000);
+			if ( !this.__opts.workerSlicer)
+				this.__timeout = setTimeout(this.__updateImage.bind(this), 10000);
 			this.__texture.needsUpdate = false;
 			this.__texture.version = this.__texture.lastVersion;
 
@@ -959,6 +1047,52 @@ qx.Class.define("desk.VolumeSlice",
 				var zi = this.getZIndex();
 				this.setPosition( slice * this.__spacing[ zi ] + this.__origin[ zi ] );
 			}
+
+			var that = this;
+
+			if (this.__opts.workerSlicer) {
+
+				if (!this.__waitingFromWorker) {
+
+					window.setTimeout(function() {
+						that.__worker.getSlice(that.getOrientation(), that.getSlice(), function (err, imageData, imgFloatArray) {
+							if (err) {
+							console.warn(err);
+							}
+
+							that.__waitingFromWorker = false;
+							//that.__texture.image = imageData;
+
+							var tmp = { data: imgFloatArray, width: imageData.width, height: imageData.height };
+							if (typeof that.__opts.postProcessFunction === 'function') {
+								that.__opts.postProcessFunction(tmp, that.__worker);
+							}
+
+							that.__texture.image = tmp;
+							that.__texture.unpackAlignment = 1;
+
+							that.__materials.forEach(function (material) {
+								material.uniforms.imageType.value = that.__availableImageFormat;
+							}, that);
+							that.__texture.needsUpdate = true;
+							if (that.__numberOfScalarComponents == 3) {
+								that.__texture.format = THREE.RGBFormat;
+								that.__texture.type = THREE.UnsignedByteType;
+							}
+
+							if (that.__numberOfScalarComponents === 1) {
+								that.__contrastMultiplier = 1 / Math.abs(that.__scalarMax - that.__scalarMin);
+								that.__brightnessOffset = - that.__scalarMin * that.__contrastMultiplier;
+							}
+							that.setBrightnessAndContrast(that.__brightness, that.__contrast);
+						});
+					}, 1);
+				}
+
+				this.__waitingFromWorker = [ this.getOrientation(), this.getSlice() ];
+				return;
+			}
+
 
 			if (!this.__opts.ooc) {
 				this.__image.src = this.getSliceURL(this.getSlice()) + "?nocache=" + this.__timestamp;

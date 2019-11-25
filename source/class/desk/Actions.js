@@ -107,12 +107,18 @@ qx.Class.define("desk.Actions",
 		if (!this.__engine) {
 			desk.FileSystem.readFile(this.__savedActionFile,
 				function (err, result) {
+					console.log(err);
 					if (err) {
 						console.log("Error while reading actions cache");
 					}
-					result = JSON.parse(result);
-					this.__recordedActions = result.actions;
-					this.__loadSettings();
+					try {
+						result = JSON.parse(result);
+						this.__recordedActions = result.actions;
+						this.__loadSettings();
+					} catch ( e ) {
+						console.log("Error while reading actions cache");
+						this.fireEvent('changeReady');
+					}
 			}, this);
 			return;
 		}
@@ -253,7 +259,7 @@ qx.Class.define("desk.Actions",
 	members : {
 		__socket : null,
 		__runingActions : {},
-		__settings : null,
+		__settings : { not_initialised : true, actions : [] },
 		__ongoingActions : null,
 		__clearErrorButton : null,
 		__recordedActions : null,
