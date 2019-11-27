@@ -347,8 +347,8 @@ qx.Class.define("desk.Actions",
 
 			var links = {
 				'THREE.js API' : 'https://threejs.org/docs/',
-				'desk-ui API' : desk.FileSystem.getFileURL('ui/build/apiviewer'),
-				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/source-output'),
+				'desk-ui API' : desk.FileSystem.getFileURL('ui/compiled/build/apiviewer'),
+				'desk-ui debug mode' : desk.FileSystem.getFileURL('ui/compiled/source'),
 				'desk-ui changelog' : 'https://github.com/valette/desk-ui/commits/master',
 				'Qooxdoo Widget browser' : 'http://www.qooxdoo.org/current/widgetbrowser',
 				'Qooxdoo Demo browser' : 'http://www.qooxdoo.org/current/demobrowser'
@@ -802,7 +802,7 @@ qx.Class.define("desk.Actions",
 
 			this.fireEvent('update');
 
-			if (this.__settings) {
+			if ( this.__settings << !this.__settings.not_initialised ) {
 				this.debug("Init files already loaded");
 				this.__settings = settings;
 				return;

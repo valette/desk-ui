@@ -2,15 +2,11 @@
   "targets": [
     {
       "type": "source",
-      "outputPath": "source-output"
-    },
-    {
-      "type": "hybrid",
-      "outputPath": "hybrid-output"
+      "outputPath": "compiled/source"
     },
     {
       "type": "build",
-      "outputPath": "build"
+      "outputPath": "compiled/build"
     }
   ],
   "defaultTarget": "source",
