@@ -18,9 +18,9 @@
   },
   "applications": [
     {
-      "class": "desk.ui.Application",
+      "class": "desk.Application",
       "resourcePath" : "resource",
-      "theme": "desk.ui.theme.Theme",
+      "theme": "desk.theme.Theme",
       "name": "desk-ui",
       "bootPath": "source/boot",
       "default" : true,

@@ -19,7 +19,7 @@
  * @ignore (Promise.*)
  */
 
-qx.Class.define("desk.ui.Application",
+qx.Class.define("desk.Application",
 {
 	extend : qx.application.Standalone,
 

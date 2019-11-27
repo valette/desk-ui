@@ -8,7 +8,7 @@
 
 ************************************************************************ */
 
-qx.Theme.define("desk.ui.theme.Decoration",
+qx.Theme.define("desk.theme.Decoration",
 {
   extend : qx.theme.indigo.Decoration,
 

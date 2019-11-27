@@ -8,7 +8,7 @@
 
 ************************************************************************ */
 
-qx.Theme.define("desk.ui.theme.Font",
+qx.Theme.define("desk.theme.Font",
 {
   extend : qx.theme.indigo.Font,
 

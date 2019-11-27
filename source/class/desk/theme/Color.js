@@ -8,7 +8,7 @@
 
 ************************************************************************ */
 
-qx.Theme.define("desk.ui.theme.Color",
+qx.Theme.define("desk.theme.Color",
 {
   extend : qx.theme.indigo.Color,
 
