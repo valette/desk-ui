@@ -64,7 +64,7 @@ var WorkerSlicer = function (volume, opts) {
     var that = this;
 
 //	PapayaSlicer = require( 'source/script/workerSlicer.worker.js');
-	require( 'source/ext/workerSlicer.worker.js');
+	require( __dirname + '/workerSlicer.worker.js');
 
 //    loadScript(scriptFile, function () {
 next();
