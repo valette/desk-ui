@@ -4,11 +4,11 @@ import jsWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-javascript.
 import jsonWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-json.js";
 import htmlWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-html.js";
 
-require('./ext/WebGL.js');
+require( __dirname + '/ext/WebGL.js');
 self.Terminal = require( 'xterm' ).Terminal;
 require ('xterm/css/xterm.css');
 self.chroma = require( 'chroma-js' );
-self.WorkerSlicer = require( 'source/ext/workerSlicer.class.js' );
+self.WorkerSlicer = require( __dirname + '/ext/workerSlicer.class.js' );
 
 function getCookie (name) {
   var match = document.cookie.match(new RegExp(name + '=([^;]+)'));
@@ -40,11 +40,11 @@ self.ace.config.setModuleUrl( "ace/mode/html_worker", htmlWorkerUrl );
 	require("ace-builds/src-noconflict/ext-language_tools");
 
 THREE.CTMLoader.prototype.createWorker = function () {
-	return work(require.resolve('./ext/CTMWorker.js'), { all : true } );
+	return work(require.resolve(__dirname + '/ext/CTMWorker.js'), { all : true } );
 }
 
 THREE.VTKLoader.prototype.createWorker = function () {
-	return work(require.resolve('./ext/VTKWorker.js'), { all : true } );
+	return work(require.resolve(__dirname + '/ext/VTKWorker.js'), { all : true } );
 }
 
 if ( !self.require ) self.require = function (module) {
