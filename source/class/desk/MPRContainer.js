@@ -252,7 +252,7 @@ qx.Class.define("desk.MPRContainer",
 				sliceView.addListener("changeCrossPosition", this.__onChangeCrossPosition, this);
 				sliceView.addListener("changeCameraZ", this.__onChangeCameraZ, this);
 				this.__setupMaximize(sliceView);
-				var button = new qx.ui.form.Button(null, 'resource/desk/expand.png')
+				var button = new qx.ui.form.Button(null, 'desk/expand.png')
 					.set({opacity: 0.75, padding: 2});
 				button.setUserData("sliceView", sliceView);
 				sliceView.setUserData("maximizeButton", button);
@@ -280,7 +280,7 @@ qx.Class.define("desk.MPRContainer",
 		 * @param button {qx.ui.form.Button} button
 		 */
 		__toggleMaximize : function (button) {
-			if (button.getIcon() === "resource/desk/expand.png") {
+			if (button.getIcon() === "desk/expand.png") {
 				this.maximizeViewer(button.getUserData("sliceView").getOrientation());
 			} else {
 				this.resetMaximize();
@@ -487,7 +487,7 @@ qx.Class.define("desk.MPRContainer",
 		 * @param orientation {Number} : viewer orientation to maximize
 		 */
 		 maximizeViewer : function (orientation) {
-			this.__maximizeButtons[orientation].setIcon('resource/desk/reduce.png');
+			this.__maximizeButtons[orientation].setIcon('desk/reduce.png');
 			var sliceView = this.__viewers[orientation];
 			this.__gridContainer.setVisibility("excluded");
 			this.__fullscreenContainer.add(sliceView, {flex : 1});
@@ -501,7 +501,7 @@ qx.Class.define("desk.MPRContainer",
 		 resetMaximize : function () {
 			this.__fullscreenContainer.setVisibility("excluded");
 			for (var i = 0; i != this.__nbUsedOrientations; i++) {
-				this.__maximizeButtons[i].setIcon('resource/desk/expand.png');
+				this.__maximizeButtons[i].setIcon('desk/expand.png');
 			}
 			this.__gridContainer.setVisibility("visible");
 			this.__applyViewsLayout(this.getViewsLayout());
