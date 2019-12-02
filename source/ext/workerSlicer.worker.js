@@ -14746,6 +14746,8 @@ if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScop
     // In main thread !
 }
 
+self.PapayaSlicer = PapayaSlicer;
+
 papaya.utilities.PlatformUtils = {
 isPlatformLittleEndian : () => true
 }

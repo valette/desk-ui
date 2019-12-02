@@ -284,3 +284,5 @@ if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScop
 } else {
     // In main thread !
 }
+
+self.PapayaSlicer = PapayaSlicer;

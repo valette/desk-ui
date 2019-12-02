@@ -37,7 +37,7 @@ var js_files =  [
   //"../Papaya/src/js/surface/surface-gifti.js",
   //"../Papaya/src/js/surface/surface-mango.js",
   //"../Papaya/src/js/surface/surface-vtk.js",
-  "source/workerSlicer.manager.js"];
+  __dirname + "/ext/workerSlicer.manager.js"];
 
 var output = js_files.map((f)=>{
   return fs.readFileSync(f).toString();
@@ -49,5 +49,5 @@ isPlatformLittleEndian : () => true
 }
 `;
 
-fs.writeFileSync("source/ext/workerSlicer.worker.js",output, "utf8");
+fs.writeFileSync( __dirname + "/ext/workerSlicer.worker.js",output, "utf8");
 

@@ -9,6 +9,7 @@ self.numeric          = require('numeric');
 self.randomJS         = require('random-js');
 self.THREE            =	require('three');
 	require('three/examples/js/controls/TransformControls.js');
+	require('three/examples/js/loaders/STLLoader.js');
 	require('./ext/CTMLoader.js');
 	require('./ext/VTKLoader.js');
 	require('./ext/TrackballControls2.js');

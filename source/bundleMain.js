@@ -8,7 +8,7 @@ require( __dirname + '/ext/WebGL.js');
 self.Terminal = require( 'xterm' ).Terminal;
 require ('xterm/css/xterm.css');
 self.chroma = require( 'chroma-js' );
-self.WorkerSlicer = require( __dirname + '/ext/workerSlicer.class.js' );
+require( __dirname + '/ext/workerSlicer.worker.js' );
 
 function getCookie (name) {
   var match = document.cookie.match(new RegExp(name + '=([^;]+)'));

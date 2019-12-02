@@ -678,7 +678,7 @@ qx.Class.define("desk.MPRContainer",
 				local: fileObject.constructor == File || typeof fileObject == "string" ,
 					noworker : options.noworker
 				};
-				worker = new WorkerSlicer(fileObject, slicerOpts);
+				worker = new desk.Slicer(fileObject, slicerOpts);
 
 				// Change options.workerSlicer from "true" to reference to worker slicerWorker,
 				// allow to pass it to viewers
