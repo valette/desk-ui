@@ -51,6 +51,10 @@ qx.Class.define("desk.ThreeContainer",
 		controls.zoomSpeed = 6;
 		scene.add(camera);
 
+		if (opts.cameraFov) {
+		  camera.fov = opts.cameraFov;
+		}
+
 		// lights
 		var dirLight = new THREE.DirectionalLight( 0x888888 );
 		dirLight.position.set(200, 200, 1000).normalize();
