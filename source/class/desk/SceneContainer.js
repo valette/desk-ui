@@ -562,7 +562,7 @@ qx.Class.define("desk.SceneContainer",
 
 			var lineGeometry = new THREE.BufferGeometry();
 			var positions = new Float32Array( 5 * 3 );
-			lineGeometry.addAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
+			lineGeometry.setAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
 			var line = new THREE.Line ( lineGeometry, lineMaterial );
 			mesh.add(line);
 

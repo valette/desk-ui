@@ -14,7 +14,8 @@ qx.Class.define("desk.TextEditor",
 	* @param options {Object} options
 	*/
 	construct : function( file, options ) {
-	    options = options || {};
+
+		options = options || {};
 		this.base(arguments);
 		this.setLayout(new qx.ui.layout.VBox());
         if ( typeof options.localStorage !== 'undefined' ) {
@@ -107,12 +108,15 @@ qx.Class.define("desk.TextEditor",
 				.insert( this.__text.getAce().getCursorPosition(),
 					e.getData( "fileBrowser" ).getSelectedFiles()[ 0 ] );
 		}, this );
+
 	},
 
 	destruct : function(file) {
+
 		this.__removeScript();
 		qx.util.DisposeUtil.destroyContainer(this.__buttons);
 		this.__text.dispose();
+
 	},
 
 	properties : {

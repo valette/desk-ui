@@ -1,4 +1,9 @@
 
+/**
+* @ignore (Worker)
+* @ignore (PapayaSlicer)
+* @ignore (require)
+*/
 
 
 qx.Class.define("desk.Slicer", {
@@ -14,7 +19,7 @@ qx.Class.define("desk.Slicer", {
 
 		if ( !opts.noworker ) {
 
-			console.log("WWWOOORRKKKEERRR");
+			// TODO!!!
 			const scriptFile = "desk-ui/workerSlicer.worker.js";
 			this.worker = new Worker(scriptFile);
 			var self = this;
@@ -56,8 +61,6 @@ qx.Class.define("desk.Slicer", {
 
 		} else {
 
-			console.log("NNNOOOOOOOWWWOOORRKKKEERRR");
-
 			var that = this;
 
 			//require( __dirname + '/workerSlicer.worker.js'); !!!!!
@@ -65,7 +68,6 @@ qx.Class.define("desk.Slicer", {
 			next();
 			function next() {
 
-				console.log("here************************");
 				var root = qx.core.Init.getApplication().getRoot();
 				var win = new qx.ui.window.Window("Chargement de l'image");
 				win.set({
@@ -86,7 +88,6 @@ qx.Class.define("desk.Slicer", {
 				win.setLayout(new qx.ui.layout.VBox(10));
 				var progressText = new qx.ui.basic.Label("Initialisation...");
 				win.add(progressText);
-				console.log("here************************");
 
 				var pb = new desk.ProgressBar();
 				win.add(pb);
@@ -102,25 +103,17 @@ qx.Class.define("desk.Slicer", {
 
 				};
 
-				console.log("here");
-
 				that.slicer = new PapayaSlicer(progressFunc);
-				console.log("here11111111111111111111111111");
 
 				if (opts.local) {
 
 					if (typeof volume == "string") {
 
-						console.log({volume, opts });
-						//fs = require("fs");
 						var str = 'fs';
-						console.log("here444");
 						var fs = require( str )
-						console.log("here444");
 						var concat = require('concat-stream')
 						var readStream = fs.createReadStream(volume)
 						var concatStream = concat(gotPicture)
-						console.log("here333");
 						readStream.on('error', handleError)
 
 						// Get the size of the file
