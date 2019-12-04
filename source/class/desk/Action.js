@@ -269,7 +269,7 @@ qx.Class.define("desk.Action",
 
 				const res = event.getData().response;
 				if ( res.error ) return callback( res.error );
-				callback( null, res );
+				if ( callback ) callback( null, res );
 
 			}, this );
 
