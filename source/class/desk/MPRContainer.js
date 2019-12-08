@@ -4,6 +4,7 @@
 * @ignore(Uint8Array)
 * @lint ignoreDeprecated(alert)
 * @asset(desk/contrast.png)
+* @asset(qx/icon/${qx.icontheme}/16/categories/system.png)
 * @ignore (async.forEachSeries)
 * @ignore (File)
 * @ignore (_.indexOf)
@@ -630,7 +631,6 @@ qx.Class.define("desk.MPRContainer",
 
 			var labelcontainer = new qx.ui.container.Composite();
 			labelcontainer.setLayout(new qx.ui.layout.HBox());
-			labelcontainer.setContextMenu(this.__getVolumeContextMenu(volume));
 			volume.add(labelcontainer);
 
             var label = new qx.ui.basic.Label(baseName);
@@ -702,28 +702,8 @@ qx.Class.define("desk.MPRContainer",
 				this.render();
 			}, this );
 
-			// create file format change widget
-			var fileFormatBox;
-			fileFormatBox = new qx.ui.form.SelectBox();
-			fileFormatBox.setWidth(60);
-			fileFormatBox.set({width : 60, toolTipText : "change image format"});
-			var SelectJPG = new qx.ui.form.ListItem("jpg");
-			SelectJPG.setUserData("imageFormat", 1);
-			fileFormatBox.add(SelectJPG);
-			var SelectPNG = new qx.ui.form.ListItem("png");
-			SelectPNG.setUserData("imageFormat", 0);
-			fileFormatBox.add(SelectPNG);
-
-			if (imageFormat != 1) {
-				fileFormatBox.setSelection([SelectPNG]);
-			}
-
-			fileFormatBox.addListener("changeSelection", function ( ) {
-				imageFormat = fileFormatBox.getSelection()[0].getUserData("imageFormat");
-				volumeSlices.forEach(function (slice) {
-					slice.setImageFormat(imageFormat);
-				});
-			});
+			const optsMenu = this.__getVolumeOptionMenu( volume, imageFormat )
+			const optsButton = new qx.ui.form.MenuButton( null, "icon/16/categories/system.png", optsMenu );
 
 			// create opacity widget
             var opacitySlider = new qx.ui.form.Slider();
@@ -795,10 +775,8 @@ qx.Class.define("desk.MPRContainer",
 			}*/
 
 			settingsContainer.add(brightnessButton);
+			settingsContainer.add(optsButton);
 //			settingsContainer.add(windowLevelContainer);
-			if (fileFormatBox) {
-				settingsContainer.add(fileFormatBox);
-			}
 			settingsContainer.add(opacitySlider, {flex : 1});
 			settingsContainer.add(hideShowCheckbox);
 			// add this user data to avoid race conditions
@@ -864,7 +842,7 @@ qx.Class.define("desk.MPRContainer",
 		 * @param volumeListItem {qx.ui.container.Composite} : volume
 		 * @return {qx.ui.menu.Menu} the menu
 		 */
-		 __getVolumeContextMenu : function (volumeListItem) {
+		 __getVolumeOptionMenu : function ( volumeListItem, format ) {
 			//context menu to edit meshes appearance
 			var menu = new qx.ui.menu.Menu();
 			var propertiesButton = new qx.ui.menu.Button("properties");
@@ -899,36 +877,75 @@ qx.Class.define("desk.MPRContainer",
 			},this);
 			menu.add(propertiesButton);
 
-			if(this.__standalone) {
-				if (desk.Actions.getInstance().getSettings().permissions) {
+			if( desk.Actions.getInstance().getSettings().permissions ) {
 
-					var segmentMenu = new qx.ui.menu.Menu();
-					menu.add(new qx.ui.menu.Button("segmentation", null, null, segmentMenu));
+				const formatMenu = new qx.ui.menu.Menu();
+				menu.add(new qx.ui.menu.Button( "image format", null, null, formatMenu ) );
 
-					var segmentButton = new qx.ui.menu.Button("segment(GC)");
-					segmentButton.addListener("execute", function () {
-						new desk.SegTools(this, this.getVolumeFile(volumeListItem));
-					},this);
-					segmentMenu.add(segmentButton);
+				const formats = [ 'png', 'jpg' ];
+				const buttons = formats.map( format =>
+					new qx.ui.menu.RadioButton( format ) );
 
-					var segmentButtonGC = new qx.ui.menu.Button("segment");
-					segmentButtonGC.addListener("execute", function () {
-						new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 1});
-					},this);
-					segmentMenu.add(segmentButtonGC);
+				buttons[ format ].setValue( true );
 
-					var segmentButtonCVT = new qx.ui.menu.Button("segment (fast)");
-					segmentButtonCVT.addListener("execute", function () {
-						new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 3});
-					},this);
-					segmentMenu.add(segmentButtonCVT);
+				buttons.forEach( ( button, format ) => {
 
-					var editButton = new qx.ui.menu.Button("edit");
-					editButton.addListener("execute", function () {
-						new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 2});
-					},this);
-					segmentMenu.add(editButton);
-				}
+					formatMenu.add( button );
+
+					button.addListener( "changeValue", e => {
+
+						if ( !e.getData() ) return;
+						buttons[ 1 - format ].setValue( false );
+
+						this.getVolumeSlices( volumeListItem ).forEach( slice => slice.setImageFormat( format ) );
+
+
+					}, this );
+
+
+				}, this );
+
+				this.getVolumeSlices( volumeListItem ).forEach( slice => {
+
+					slice.addListener( "changeImageFormat", e => {
+
+						buttons[ e.getData() ].setValue( true );
+
+					} );
+
+				} );
+
+			}
+
+			if( this.__standalone && desk.Actions.getInstance().getSettings().permissions ) {
+
+				var segmentMenu = new qx.ui.menu.Menu();
+				menu.add(new qx.ui.menu.Button("segmentation", null, null, segmentMenu));
+
+				var segmentButton = new qx.ui.menu.Button("segment(GC)");
+				segmentButton.addListener("execute", function () {
+					new desk.SegTools(this, this.getVolumeFile(volumeListItem));
+				},this);
+				segmentMenu.add(segmentButton);
+
+				var segmentButtonGC = new qx.ui.menu.Button("segment");
+				segmentButtonGC.addListener("execute", function () {
+					new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 1});
+				},this);
+				segmentMenu.add(segmentButtonGC);
+
+				var segmentButtonCVT = new qx.ui.menu.Button("segment (fast)");
+				segmentButtonCVT.addListener("execute", function () {
+					new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 3});
+				},this);
+				segmentMenu.add(segmentButtonCVT);
+
+				var editButton = new qx.ui.menu.Button("edit");
+				editButton.addListener("execute", function () {
+					new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 2});
+				},this);
+				segmentMenu.add(editButton);
+
 			}
 
 
