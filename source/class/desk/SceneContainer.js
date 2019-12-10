@@ -988,7 +988,6 @@ qx.Class.define("desk.SceneContainer",
 			// drag and drop support
 			label.setDraggable(true);
 			label.addListener("dragstart", function(e) {
-				desk.DragFix.getInstance().focus();
 				e.addAction("alias");
 				e.addType("meshView");
 				});

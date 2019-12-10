@@ -213,7 +213,6 @@ qx.Class.define("desk.FileBrowser",
 		* @param e {qx.event.type.Drag}
 		*/
 		__onDragstart : function(e) {
-			desk.DragFix.getInstance().focus();
 			e.addAction("move");
 			e.addType("fileBrowser");
 			e.addType("file");
