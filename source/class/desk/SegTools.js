@@ -505,7 +505,7 @@ qx.Class.define("desk.SegTools",
 
 				this.__saveCurrentSeeds( function() {
 
-					this.__segmentationAction.executeAction();
+					this.__segmentationAction.execute();
 
 				} );
 
@@ -550,7 +550,7 @@ qx.Class.define("desk.SegTools",
 
 				this.__saveCurrentSeeds( function () {
 
-					this.__meshingAction.executeAction();
+					this.__meshingAction.execute();
 
 				} );
 

@@ -263,13 +263,13 @@ qx.Class.define("desk.Action",
 		*/
 		execute : function( callback ) {
 
-			if ( !this.__manager.validate() ) return callback( "Validation error" );
+			if ( !this.__manager.validate() && callback ) return callback( "Validation error" );
 
 			this.addListenerOnce( "actionUpdated", function ( event ) {
 
 				const res = event.getData().response;
-				if ( res.error ) return callback( res.error );
-				callback( null, res );
+				if ( res.error && callback ) return callback( res.error );
+				if ( callback ) callback( null, res );
 
 			}, this );
 

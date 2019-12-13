@@ -30,18 +30,18 @@
     "numeric": "1.2.6",
     "operative": "0.4.6",
     "papaya-viewer": "1.0.1449",
-    "@qooxdoo/compiler": "1.0.0-beta.20191105-1146",
+    "@qooxdoo/compiler": "1.0.0-beta.20191204-1920",
     "random-js": "2.1.0",
     "socket.io-client": "2.3.0",
     "style-loader": "1.0.1",
-    "terser": "4.4.1",
+    "terser": "4.4.2",
     "three": "0.111.0",
     "ttest": "1.1.0",
     "url-loader": "3.0.0",
     "webpack": "4.41.2",
     "webpack-cli": "3.3.10",
     "webworkify-webpack": "2.1.5",
-    "xterm": "4.2.0-vscode1"
+    "xterm": "4.3.0"
   },
   "engines": {
     "node": ">=8.0.0"

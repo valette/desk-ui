@@ -247,23 +247,23 @@ THREE.CTMLoader.prototype._createGeometry = function ( file, callback ) {
 	}
 
 	geometry.setIndex( new THREE.BufferAttribute( indices, 1 ) );
-	geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+	geometry.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
 
 	if ( normals !== undefined ) {
 
-		geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+		geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
 
 	}
 
 	if ( uvs !== undefined ) {
 
-		geometry.addAttribute( 'uv', new THREE.BufferAttribute( uvs, 2 ) );
+		geometry.setAttribute( 'uv', new THREE.BufferAttribute( uvs, 2 ) );
 
 	}
 
 	if ( colors !== undefined ) {
 
-		geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 4 ) );
+		geometry.setAttribute( 'color', new THREE.BufferAttribute( colors, 4 ) );
 
 	}
 
