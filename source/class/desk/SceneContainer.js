@@ -1,8 +1,8 @@
 /**
 * A widget containing a THREE.scene to visualize 3D meshes
-* 
+*
 * @asset(desk/camera-photo.png)
-* @asset(qx/icon/${qx.icontheme}/16/categories/system.png) 
+* @asset(qx/icon/${qx.icontheme}/16/categories/system.png)
 * @ignore(THREE.*)
 * @ignore(requestAnimationFrame)
 * @ignore(Detector)
@@ -15,11 +15,11 @@
 * @ignore (Float32Array)
 */
 
-qx.Class.define("desk.SceneContainer", 
+qx.Class.define("desk.SceneContainer",
 {
     extend : desk.ThreeContainer,
 
-	/** 
+	/**
 	 * constructor
 	 * @param file {String} file to open
 	 * @param opts {Object} options, see desk.SceneContainer.addFile()
@@ -42,7 +42,7 @@ qx.Class.define("desk.SceneContainer",
 			context = callback;
 			opts = {};
 		}
-		opts = opts || {};
+		this.options = opts = opts || {};
 
         this.base(arguments, opts);
 
@@ -53,6 +53,11 @@ qx.Class.define("desk.SceneContainer",
 		if (!desk.Actions.getAction('mesh2ctm')) {
 			this.setConvertVTK(false);
 		}
+
+		if (this.options.maxZoom)
+			this.getControls().setMaxZoom(this.options.maxZoom)
+		if (this.options.minZoom)
+			this.getControls().setMinZoom(this.options.minZoom)
 
 		var leftContainer = this.__leftContainer = new qx.ui.container.Composite();
 		leftContainer.setLayout(new qx.ui.layout.VBox());
@@ -99,19 +104,21 @@ qx.Class.define("desk.SceneContainer",
 		}, this);
 
 		var button = this.__optionsButton = new qx.ui.form.ToggleButton("+").set({opacity : 0.5, width : 30});
-		this.add (button, {left : 0, top : 0});
-		button.addListener("changeValue", function () {
-			leftContainer.setVisibility(button.getValue() ? "visible" : "excluded");
-			button.setLabel(button.getValue() ? "-" : "+");
-			var color = this.getRenderer().getClearColor();
-			var colors = this.__meshes.getDataRowRenderer()._colors;
-			colors.colNormal = "rgb(" + (255 * (1 - color.r)) + "," +
+		if (opts.noOpts === undefined || !opts.noOpts) {
+			this.add(button, {left : 0, top : 0});
+			button.addListener("changeValue", function () {
+				leftContainer.setVisibility(button.getValue() ? "visible" : "excluded");
+				button.setLabel(button.getValue() ? "-" : "+");
+				var color = this.getRenderer().getClearColor();
+				var colors = this.__meshes.getDataRowRenderer()._colors;
+				colors.colNormal = "rgb(" + (255 * (1 - color.r)) + "," +
 				(255 * (1 - color.g)) + "," + (255 * (1 - color.b)) + ")";
-			colors.bgcolEven = colors.bgcolOdd = colors.horLine = "transparent";
-			colors.bgcolFocused = "rgba(249, 249, 249, 0.5)";
-			colors.bgcolFocusedSelected = "rgba(60, 100, 170, 0.5)";
-			colors.bgcolSelected = "rgba(51, 94, 168, 0.5)";
-		}, this);
+				colors.bgcolEven = colors.bgcolOdd = colors.horLine = "transparent";
+				colors.bgcolFocused = "rgba(249, 249, 249, 0.5)";
+				colors.bgcolFocusedSelected = "rgba(60, 100, 170, 0.5)";
+				colors.bgcolSelected = "rgba(51, 94, 168, 0.5)";
+			}, this);
+		}
 
 		var buttons = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 		buttons.add(this.__getDragLabel(), {flex : 1});
@@ -169,7 +176,7 @@ qx.Class.define("desk.SceneContainer",
 		 * if true, .vtk files will be converted to .ctm files before loading
 		 */
 		convertVTK : {init : true, check: "Boolean"},
-		
+
 		/**
 		 * allows picking with mouse instead of rotation, pan, etc..
 		 */
@@ -212,7 +219,7 @@ qx.Class.define("desk.SceneContainer",
 
 		/**
 		 * Returns the objects handled in the scene
-		 * @return {Array} array of objects 
+		 * @return {Array} array of objects
 		 */
 		getMeshes : function() {
 			var meshes = [];
@@ -267,7 +274,6 @@ qx.Class.define("desk.SceneContainer",
 			if (opt.updateCamera !== false) {
 				this.viewAll();
 			}
-			this.render();
 		},
 
 		/**
@@ -353,7 +359,7 @@ qx.Class.define("desk.SceneContainer",
 			case "ctm":
 				this.__loadFile(file, opt, callback);
 				break;
-			default : 
+			default :
 				console.error("error : file " + file + " cannot be displayed by mesh viewer");
 			}
 		},
@@ -435,9 +441,8 @@ qx.Class.define("desk.SceneContainer",
 				this.__readFile(path + xmlName, meshParameters,
 					function () {callback();});
 			}.bind(this), function () {
-				this.viewAllSync();
 				callback(object);
-			}.bind(this));
+			});
 		},
 
 		/**
@@ -493,7 +498,7 @@ qx.Class.define("desk.SceneContainer",
 						this.__parseXMLData(file, result, opts, after);
 					}, this);
 					break;
-				case "json" : 
+				case "json" :
 					desk.FileSystem.readFile(file, function (error, result){
 						if (error) {
 							console.error("Error while reading " + file + "\n" + error);
@@ -509,7 +514,7 @@ qx.Class.define("desk.SceneContainer",
 						};
 					}, this);
 					break;
-				default : 
+				default :
 					console.error ("error : meshviewer cannot read " + file);
 					break;
 			}
@@ -542,30 +547,46 @@ qx.Class.define("desk.SceneContainer",
 			function update () {
 				var coords = volumeSlice.getCornersCoordinates();
 				var vertices = geometry.attributes.position;
+				var vertices2 = line.geometry.attributes.position;
+
 				for (var i = 0; i < 4 * 3; i++) {
 					vertices.array[i] = coords[i];
+					vertices2.array[i] = coords[i];
 				}
+
 				vertices.needsUpdate = true;
 				geometry.computeBoundingBox();
 				geometry.computeFaceNormals();
 				geometry.computeBoundingSphere();
-				var vertices2 = lineGeometry.attributes.position;
-				[0, 1, 3, 2, 0].forEach(function (i, j) {
-					vertices2.copyAt(j, vertices, i);
-				});
+
+				/* LINE MESH */
+				var vecCoords = [];
+				for (var i =0 ; i < 4 ; i++)
+					vecCoords[i] = new THREE.Vector3(coords[3*i], coords[3*i+1], coords[3*i+2]);
+
+				line.position.addVectors(vecCoords[3], vecCoords[0]).divideScalar(2);
+				line.scale.set(1.03, 1.03, 1.03);
+
+				for (var i =0 ; i < 4 ; i++) {
+				    vertices2.array[i*3]   = vertices2.array[i*3]   - line.position.x;
+				    vertices2.array[i*3+1] = vertices2.array[i*3+1] - line.position.y;
+				    vertices2.array[i*3+2] = vertices2.array[i*3+2] - line.position.z;
+				}
+
 				vertices2.needsUpdate = true;
 				this.render();
 			}
 
-			var lineMaterial = new THREE.LineBasicMaterial({linewidth: 3,
-				color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()]});
+			var lineGeometry = new THREE.PlaneBufferGeometry( 1, 1);
+			var lineMaterial = new THREE.MeshBasicMaterial({
+				color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()],
+				side:THREE.DoubleSide,
+				polygonOffset: true,
+				polygonOffsetFactor: 1.0,
+				polygonOffsetUnits: 4.0	});
 
-			var lineGeometry = new THREE.BufferGeometry();
-			var positions = new Float32Array( 5 * 3 );
-			lineGeometry.setAttribute('position', new THREE.BufferAttribute( positions, 3 ) );
-			var line = new THREE.Line ( lineGeometry, lineMaterial );
+			var line = new THREE.Mesh( lineGeometry, lineMaterial );
 			mesh.add(line);
-
 			volumeSlice.fireEvent('changeImage');
 
 			this.addMesh(mesh, _.extend({label : 'View ' + (volumeSlice.getOrientation()+1),
@@ -581,7 +602,7 @@ qx.Class.define("desk.SceneContainer",
 		},
 
 		/**
-		 * Attaches a volume to the scene. The volume wil be represented 
+		 * Attaches a volume to the scene. The volume wil be represented
 		 *  by its three orthogonal slices
 		 * @param file {String} volume file
 		 * @param opts {Object} options;
@@ -623,11 +644,11 @@ qx.Class.define("desk.SceneContainer",
 		__addDropSupport : function () {
 			this.setDroppable(true);
 			this.addListener("drop", function(e) {
-				if (e.supportsType("volumeSlices")) {
-					this.attachVolumeSlices(e.getData("volumeSlices"));
-				} else if (e.supportsType("fileBrowser")) {
+				if (e.supportsType("fileBrowser")) {
 					e.getData("fileBrowser").getSelectedFiles().
 						forEach(function (file) {this.addFile(file);}, this);
+				} else if (e.supportsType("volumeSlices")) {
+					this.attachVolumeSlices(e.getData("volumeSlices"));
 				}
 			}, this);
 			this.addListener('appear', function() {
@@ -683,7 +704,7 @@ qx.Class.define("desk.SceneContainer",
 			}
 			var origin = this.getContentLocation();
 			var button = 0;
-			if (event.isRightPressed() || 
+			if (event.isRightPressed() ||
 				(event.isCtrlPressed() && !event.isShiftPressed())) {
 				button = 1;
 			}
@@ -740,7 +761,7 @@ qx.Class.define("desk.SceneContainer",
 
 		/**
 		 * computes the intersections between an array of objects and the mouse pointer
-		 * @param meshes {Array} array of THREE objects. Default value : all visible objects in the scene 
+		 * @param meshes {Array} array of THREE objects. Default value : all visible objects in the scene
 		 * @return {Array} array of intersections
 		 */
 		getIntersections : function (meshes) {
@@ -778,7 +799,7 @@ qx.Class.define("desk.SceneContainer",
 			});
 			var intersects = this.getIntersections(slices)[0];
 			var delta = event.getWheelDelta() > 0 ? 1 : -1;
-			if (intersects != undefined) {
+			if (intersects && ( this.options.sliceOnWheel != false )) {
 				var slice = intersects.object.userData.viewerProperties.volumeSlice;
 				var maximum = slice.getNumberOfSlices() - 1;
 				var newValue = slice.getSlice() + delta;
@@ -817,7 +838,7 @@ qx.Class.define("desk.SceneContainer",
 			if (opts.opacity !== undefined) {
 				opacity = opts.opacity;
 			}
- 
+
 			var material =  new THREE.MeshLambertMaterial({
 				color : new THREE.Color().fromArray(color).getHex(),
 				side : THREE.DoubleSide
@@ -1023,7 +1044,7 @@ qx.Class.define("desk.SceneContainer",
 		 * @param parentWindow {qx.ui.window.Window} optional parent window
 		 * @return {qx.ui.container.Composite} the container
 		 */
-		__getPropertyWidget : function (parentWindow){		
+		__getPropertyWidget : function (parentWindow){
 			var mainContainer = new qx.ui.container.Composite();
 			mainContainer.setLayout(new qx.ui.layout.VBox());
 
@@ -1079,7 +1100,7 @@ qx.Class.define("desk.SceneContainer",
 					enableUpdate=true;
 				}
 			};
-			
+
 			updateWidgets.apply(this);
 
 			this.__meshes.addListener("changeSelection", updateWidgets, this);
@@ -1176,6 +1197,9 @@ qx.Class.define("desk.SceneContainer",
 						delete attributes[key].array;
 					});
 				}
+				if (mesh.geometry.index) {
+					delete mesh.geometry.index.array;
+				}
 			}
 
 			if (mesh.material) {
@@ -1214,7 +1238,7 @@ qx.Class.define("desk.SceneContainer",
 				console.log(mesh);
 				var geometry = mesh.geometry;
 				if (!geometry) return;
-				
+
 				var nV = 0, nT = 0;
 				if ( geometry instanceof THREE.Geometry ) {
 					nV = geometry.vertices.length;
@@ -1286,7 +1310,7 @@ qx.Class.define("desk.SceneContainer",
 			var removeButton = new qx.ui.menu.Button("remove");
 			removeButton.addListener("execute", function (){
 				this.removeMeshes(this.getSelectedMeshes());
-				this.render();		
+				this.render();
 			},this);
 			menu.add(removeButton);
 
@@ -1308,7 +1332,7 @@ qx.Class.define("desk.SceneContainer",
 				}, this);
 			},this);
 			menu.add(animate);
-			
+
 			//// hide all menu buttons but the "show" and "hide" buttons for the volumeSlices
 			menu.addListener("appear", function() {
 				var nodes = this.__meshes.getSelectedNodes() || [];
