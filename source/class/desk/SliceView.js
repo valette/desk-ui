@@ -1220,19 +1220,15 @@ qx.Class.define("desk.SliceView",
 				event.stopPropagation();
 			});
 
-			window.loopGuard = false;
-			label.addListener('changeValue', function () {
-				if (!qx.ui.core.FocusHandler.getInstance().isActive(label)) return;
+			label.addListener( 'changeValue', function () {
+
+				if ( !qx.ui.core.FocusHandler.getInstance().isActive( label ) ) return;
 				label.blur();
+				const slice = this.getFirstSlice();
+				const n = parseInt( label.getValue() );
+				if ( !slice || isNaN( n ) ) return;
+				this.setSlice( slice.getNumberOfSlices() - 1 - n );
 
-				var slice = this.getFirstSlice();
-				if (!slice) return;
-
-				if (window.loopGuard !== true) {
-					window.loopGuard = true;
-					this.setSlice(slice.getNumberOfSlices() - 1 - parseInt(label.getValue()) );
-					window.loopGuard = false;
-				}
 			}, this);
 
 			var slider = this.__slider = new qx.ui.form.Slider().set (
