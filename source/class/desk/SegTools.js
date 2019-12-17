@@ -76,6 +76,9 @@ qx.Class.define("desk.SegTools",
 
 		} );
 
+
+		master.getWindow().addListener( 'close' , this.destroy, this );
+
 		this.__labels = [];
 		this.open();
         this.center();

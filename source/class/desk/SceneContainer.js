@@ -1253,16 +1253,26 @@ qx.Class.define("desk.SceneContainer",
 			menu.add(properties);
 
 			var appearance = new qx.ui.menu.Button("appearance");
+
 			appearance.addListener("execute", function (){
+
 				var win = new qx.ui.window.Window();
 				win.setLayout(new qx.ui.layout.HBox());
 				win.add(this.__getPropertyWidget(win));
 				win.open();
+				let closed = false;
 				win.addListener('close', function () {
-					qx.util.DisposeUtil.destroyContainer(win.getChildren()[0]);
-					win.destroy();
+					if ( !win.isDisposed() ) win.destroy();
+					closed = true;
 				});
+
+				if ( !this.getWindow ) return;
+				this.getWindow().addListener( 'close', function () {
+					if ( !closed ) win.destroy();
+				} );
+
 			}, this);
+
 			menu.add(appearance);
 
 			var showButton = new qx.ui.menu.Button("show/hide");
