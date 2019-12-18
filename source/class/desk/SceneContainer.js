@@ -537,21 +537,22 @@ qx.Class.define("desk.SceneContainer",
 		 * @param opts {Object} options;
 		 * @return {THREE.Mesh} the created mesh;
 		 */
-		attachVolumeSlice : function (volumeSlice, opts) {
-			opts = opts || {};
+		attachVolumeSlice : function ( volumeSlice, opts = {} ) {
 			var geometry = new THREE.PlaneBufferGeometry( 1, 1);
 			var material = volumeSlice.getMaterial();
 			var mesh = new THREE.Mesh(geometry,material);
 			var listenerId = volumeSlice.addListener( 'changeImage', update, this );
 			var listener2Id = volumeSlice.addListener( 'changePosition', update, this );
+			const { colorFrame = false } = opts;
+
 			function update () {
+
+				if ( this.isDisposed() ) return cleanup();
 				var coords = volumeSlice.getCornersCoordinates();
 				var vertices = geometry.attributes.position;
-				var vertices2 = line.geometry.attributes.position;
 
 				for (var i = 0; i < 4 * 3; i++) {
 					vertices.array[i] = coords[i];
-					vertices2.array[i] = coords[i];
 				}
 
 				vertices.needsUpdate = true;
@@ -559,45 +560,66 @@ qx.Class.define("desk.SceneContainer",
 				geometry.computeFaceNormals();
 				geometry.computeBoundingSphere();
 
-				/* LINE MESH */
-				var vecCoords = [];
-				for (var i =0 ; i < 4 ; i++)
-					vecCoords[i] = new THREE.Vector3(coords[3*i], coords[3*i+1], coords[3*i+2]);
+				if ( colorFrame )  {
 
-				line.position.addVectors(vecCoords[3], vecCoords[0]).divideScalar(2);
-				line.scale.set(1.03, 1.03, 1.03);
+					/* LINE MESH */
+					for (var i = 0; i < 4 * 3; i++) {
+						vertices.array[i] = coords[i];
+						vertices2.array[i] = coords[i];
+					}
+					var vecCoords = [];
+					for (var i =0 ; i < 4 ; i++)
+						vecCoords[i] = new THREE.Vector3(coords[3*i], coords[3*i+1], coords[3*i+2]);
+					var vertices2 = line.geometry.attributes.position;
 
-				for (var i =0 ; i < 4 ; i++) {
-				    vertices2.array[i*3]   = vertices2.array[i*3]   - line.position.x;
-				    vertices2.array[i*3+1] = vertices2.array[i*3+1] - line.position.y;
-				    vertices2.array[i*3+2] = vertices2.array[i*3+2] - line.position.z;
+					line.position.addVectors(vecCoords[3], vecCoords[0]).divideScalar(2);
+					line.scale.set(1.03, 1.03, 1.03);
+
+					for (var i =0 ; i < 4 ; i++) {
+						vertices2.array[i*3]   = vertices2.array[i*3]   - line.position.x;
+						vertices2.array[i*3+1] = vertices2.array[i*3+1] - line.position.y;
+						vertices2.array[i*3+2] = vertices2.array[i*3+2] - line.position.z;
+					}
+
+					vertices2.needsUpdate = true;
+
 				}
 
-				vertices2.needsUpdate = true;
 				this.render();
 			}
 
-			var lineGeometry = new THREE.PlaneBufferGeometry( 1, 1);
-			var lineMaterial = new THREE.MeshBasicMaterial({
-				color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()],
-				side:THREE.DoubleSide,
-				polygonOffset: true,
-				polygonOffsetFactor: 1.0,
-				polygonOffsetUnits: 4.0	});
+			if ( colorFrame ) {
 
-			var line = new THREE.Mesh( lineGeometry, lineMaterial );
-			mesh.add(line);
+				var lineGeometry = new THREE.PlaneBufferGeometry( 1, 1);
+				var lineMaterial = new THREE.MeshBasicMaterial({
+					color: desk.VolumeSlice.COLORS[volumeSlice.getOrientation()],
+					side:THREE.DoubleSide,
+					polygonOffset: true,
+					polygonOffsetFactor: 1.0,
+					polygonOffsetUnits: 4.0	});
+
+				var line = new THREE.Mesh( lineGeometry, lineMaterial );
+				mesh.add(line);
+
+			}
+
 			volumeSlice.fireEvent('changeImage');
 
 			this.addMesh(mesh, _.extend({label : 'View ' + (volumeSlice.getOrientation()+1),
 				volumeSlice : volumeSlice}, opts));
 
-			mesh.addEventListener("removed", function () {
-				volumeSlice.removeListenerById(listenerId);
-				volumeSlice.removeListenerById(listener2Id);
-				lineGeometry.dispose();
-				lineMaterial.dispose();
-			});
+			mesh.addEventListener("removed", cleanup );
+
+			function cleanup () {
+
+				if ( !volumeSlice.isDisposed() ) {
+					volumeSlice.removeListenerById(listenerId);
+					volumeSlice.removeListenerById(listener2Id);
+				}
+				if ( colorFrame ) lineGeometry.dispose();
+				if ( colorFrame ) lineMaterial.dispose();
+			}
+
 			return mesh;
 		},
 
