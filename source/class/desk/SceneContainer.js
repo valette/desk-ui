@@ -209,6 +209,8 @@ qx.Class.define("desk.SceneContainer",
 
 		__optionsButton : null,
 
+		rayCasterParams : null,
+
 		/**
 		 * Returns the button opening the options pane
 		 * @return {qx.ui.form.ToggleButton} button opening the options pane
@@ -803,6 +805,7 @@ qx.Class.define("desk.SceneContainer",
 				return mesh.visible;
 			});
 
+			if ( this.rayCasterParams ) raycaster.params = this.rayCasterParams;
 			return raycaster.intersectObjects(meshes);
 		},
 
