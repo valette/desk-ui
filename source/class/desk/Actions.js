@@ -146,7 +146,7 @@ qx.Class.define("desk.Actions",
 		*/
 		init : function (callback, context) {
 			var actions = desk.Actions.getInstance();
-			if (actions.__settings) {
+			if (actions.__settings && !actions.__settings.not_initialised ) {
 				callback.apply(context);
 			} else {
 				actions.addListenerOnce("changeReady", callback , context);
@@ -802,7 +802,7 @@ qx.Class.define("desk.Actions",
 
 			this.fireEvent('update');
 
-			if ( this.__settings << !this.__settings.not_initialised ) {
+			if ( this.__settings && !this.__settings.not_initialised ) {
 				this.debug("Init files already loaded");
 				this.__settings = settings;
 				return;
