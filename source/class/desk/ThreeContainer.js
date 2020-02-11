@@ -83,6 +83,9 @@ qx.Class.define("desk.ThreeContainer",
 	},
 
 	destruct : function(){
+
+		this.__scene.dispose();
+		this.__scene = null;
 		this.__threeCanvas.removeListenerById(this.__listenerId);
 		desk.ThreeContainer.__garbageContainer.add(this.__threeCanvas);
 
@@ -152,7 +155,6 @@ qx.Class.define("desk.ThreeContainer",
 		while(ctx.getError());
 
 		//clean the scene
-		this.__scene = null;
 		this.__renderer.dispose();
 		this.__renderer = null;
 		this.__threeCanvas = null;

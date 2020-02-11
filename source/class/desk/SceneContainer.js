@@ -209,6 +209,8 @@ qx.Class.define("desk.SceneContainer",
 
 		__optionsButton : null,
 
+		rayCasterParams : null,
+
 		/**
 		 * Returns the button opening the options pane
 		 * @return {qx.ui.form.ToggleButton} button opening the options pane
@@ -803,6 +805,7 @@ qx.Class.define("desk.SceneContainer",
 				return mesh.visible;
 			});
 
+			if ( this.rayCasterParams ) raycaster.params = this.rayCasterParams;
 			return raycaster.intersectObjects(meshes);
 		},
 
@@ -1187,11 +1190,60 @@ qx.Class.define("desk.SceneContainer",
 			}, this);
 		},
 
+
+		__removeReal : function (mesh) {
+
+			if (mesh.parent) {
+				mesh.parent.remove( mesh );
+			}
+
+			var params = mesh && mesh.userData && mesh.userData.viewerProperties;
+
+			if ( params ) {
+				var leaf = this.__meshes.nodeGet( params.leaf );
+
+				if (leaf) {
+
+					delete leaf.viewerProperties;
+					this.__meshes.getDataModel().prune(leaf.nodeId, true);
+
+				}
+
+				this._deleteMembers(params);
+
+			}
+
+			this.__setData();
+
+			if ( mesh.geometry ) mesh.geometry.dispose();
+
+			if ( mesh.material ) {
+
+				if (mesh.material.map) mesh.material.map.dispose();
+				mesh.material.dispose();
+
+			}
+
+			this._deleteMembers( mesh.userData );
+			if ( mesh.dispose && ( typeof mesh.dispose === "function" ) ) {
+				mesh.dispose();
+			}
+        },
+
 		/**
 		 * Removes a mesh from the scene
 		 * @param mesh {THREE.Mesh} mesh to remove
 		 */
 		removeMesh : function (mesh) {
+
+			const objects = [];
+			mesh.traverse( m => objects.push( m ) );
+			for ( let object of objects ) this.__removeReal( object );
+			this.render();
+
+        },
+
+		removeMeshOLD : function (mesh) {
 			mesh.children.forEach(this.removeMesh, this);
 
 			if (mesh.parent) {
