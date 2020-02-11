@@ -222,7 +222,12 @@ qx.Class.define("desk.Action",
 
 			const form = this.getForm( parameter );
 			if ( !form ) return;
-			form.setValue( value.toString() );
+
+			if ( form.getUserData( 'type' ) === "flag" )
+				form.setValue( value === "true" || value === true );
+			else
+				form.setValue( value.toString() );
+
 			if ( hide === undefined ) return;
 			this.setParameterVisibility( parameter, !hide );
 
@@ -396,7 +401,13 @@ qx.Class.define("desk.Action",
 
 				const value = item.getValue();
 
-				if ( ( typeof value === 'string' ) && value.length ) {
+				if ( ( typeof value === 'string' )  && value.length  ) {
+
+					params[ item.getUserData( "name" ) ] = value;
+
+				}
+
+				if ( ( typeof value === 'boolean' ) && value ) {
 
 					params[ item.getUserData( "name" ) ] = value;
 
@@ -567,29 +578,6 @@ qx.Class.define("desk.Action",
 		* @param item {qx.ui.form.TextField} the parameter UI form
 		* @return {Boolean} true if the aprameter is valid
 		*/
-		__flagValidator : function(value, item) {
-			if ((value == null) || (value == '')) {
-				if (this.required) {
-					item.setInvalidMessage('"' + this.name + '" is empty');
-					return false;
-				} else return true;
-			}
-
-			switch(value.toLowerCase()) {
-				case "true": case "yes": case "1": 
-				case "false": case "no": case "0": return true;
-				default: 
-					item.setInvalidMessage('"' + this.name + '" should be a boolean');
-					return false;
-			}
-        },
-
-		/**
-		* Dummy validator (always returns true)
-		* @param value {String} the parameter value
-		* @param item {qx.ui.form.TextField} the parameter UI form
-		* @return {Boolean} true if the aprameter is valid
-		*/
 		__dummyValidator : function(value, item) {
             return true;
         },
@@ -622,13 +610,21 @@ qx.Class.define("desk.Action",
 					}
 				});
 
-				var label = new qx.ui.basic.Label(parameter.name);
-				container.add(label);
+				if ( parameter.type !== "flag" ) {
+					var label = new qx.ui.basic.Label(parameter.name);
+					container.add(label);
+				}
+
 				var form;
+
 				switch (parameter.type) {
+
 				case "file":
 				case "directory":
 					form = new desk.FileField();
+					break;
+				case "flag":
+					form = new qx.ui.form.CheckBox( parameter.name );
 					break;
 				default :
 					form = new qx.ui.form.TextField();
@@ -637,11 +633,12 @@ qx.Class.define("desk.Action",
 
 				form.setUserData("label", label);
 				form.setUserData("name", parameter.name);
+				form.setUserData("type", parameter.type);
 				if (toolTip.length) {
 					form.setToolTipText(toolTip);
 					label.setToolTipText(toolTip);
 				}
-				form.setPlaceholder(parameter.name);
+
 				container.add(form);
 
 				var validator = {
@@ -651,8 +648,8 @@ qx.Class.define("desk.Action",
 					"file" : this.__dummyValidator,
 					"directory" : this.__dummyValidator,
 					"xmlcontent" : this.__dummyValidator,
-					"flag" : this.__flagValidator
-				}[parameter.type];
+					"flag" : this.__dummyValidator
+				} [ parameter.type ];
 
 				if (validator) {
 					this.__manager.add(form, validator, parameter);				
@@ -665,9 +662,12 @@ qx.Class.define("desk.Action",
 					form.setValue('' + parameter.defaultValue);
 				}
 
-				form.addListener("input", function(e) {
-					this.setInvalidMessage('');
-				}, form);
+				if ( parameter.type !== "flag" ) {
+					form.setPlaceholder(parameter.name);
+					form.addListener("input", function(e) {
+						this.setInvalidMessage('');
+					}, form);
+				}
 			}, this);
 
 			this.__controls = new qx.ui.container.Composite();
