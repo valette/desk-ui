@@ -51,9 +51,9 @@ qx.Class.define("desk.SegTools",
 
 		master.getViewers().forEach( function ( viewer ) {
 
-			listenersIds[ viewer ] = viewer.addListener( "changeSlice", function ( event ) {
+			listenersIds[ viewer ] = viewer.addListener( "changeSlice", async function ( event ) {
 
-				this.__saveCurrentSeeds();
+				await this.__saveCurrentSeeds();
 				this.__reloadSeedImage( viewer );
 
 			}, this );
@@ -501,16 +501,11 @@ qx.Class.define("desk.SegTools",
 			} );
 
 			this.__segmentationButton = new qx.ui.form.Button( "Start" );
-			this.__segmentationButton.addListener("execute", function () {
+			this.__segmentationButton.addListener("execute", async function () {
 
 				this.__segmentationButton.setEnabled( false );
-				this.__segmentationInProgress = true;
-
-				this.__saveCurrentSeeds( function() {
-
-					this.__segmentationAction.execute();
-
-				} );
+				await this.__saveCurrentSeeds()
+				this.__segmentationAction.execute();
 
 			}, this );
 
@@ -546,16 +541,12 @@ qx.Class.define("desk.SegTools",
 			this.__meshingButton = new qx.ui.form.Button( "extract meshes" );
 			this.__bottomContainer.add( this.__meshingButton, { flex : 1 } );
 
-			this.__meshingButton.addListener("execute", function () {
+			this.__meshingButton.addListener("execute", async function () {
 
 				this.__segmentationButton.setEnabled( false );
 				this.__meshingButton.setEnabled( false );
-
-				this.__saveCurrentSeeds( function () {
-
-					this.__meshingAction.execute();
-
-				} );
+				await this.__saveCurrentSeeds();
+				this.__meshingAction.execute();
 
 			}, this );
 
@@ -1483,199 +1474,131 @@ qx.Class.define("desk.SegTools",
 
 		/**
 		 * Saves the seeds
-		 * @param callback {Function} callback when done
 		 */
-		__saveCurrentSeeds : function( callback ) {
-
-			callback = callback || function () {};
+		__saveCurrentSeeds : async function() {
 
 			if ( this.getSessionDirectory() === null ) return;
+			let modified = false;
 
-			var modified = false;
+			for ( let viewer of this.__master.getViewers() ) {
 
-			async.each( this.__master.getViewers(), ( function (viewer, callback) {
+				if ( !viewer.isDrawingCanvasModified() ) continue;
+				const base64Img = this.__getNewSeedsImage( viewer );
+				const sliceId = viewer.getUserData( "previousSlice" );
 
-				if (viewer.isDrawingCanvasModified()) {
+				if ( base64Img ) {
 
-					var base64Img = this.__getNewSeedsImage (viewer);
-					var sliceId = viewer.getUserData( "previousSlice" );
+					modified = true;
+					// save image
+					var seedsType = this.getSeedsType();
+					this.__addNewSeedItemToList ( viewer, sliceId, seedsType);
 
-					if (base64Img != false) {
+					await desk.Actions.executeAsync( {
 
-						modified = true;
-						// save image
-						var seedsType = this.getSeedsType();
+						action : "write_binary",
+						file_name : this.__getSeedFileName( viewer, sliceId, seedsType ),
+						base64data : base64Img,
+						output_directory : this.getSessionDirectory()
 
-						this.__addNewSeedItemToList (viewer, sliceId, seedsType);
-
-						desk.Actions.execute({
-
-							action : "write_binary",
-							file_name : this.__getSeedFileName (viewer, sliceId, seedsType),
-							base64data : base64Img,
-							output_directory : this.getSessionDirectory()
-
-						}, callback);
-
-					} else {
-
-						callback();
-
-					}
-				} else {
-
-					callback();
+					} );
 
 				}
-				
-				viewer.setUserData("previousSlice", viewer.getSlice());
+
+				viewer.setUserData( "previousSlice", viewer.getSlice() );
 				viewer.setDrawingCanvasNotModified();
 
-			}).bind(this),
-			
-			(function () {
+			}
 
-				if (modified) {
-
-					this.__saveSeedsXML( callback );
-
-				} else {
-
-					callback.call( this );
-
-				}
-
-			} ).bind( this ) );
+			if ( modified ) await this.__saveSeedsXML();
 
 		},
 
 		/**
 		 * Saves the seeds in an xml file
-		 * @param callback {Function} callback when done
 		 */
-		__saveSeedsXML : function( callback ) {
-			callback = callback || function () {};
+		__saveSeedsXML : async function() {
 
-               // XML writer with attributes and smart attribute quote escaping
-			/*
-				Format a dictionary of attributes into a string suitable
-				for inserting into the start tag of an element.  Be smart
-			   about escaping embedded quotes in the attribute values.
-			*/
-			function formatAttributes (attributes) {
-				var APOS = "'";
-				var QUOTE = '"';
-				var ESCAPED_QUOTE = {  };
-				ESCAPED_QUOTE[QUOTE] = '&quot;';
-				ESCAPED_QUOTE[APOS] = '&apos;';
-				var att_value;
-				var apos_pos, quot_pos;
-				var use_quote, escape;
-				var att_str;
-				var re;
-				var result = '';
-				for (var att in attributes) {
-					att_value = attributes[att];
-					// Find first quote marks if any
-					apos_pos = att_value.indexOf(APOS);
-					quot_pos = att_value.indexOf(QUOTE);
-					// Determine which quote type to use around 
-					// the attribute value
-					if (apos_pos == -1 && quot_pos == -1) {
-						att_str = ' ' + att + "='" + att_value +  "'";	//	use single quotes for attributes
-						att_str = ' ' + att + '="' + att_value +  '"';	//	use double quotes for attributes
-						result += att_str;
-						continue;
-					}
-					// Prefer the single quote unless forced to use double
-					if (quot_pos != -1 && quot_pos < apos_pos) {
-						use_quote = APOS;
-					} else {
-						use_quote = QUOTE;
-					}
-					// Figure out which kind of quote to escape
-					// Use nice dictionary instead of yucky if-else nests
-					escape = ESCAPED_QUOTE[use_quote];
-					// Escape only the right kind of quote
-					re = new RegExp(use_quote,'g');
-					att_str = ' ' + att + '=' + use_quote + 
-						att_value.replace(re, escape) + use_quote;
-					result += att_str;
-				}
-				return result;
+			const doc = document.implementation.createDocument( "", "", null );
+			const seeds = doc.createElement( "seeds" );
+			const colors = doc.createElement( "colors" );
+
+			for ( let color of this.__labels ) {
+
+				const element = doc.createElement("color");
+				colors.appendChild( element );
+				element.setAttribute( "red", color.red );
+				element.setAttribute( "green", color.green );
+				element.setAttribute( "blue", color.blue );
+				element.setAttribute( "label", color.label );
+				element.setAttribute( "name", color.labelName );
+				element.setAttribute( "meshcolor",
+					color.meshRed / 255 + " " +
+					color.meshGreen / 255 + " " +
+					color.meshBlue / 255 + " " +
+					color.opacity + " " +
+					color.depth );
+
 			}
 
-			function element (name,content,attributes) {
-				var att_str = '';
-				if (attributes) { // tests false if this arg is missing!
-					att_str = formatAttributes(attributes);
+			seeds.appendChild( colors );
+			const adjacencies = doc.createElement("adjacencies");
+			seeds.appendChild( adjacencies );
+			const adjArray = [];
+
+			for ( let lab of this.__labels ) {
+
+				const label1 = lab.label;
+
+				for ( let adj of lab.adjacencies ) {
+
+					const label2 = adj.label;
+
+					if ( _.find( adjArray, function ( edge ) {
+						return ( ( edge.label1 == label1 ) && ( edge.label2 == label2 ) ) ||
+							( ( edge.label1 == label2 ) && ( edge.label2 == label1 ) )
+						} ) ) continue;
+
+					adjArray.push( { label1 : label1, label2 : label2 } );
+					const element = doc.createElement( "adjacency" );
+					element.setAttribute( "label1", label1 );
+					element.setAttribute( "label2", label2 );
+					adjacencies.appendChild( element );
+
 				}
-				var xml;
-				if (!content){
-					xml='<' + name + att_str + '/>';
-				} else {
-					xml='<' + name + att_str + '>' + content + '</'+name+'>';
-				}
-				return xml;
+
 			}
 
-			var colors = this.__labels.reduce(function (colors, labelColor) {
-				return colors + element('color', null, {red : "" + labelColor.red,
-					green: "" + labelColor.green,
-					blue : "" + labelColor.blue,
-					label : "" + labelColor.label,
-					name : "" + labelColor.labelName,
-					meshcolor : labelColor.meshRed / 255 + " " +
-								labelColor.meshGreen / 255 + " " +
-								labelColor.meshBlue / 255 + " " +
-								labelColor.opacity + " " +
-								labelColor.depth
-				}) + "\n";
-			}, "");
+			for ( let viewer of this.__master.getViewers() ) {
 
-			var xmlContent = element('colors', colors) + "\n";
+				for ( let [ type, list ] of viewer.getUserData("seeds").entries() ) {
 
-			var adjacencies = "\n";
-			var adjArray = [];
-			this.__labels.forEach(function (lab) {
-				var label1 = lab.label;
-				lab.adjacencies.forEach(function (adj) {
-					var label2 = adj.label;
+					for ( let slice of list.getChildren() ) {
 
-					if (!_.find(adjArray, function (edge) {
-						return ((edge.label1 == label1) && (edge.label2 == label2)) ||
-							((edge.label1 == label2) && (edge.label2 == label1))
-						})) {
-						adjacencies += element('adjacency', null, 
-							{label1 : "" + label1, label2 : "" + label2}) + "\n";
-						adjArray.push({label1 : label1, label2 : label2});
-					}
-				});
-			});
-
-			if (adjArray.length > 0) {
-				xmlContent += element('adjacencies', adjacencies) + "\n";
-			}
-
-			this.__master.getViewers().forEach(function (viewer) {
-				viewer.getUserData("seeds").forEach(function (list, type) {
-					list.getChildren().forEach(function (slice) {
 						var sliceId = slice.getUserData("slice");
-						xmlContent += element(desk.SegTools.filePrefixes[type],
-							this.__getSeedFileName(viewer, sliceId, type), 
-							{slice: sliceId + "",
-							orientation: viewer.getOrientation() + ""}) + '\n';
-					}, this);
-				}, this)
-			}, this);
+						const seed = doc.createElement("seed");
+						seed.setAttribute( "slice", sliceId );
+						seed.setAttribute( "orientation", viewer.getOrientation() );
+						const txt = doc.createTextNode( "" + this.__getSeedFileName( viewer, sliceId, type ) );
+						seed.appendChild( txt );
+						seeds.appendChild( seed );
 
-			var seeds = element('seeds', xmlContent);
-			desk.Actions.execute({
+					}
+
+				}
+
+			}
+
+			const string = new XMLSerializer().serializeToString( seeds );
+
+			await desk.Actions.executeAsync ( {
+
 				action : "write_binary",
 				file_name : "seeds.xml",
-				base64data : qx.util.Base64.encode(seeds, true),
-				output_directory : this.getSessionDirectory()},
-			callback, this);
+				base64data : qx.util.Base64.encode( string, true ),
+				output_directory : this.getSessionDirectory()
+
+			} );
+
 		},
 
 		/**
