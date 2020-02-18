@@ -66,6 +66,7 @@ qx.Class.define("desk.Animator",
 		this.setLayout(new qx.ui.layout.VBox());
 
 		if (opts.standalone === true) {
+
 			this.__standalone = true;
 			var win = new qx.ui.window.Window();
 			win.setLayout(new qx.ui.layout.HBox());
@@ -81,6 +82,7 @@ qx.Class.define("desk.Animator",
 			win.open();
 			win.center();
 			qx.util.DisposeUtil.disposeTriggeredBy(win, this);
+
 		}
 
 		var list = new qx.ui.form.List();
@@ -90,6 +92,10 @@ qx.Class.define("desk.Animator",
 		this.__list = list;
 		this.add(list, {flex : 1});
 		this.add(this.getControlsContainer());
+		var loopCheckBox = this.__loopCheckBox = new qx.ui.form.CheckBox("loop");
+		loopCheckBox.setValue( true );
+		this.addListener( 'changeLoop', e => loopCheckBox.setValue( e.getData() ) );
+		this.add(loopCheckBox);
 		var snapCheckBox = this.__snapshotCheckBox = new qx.ui.form.CheckBox("snapshot");
 		this.add(snapCheckBox);
 
@@ -170,10 +176,16 @@ qx.Class.define("desk.Animator",
 	},
 
 	properties : {
+
 		/**
 		 * Defines each frame duration in milliseconds
 		 */
-		refreshTime : { init : 50, check: 'Number'},
+		refreshTime : { init : 50, check: 'Number', event : "changeRefreshTime" },
+
+		/**
+		 * Defines each frame duration in milliseconds
+		 */
+		loop : { init : true, check: 'Boolean', event : "changeLoop" },
 
 		/**
 		 * Defines current frame
@@ -188,6 +200,7 @@ qx.Class.define("desk.Animator",
 
 	members : {
 		__list : null,
+		__loopCheckBox : null,
 		__snapshotCheckBox : null,
 		__standalone : false,
 
@@ -213,27 +226,28 @@ qx.Class.define("desk.Animator",
 		/**
 		 * Starts/stops the animation
 		 */
-		__applyPlay : function (play) {
+		__applyPlay : async function (play) {
+
 			if (!play) return;
-
 			var counter = ++this.__counter;
-
 			var numberOfObjects = this.__getNumberOfObjects();
 
-			async.whilst(function () {
-					return (counter === this.__counter) && this.getPlay();
-				}.bind(this),
-				function (callback) {
-					this.setFrame((this.getFrame() + 1) % numberOfObjects);
+            while ( 1 ) {
 
-					if (this.__snapshotCheckBox.getValue()) {
-						setTimeout(this.__snapshot, this.getRefreshTime() / 3);
-					}
+				this.setFrame( ( this.getFrame() + 1 ) % numberOfObjects );
 
-					setTimeout(callback, this.getRefreshTime());
-				}.bind(this),
-				function (err) {}
-			);
+				if (this.__snapshotCheckBox.getValue()) {
+
+					setTimeout( async x => { await this.__snapshot() } , this.getRefreshTime() / 3 );
+
+				}
+
+				await new Promise( res => setTimeout( res, this.getRefreshTime()) );
+                if ( ( this.getFrame() === 0 ) && !this.__loopCheckBox.getValue() ) this.setPlay( false );
+                if ( ( counter !== this.__counter ) || !this.getPlay() ) break;
+
+            }
+
 		},
 
 		/**
@@ -298,18 +312,17 @@ qx.Class.define("desk.Animator",
 		 * @return {qx.ui.container.Composite} playback container
 		 */
 		getControlsContainer : function () {
-			if (this.__controls) {
-				return this.__controls;
-			}
+
+			if (this.__controls) return this.__controls;
 
 			var frameLabel = this.__frameLabel = new qx.ui.basic.Label("0");
 			frameLabel.setWidth(30);
 
 			var startButton = new qx.ui.form.Button(null, "icon/16/actions/media-playback-start.png");
-			startButton.addListener("execute", function () {this.setPlay(true);}, this);
+			startButton.addListener("execute", e => this.setPlay( true ) );
 
 			var stopButton = new qx.ui.form.Button(null, "icon/16/actions/media-playback-stop.png");
-			stopButton.addListener("execute", function () {this.setPlay(false);}, this);
+			stopButton.addListener("execute", e => this.setPlay( false ) );
 
 			var nextButton = new qx.ui.form.Button(null, "icon/16/actions/media-seek-forward.png");
 			nextButton.addListener("execute", this.getNextFrame, this);
@@ -319,15 +332,16 @@ qx.Class.define("desk.Animator",
 
 			var spinner = new qx.ui.form.Spinner(5, 50, 5000);
 			spinner.bind('value', this, 'refreshTime');
+			this.addListener( 'changeRefreshTime', e => spinner.setValue( e.getData() ) );
 
 			var container = this.__controls = new qx.ui.container.Composite();		
 			container.setLayout(new qx.ui.layout.HBox());
 			container.add(frameLabel);
-			container.add(startButton, {flex : 1});
-			container.add(stopButton, {flex : 1});
-			container.add(prevButton, {flex : 1});
-			container.add(nextButton, {flex : 1});
-			container.add(spinner);
+			container.add(startButton, { flex : 1} );
+			container.add(stopButton, { flex : 1 } );
+			container.add(prevButton, { flex : 1 } );
+			container.add(nextButton, { flex : 1 } );
+			container.add( spinner );
 			return container;
 		},
 
@@ -337,6 +351,7 @@ qx.Class.define("desk.Animator",
 		 * @param label {String} object label in the list
 		 */
 		addObject : function (object, label) {
+		    label = label || ( "" + this.__list.getChildren().length );
 			var item = new qx.ui.form.ListItem(label);
 			item.setUserData('threeObject', object);
 			this.__list.add(item);
