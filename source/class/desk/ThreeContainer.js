@@ -496,7 +496,7 @@ qx.Class.define("desk.ThreeContainer",
 		* @param opts {Object} options such as 'ratio' to multiplpy image dimensions,
 		* 'file' to choose file name or 'path' to write to server
 		*/
-		snapshot : function (opts) {
+		snapshot : async function (opts) {
 			opts = opts || {};
 			var ratio = opts.ratio || 1;
 
@@ -509,12 +509,15 @@ qx.Class.define("desk.ThreeContainer",
 				var saveData = dataURL.replace("image/png", "image/octet-stream");
 				var commaIndex = dataURL.lastIndexOf(",");
 
-				desk.Actions.execute({
+				await desk.Actions.executeAsync({
 					action : "write_binary",
 					file_name : desk.FileSystem.getFileName(opts.path),
 					base64data : dataURL.substring(commaIndex + 1, dataURL.length),
 					output_directory : desk.FileSystem.getFileDirectory(opts.path)
-				}, opts.callback);
+				} );
+
+				if ( opts.callback ) opts.callback();
+
 			} else {
 				var binary = atob(dataURL.split(',')[1]);
 				var array = [];
