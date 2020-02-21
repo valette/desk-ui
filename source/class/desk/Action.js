@@ -430,6 +430,7 @@ qx.Class.define("desk.Action",
 			// update parent Actions
 			this.__update.setEnabled( false );
 			this.__update.setLabel( "Updating Parents..." );
+			this.__status.setValue( "Processing..." );
 
 			await Promise.all(
 				_.uniq( this.__connections.map( conn => conn.action ) )
@@ -439,9 +440,11 @@ qx.Class.define("desk.Action",
 			// update parameters from connections
 			for ( let connection of this.__connections ) {
 
-				params[ connection.parameter ] =
-					connection.action.getOutputDirectory() +
-						desk.FileSystem.getFileName( connection.file );
+				const file = connection.action.getOutputDirectory() +
+					desk.FileSystem.getFileName( connection.file )
+
+				params[ connection.parameter ] = file;
+				this.setParameter( connection.parameter, file );
 
 			}
 
@@ -452,7 +455,6 @@ qx.Class.define("desk.Action",
 
 			// add the value of the "force update" checkbox
 			params.force_update = this.__forceUpdate.getValue();
-			this.__status.setValue( "Processing..." );
 			const id = this.__actionsCounter++;
 			let log, started;
 			const options = {};
