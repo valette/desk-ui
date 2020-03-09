@@ -857,210 +857,179 @@ qx.Class.define("desk.Actions",
 		* Executes statification
 		* @param show {Boolean} display or not the statify window
 		*/
-		__statify : function (show) {
-			var win = this.__statifyWindow;
+		__statify : async function (show) {
+
+			let win = this.__statifyWindow;
 			if (!win) {
-				win = this.__statifyWindow = new qx.ui.window.Window("Statify");
+
+				win = this.__statifyWindow = new qx.ui.window.Window( "Statify" );
 				win.set({layout : new qx.ui.layout.VBox(), 
 					height :400, width : 500, showClose : false});
 				this.__statifyLog = new desk.LogContainer();
-				win.add(this.__statifyLog, {flex :1});
-				var button = new qx.ui.form.Button("Statify");
-				button.addListener("execute", function () {
-					this.__statify2(content);
-				}, this);
+				win.add( this.__statifyLog, { flex :1 } );
+				var button = new qx.ui.form.Button( "Statify" );
+				button.addListener( "execute", () => this.__statify2( content ) );
 				win.add(button);
+
 			}
-			var log = this.__statifyLog;
-			if (show) {
+
+			const log = this.__statifyLog;
+
+			if ( show ) {
 				win.open();
 				win.center();
 			}
+
 			log.clear();
-			var content;
-			desk.FileSystem.readFile(this.__savedActionFile, function (err, res) {
-				content = JSON.parse(res) ;
-				if (err) content = {files : {} ,actions : {}};
-				var actions = content.actions;
-				var files = content.files;
+			const res = await desk.FileSystem.readFileAsync( this.__savedActionFile )
+			const content = JSON.parse( res ) ;
+//			if (err) content = {files : {} ,actions : {}};
+			var actions = content.actions;
+			var files = content.files;
+			var usedCachedDirs = {};
 
-				var usedCachedDirs = {};
-				Object.keys( files ).forEach( function ( hash ) {
-					var file = files[ hash ];
-					if ( file.slice( 0, 6 ) === 'cache/' ) {
-						var dir = desk.FileSystem.getFileDirectory( file )
-							.split('/')
-							.filter( function ( f ) { return f.length } )
-							.join('/')
-							+ "/";
+			for ( let file of Object.values( files ) ) {
 
-						usedCachedDirs[ dir ] = true;
-					}
-				} );
-
-				var nUnused = 0;
-				Object.keys( actions ).forEach( function ( hash ) {
-					var dir = actions[ hash ].outputDirectory;
-					if (!dir) {
-						return;
-					}
-					dir = dir.split('/')
+				if ( file.slice( 0, 6 ) === 'cache/' ) {
+					const dir = desk.FileSystem.getFileDirectory( file )
+						.split('/')
 						.filter( function ( f ) { return f.length } )
 						.join('/')
 						+ "/";
-					if ( !usedCachedDirs[ dir ] ) {
-						delete actions[ hash ];
-						nUnused++;
-					}
-				} );
 
-				if (nUnused ) {
-					log.log( nUnused + ' actions were discarded as they were not used.' );
+					usedCachedDirs[ dir ] = true;
+				}
+			}
+
+			var nUnused = 0;
+
+			for ( let hash of Object.keys( actions ) ) {
+
+				let dir = actions[ hash ].outputDirectory;
+				if ( !dir ) continue;
+
+				dir = dir.split('/')
+					.filter( function ( f ) { return f.length } )
+					.join('/')
+					+ "/";
+
+				if ( !usedCachedDirs[ dir ] ) {
+
+					delete actions[ hash ];
+					nUnused++;
+
 				}
 
-				log.log("Actions to copy : ");
+			}
 
-				Object.keys(actions).forEach(function (hash) {
-					log.log(actions[hash].outputDirectory + '\n', "blue");
-				});
-				if (Object.keys(actions).length === 0) {
-					log.log("none\n");
-				}
-				log.log("Files to copy : ");
-				Object.keys(files).forEach(function (hash) {
-					log.log(files[hash] + '\n');
-				});
-				if (Object.keys(files).length === 0) {
-					log.log("none\n");
-				}
-			});
+			if ( nUnused ) log.log( nUnused + ' actions were discarded as they were not used.\n' );
+			log.log("Actions to copy : ");
+			for ( let action of Object.values( actions ) ) log.log( action.outputDirectory + '\n', "blue" );
+			if ( Object.keys( actions ).length === 0 ) log.log( "none\n" );
+			log.log( "Files to copy : " );
+			for ( let file of Object.values( files ) ) log.log( file + '\n' );
+			if ( Object.keys( files ).length === 0) log.log("none\n");
+
 		},
 
 		/**
 		* Executes statification (for real...)
 		* @param content {Object} content to statify
 		*/
-		__statify2 : function(content) {
+		__statify2 : async function(content) {
 			var installDir = prompt('output directory?' , "code/static");
-
-			var boot = prompt('what is the startup file?', this.__firstReadFile);
+			var boot = prompt('what is the startup file?', this.__firstReadFile );
 			var startupFile;
-			if (!boot) {
+
+			if ( !boot ) {
 				boot = "";
 			} else {
 				startupFile = boot;
 				boot = 'desk_startup_script = "' + boot + '";';
 			}
 
-			var self = this;
+			await desk.Actions.executeAsync( {
+				   action : "copy",
+				   source : "ui/compiled/build",
+				   destination : installDir,
+				   recursive : true
+			} );
 
-			async.waterfall([
-				function (cb) {
-					desk.Actions.execute({
-					   action : "copy",
-					   source : "ui/compiled/build",
-					   destination : installDir,
-					   recursive : true
-					}, cb);
-				},
-				function (res, cb) {
-					desk.FileSystem.mkdirp(installDir + "/cache", cb);
-				},
-				function (res, cb) {
-					self.debug("copying actions results...");
-					var files = content.actions;
-					async.eachSeries(Object.keys(files), function (hash, cb) {
-						var res = files[hash];
-						var source = res.outputDirectory;
-						if (!source) {
-							cb();
-							return;
-						}
-						var des2 = source.split('/');
-						des2.pop();
-						des2.pop();
-						var dest = installDir + '/' + des2.join("/");
-						desk.FileSystem.mkdirp(dest, function (err) {
-							if (err) {
-								cb (err);
-								return;
-							}
-							self.__statifyLog.log("copying " + source + " to " + dest);
-							desk.Actions.execute({
-								action : "copy",
-								source : source,
-								recursive : true,
-								destination : dest
-							}, cb);
-						});
-					}, cb);
-				},
-				function (cb) {
-					self.debug("copying files...");
-					var files = content.files;
-					files.boot = startupFile;
-					async.each(Object.keys(files), function (hash, cb) {
-						var file = files[hash];
-						self.debug("file : ", file);
-						desk.FileSystem.exists(file, function (err, exists) {
-							if (!exists) {
-								self.__statifyLog.log("skipping " + file + " copy");
-								cb();
-								return;
-							}
-							var dest = installDir + "/" + desk.FileSystem.getFileDirectory(file);
-								desk.FileSystem.mkdirp(dest, function (err) {
-									if (err) {
-										cb (err);
-										return;
-									}
-									self.__statifyLog.log("copying " + file + " to " + dest);
-									desk.Actions.execute({
-										action : "copy",
-										source : file,
-										recursive : true,
-										destination : dest
-									}, cb);
-								});
-							});
-					}, cb);
-				},
-				function (callback) {
-					// hack index.html
-					var file = installDir + "/index.html";
-					desk.FileSystem.readFile(file, {forceText : true}, function (err, res) {
-						var lines = res.split('\n').map(function (line, index) {
-							if (line.indexOf('desk_startup_script') >= 0) {
-								return boot;
-							} else {
-								return line;
-							}
-						});
-						desk.FileSystem.writeFile(file, lines.join('\n'), callback);
-					});
-				},
-				function (res, callback) {
-					self.debug("copying recorded actions");
-					desk.Actions.execute({
-						action : "copy",
-						source : self.__savedActionFile,
-						destination : installDir + "/cache"
-					}, callback);
-				},
-				function (res, callback) {
-					self.debug("copying actions list");
-					desk.FileSystem.writeJSON(installDir + "/actions.json", self.__settings, callback);
+			await desk.FileSystem.mkdirpAsync(installDir + "/cache" );
+			this.debug("copying actions results...");
+			let files = content.actions;
+
+			for ( let res of Object.values( files ) ) {
+
+				var source = res.outputDirectory;
+				if ( !source ) continue;
+				var des2 = source.split('/');
+				des2.pop();
+				des2.pop();
+				var dest = installDir + '/' + des2.join("/");
+				await desk.FileSystem.mkdirpAsync( dest )
+				this.__statifyLog.log( "copying " + source + " to " + dest + "\n" );
+				await desk.Actions.executeAsync( {
+					action : "copy",
+					source : source,
+					recursive : true,
+					destination : dest
+				} );
+			}
+
+			this.debug("copying files...");
+			files = content.files;
+			files.boot = startupFile;
+
+			for ( let file of Object.values(files) )  {
+
+				this.debug( "file : ", file );
+
+				if ( !( await desk.FileSystem.existsAsync( file ) ) ) {
+
+					this.__statifyLog.log( "skipping " + file + " copy" + "\n" );
+					continue;
 				}
-			], function (err) {
-				if (err) {
-					alert("error, see console output");
-					console.log(err);
+
+				var dest = installDir + "/" + desk.FileSystem.getFileDirectory( file );
+				await desk.FileSystem.mkdirpAsync( dest )
+				this.__statifyLog.log( "copying " + file + " to " + dest + "\n" );
+
+				await desk.Actions.executeAsync( {
+
+					action : "copy",
+					source : file,
+					recursive : true,
+					destination : dest
+
+				} );
+
+			}
+
+			// hack index.html
+			var file = installDir + "/index.html";
+			res = await desk.FileSystem.readFileAsync(file, {forceText : true} )
+			var lines = res.split('\n').map(function (line, index) {
+				if (line.indexOf('desk_startup_script') >= 0) {
+					return boot;
 				} else {
-					self.__statifyLog.log("Done");
-					self.debug("Records statified!");
-					alert("done");
+					return line;
 				}
 			});
+			await desk.FileSystem.writeFileAsync(file, lines.join('\n') );
+			this.debug("copying recorded actions");
+
+			await desk.Actions.executeAsync( {
+				action : "copy",
+				source : this.__savedActionFile,
+				destination : installDir + "/cache"
+			} );
+
+			this.debug("copying actions list");
+			desk.FileSystem.writeJSONAsync( installDir + "/actions.json", this.__settings );
+			this.__statifyLog.log( "Done\n" );
+			this.debug( "Records statified!" );
+			alert("done");
 		}
 	}
 });
