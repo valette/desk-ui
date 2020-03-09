@@ -782,14 +782,16 @@ qx.Class.define("desk.Actions",
 		* refreshes the actions
 		* @param settings {Object} new settings
 		*/
-		__setSettings : function( settings ) {
-			if (this.__serverRandomValue && (this.__serverRandomValue != settings.randomValue)) {
-				console.warn("Server has restarted");
+		__setSettings : async function( settings ) {
+
+			if ( this.__serverRandomValue && (this.__serverRandomValue != settings.randomValue ) ) {
+				console.warn( "Server has restarted" );
 			}
+
 			this.__serverRandomValue = settings.randomValue;
 
-			if (this.__settings && this.__settings.version == settings.version) {
-				this.debug("update avoided");
+			if ( this.__settings && this.__settings.version == settings.version ) {
+				this.debug( "update avoided" );
 				// avoid updating when version is the same
 				return;
 			}
@@ -809,41 +811,24 @@ qx.Class.define("desk.Actions",
 			}
 
 			this.__settings = settings;
-			if (settings.permissions) {
-				this.__createActionsMenu();
-			}
-
+			if ( settings.permissions ) this.__createActionsMenu();
 			this.debug("loading init files");
 			var initDir = 'code/init';
-			async.waterfall([
-				function (cb) {
-					desk.FileSystem.exists(initDir, cb);
-				}.bind(this),
-				function (exists, cb) {
-					if (!exists) {
-						cb(1);
-						return;
-					}
-					desk.FileSystem.readDir(initDir, cb);
-				}
-			], function (err, files) {
-				if (!err) files.forEach(function (file) {
-					if (desk.FileSystem.getFileExtension(file.name).toLowerCase() === "js") {
-						settings.init.push(initDir + '/' + file.name);
-					}
-				});
-				desk.FileSystem.includeScripts(
-					settings.init.map(function (file) {
-						return desk.FileSystem.getFileURL(file);
-					}),
-					function (err) {
-					if (err) {
-						alert (err);
-					}
-					this.fireEvent('changeReady');
-				}.bind(this));
 
-			}.bind(this));
+			const exists = await desk.FileSystem.existsAsync( initDir );
+			if ( !exists ) return;
+			const files = await desk.FileSystem.readDirAsync( initDir );
+
+			for ( let file of files ) {
+				if ( file.name.split( "." ).pop().toLowerCase() === "js" )
+					settings.init.push(initDir + '/' + file.name);
+			}
+
+			await desk.FileSystem.includeScriptsAsync(
+				settings.init.map( file => desk.FileSystem.getFileURL(file) ) );
+
+			this.fireEvent('changeReady');
+
 		},
 
 		/**
