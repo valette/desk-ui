@@ -382,17 +382,10 @@ qx.Class.define("desk.Action",
 		},
 
 		/**
-		* Fired whenever the execute button has been pressed
+		* Returns the action parameters
+		* @return {Object}
 		*/
-		__afterValidationUnsafe : async function () {
-
-			// check the validation status
-			if ( !this.__manager.getValid() ) {
-
-				alert( this.__manager.getInvalidMessages().join( "\n" ) );
-				return;
-
-			}
+		getParameters : function () {
 
 			const params = { "action" : this.__name };
 
@@ -415,9 +408,29 @@ qx.Class.define("desk.Action",
 
 			}
 
+			return params;
+
+		},
+
+		/**
+		* Fired whenever the execute button has been pressed
+		*/
+		__afterValidationUnsafe : async function () {
+
+			// check the validation status
+			if ( !this.__manager.getValid() ) {
+
+				alert( this.__manager.getInvalidMessages().join( "\n" ) );
+				return;
+
+			}
+
+			const params = this.getParameters();
+
 			// update parent Actions
 			this.__update.setEnabled( false );
 			this.__update.setLabel( "Updating Parents..." );
+			this.__status.setValue( "Processing..." );
 
 			await Promise.all(
 				_.uniq( this.__connections.map( conn => conn.action ) )
@@ -427,9 +440,11 @@ qx.Class.define("desk.Action",
 			// update parameters from connections
 			for ( let connection of this.__connections ) {
 
-				params[ connection.parameter ] =
-					connection.action.getOutputDirectory() +
-						desk.FileSystem.getFileName( connection.file );
+				const file = connection.action.getOutputDirectory() +
+					desk.FileSystem.getFileName( connection.file )
+
+				params[ connection.parameter ] = file;
+				this.setParameter( connection.parameter, file );
 
 			}
 
@@ -440,7 +455,6 @@ qx.Class.define("desk.Action",
 
 			// add the value of the "force update" checkbox
 			params.force_update = this.__forceUpdate.getValue();
-			this.__status.setValue( "Processing..." );
 			const id = this.__actionsCounter++;
 			let log, started;
 			const options = {};
@@ -610,8 +624,10 @@ qx.Class.define("desk.Action",
 					}
 				});
 
+				let label;
+
 				if ( parameter.type !== "flag" ) {
-					var label = new qx.ui.basic.Label(parameter.name);
+					label = new qx.ui.basic.Label(parameter.name);
 					container.add(label);
 				}
 
@@ -624,7 +640,7 @@ qx.Class.define("desk.Action",
 					form = new desk.FileField();
 					break;
 				case "flag":
-					form = new qx.ui.form.CheckBox( parameter.name );
+					label = form = new qx.ui.form.CheckBox( parameter.name );
 					break;
 				default :
 					form = new qx.ui.form.TextField();
@@ -659,7 +675,8 @@ qx.Class.define("desk.Action",
 
 				//use default value if provided
 				if (parameter.defaultValue !== undefined)  {
-					form.setValue('' + parameter.defaultValue);
+					form.setValue( parameter.type === "flag" ? parameter.defaultValue
+						: ( "" + parameter.defaultValue ) );
 				}
 
 				if ( parameter.type !== "flag" ) {

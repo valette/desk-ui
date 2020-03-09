@@ -88,10 +88,11 @@ qx.Class.define("desk.FileBrowser",
 	},
 
 	destruct : function() {
-		if (this.__standAlone) {
-			this.__window.destroy();
-		}
+
+		desk.Actions.getInstance().removeListenerById( this.__actionListener );
+		if ( this.__standAlone ) this.__window.destroy();
 		this.__files.dispose();
+
 		qx.util.DisposeUtil.destroyContainer(this);
 		for (var i = 0; i < this.__fileBrowsers.length; i++) {
 			if (this.__fileBrowsers[i] === this) {
@@ -103,6 +104,7 @@ qx.Class.define("desk.FileBrowser",
 
 	members : {
 		__displayHiddenFiles : false,
+		__actionListener: null, // listens for action updates;
 
 		__iconOptions : {
 			converter : function(value, model) {
@@ -683,7 +685,7 @@ qx.Class.define("desk.FileBrowser",
 			this.__files.setContextMenu(menu);
 			qx.util.DisposeUtil.disposeTriggeredBy(menu, this);
 
-			desk.Actions.getInstance().addListener( 'update', this.__updateActions, this);
+			this.__actionListener = desk.Actions.getInstance().addListener( 'update', this.__updateActions, this);
 			this.__updateActions();
 
 			if (desk.Actions.getInstance().getSettings().permissions < 1) {
