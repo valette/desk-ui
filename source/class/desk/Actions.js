@@ -958,7 +958,7 @@ qx.Class.define("desk.Actions",
 				function (cb) {
 					desk.Actions.execute({
 					   action : "copy",
-					   source : "ui/build",
+					   source : "ui/compiled/build",
 					   destination : installDir,
 					   recursive : true
 					}, cb);
