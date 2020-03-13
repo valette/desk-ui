@@ -35,6 +35,7 @@ self.ace.config.setModuleUrl( "ace/mode/html_worker", htmlWorkerUrl );
 	require('ace-builds/src-noconflict/mode-html');
 	require('ace-builds/src-noconflict/mode-javascript');
 	require('ace-builds/src-noconflict/mode-json');
+	require('ace-builds/src-noconflict/mode-python');
 	require('ace-builds/src-noconflict/theme-eclipse');
 	require('ace-builds/src-noconflict/ext-searchbox');
 	require("ace-builds/src-noconflict/ext-language_tools");

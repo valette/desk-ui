@@ -239,6 +239,9 @@ qx.Class.define("desk.TextEditor",
 					this.__execute.setVisibility('visible');
 					this.__text.setMode("javascript");
 					break;
+				case "py":
+					this.__text.setMode("python");
+					break;
 				default : 
 					this.__fold.setVisibility('excluded');
 					break;

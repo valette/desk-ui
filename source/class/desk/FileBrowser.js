@@ -462,6 +462,7 @@ qx.Class.define("desk.FileBrowser",
 			case 'cpp':
 			case 'cxx':
 			case 'h':
+			case 'py':
 				desk.TabTextEditor.open(file);
 				break;
 			case "vtk":
