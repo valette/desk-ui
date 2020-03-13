@@ -33,9 +33,10 @@ qx.Class.define("desk.Application",
 			new qx.ui.list.List();
 		},
 
-		main : function() {
+		main : async function() {
+
 			// Call super class
-			this.base(arguments);
+			this.base( arguments );
 
 			// Enable logging in debug variant
 			if (qx.core.Environment.get("qx.debug")) {
@@ -56,48 +57,49 @@ qx.Class.define("desk.Application",
 				}
 			}
 
-			var actions = desk.Actions.getInstance()
-			desk.Actions.init(afterActionsInitialized);
-			var savedDesk = window.desk;
+			const actions = desk.Actions.getInstance()
+			await desk.Actions.initAsync();
+			actions.debug("actions initialized!");
+			desk.auto = false;
 
-			function afterActionsInitialized () {
-				if ( !window.desk.FileSystem ) window.desk = savedDesk; // #BUG this happens whith webpack
-				actions.debug("actions initialized!");
-				desk.auto = false;
-				// first try to automatically launch startup script if it exists
-				if (getParameter("noauto")) {
-					next();
-					return;
-				}
+			// first try to automatically launch startup script if it exists
+			if ( !getParameter( "noauto" ) ) {
 
-				if (typeof desk_startup_script === "string") {
+				if ( typeof desk_startup_script === "string" ) {
+
 					desk.auto = true;
-					desk.FileSystem.executeScript(desk_startup_script);
+					desk.FileSystem.executeScript( desk_startup_script );
 					return;
+
 				}
-				
-				var initScript = 'code/init.js';
-				desk.FileSystem.exists(initScript, function (err, exists) {
-					if (exists) {
-						desk.auto = true;
-						desk.FileSystem.executeScript(initScript);
-					} else {
-						next();
-					}
-				});
+
+				const initScript = 'code/init.js';
+
+				if ( await desk.FileSystem.existsAsync( initScript ) ) {
+
+					desk.auto = true;
+					desk.FileSystem.executeScript(initScript);
+					return;
+
+				}
+
 			}
 
-			function next() {
-				var startupScript = getParameter("script");
-				if (startupScript) {
-					desk.auto = true;
-					desk.FileSystem.executeScript(startupScript);
-					return;
-				}
-				actions.buildUI();
-				new desk.FileBrowser(getParameter("rootDir"), {standalone : true});
+			const startupScript = getParameter( "script" );
+
+			if ( startupScript ) {
+
+				desk.auto = true;
+				desk.FileSystem.executeScript(startupScript);
+				return;
+
 			}
+
+			actions.buildUI();
+			new desk.FileBrowser( getParameter( "rootDir" ), { standalone : true } );
+
 		}
 
 	}
+
 });

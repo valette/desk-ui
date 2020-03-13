@@ -150,7 +150,7 @@ qx.Class.define("desk.Actions",
 			if (actions.__settings && !actions.__settings.not_initialised ) {
 				callback.apply(context);
 			} else {
-				actions.addListenerOnce("changeReady", callback , context);
+				actions.addListenerOnce("changeReady", () => callback.call( context ) );
 			}
 		},
 
