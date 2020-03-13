@@ -814,19 +814,21 @@ qx.Class.define("desk.Actions",
 			this.__settings = settings;
 			if ( settings.permissions ) this.__createActionsMenu();
 			this.debug("loading init files");
-			var initDir = 'code/init';
+			const initDir = 'code/init';
 
-			const exists = await desk.FileSystem.existsAsync( initDir );
-			if ( !exists ) return;
-			const files = await desk.FileSystem.readDirAsync( initDir );
+			if ( await desk.FileSystem.existsAsync( initDir ) ) {
 
-			for ( let file of files ) {
-				if ( file.name.split( "." ).pop().toLowerCase() === "js" )
-					settings.init.push(initDir + '/' + file.name);
+				const files = await desk.FileSystem.readDirAsync( initDir );
+
+				for ( let file of files ) {
+					if ( file.name.split( "." ).pop().toLowerCase() === "js" )
+						settings.init.push(initDir + '/' + file.name);
+				}
+
+				await desk.FileSystem.includeScriptsAsync(
+					settings.init.map( file => desk.FileSystem.getFileURL(file) ) );
+
 			}
-
-			await desk.FileSystem.includeScriptsAsync(
-				settings.init.map( file => desk.FileSystem.getFileURL(file) ) );
 
 			this.fireEvent('changeReady');
 
