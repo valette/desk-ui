@@ -14,6 +14,7 @@ qx.Class.define("desk.FileSystem",
 	type : "singleton",
 
 	construct : function() {
+		desk.AddPromises.getInstance();
 		try {
 			this.__baseURL = 'file://' + require('desk-base').getRootDir();
 		} catch (e) {
