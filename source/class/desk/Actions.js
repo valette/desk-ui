@@ -235,7 +235,17 @@ qx.Class.define("desk.Actions",
 		*/
 		getAction : function (name) {
 			return desk.Actions.getInstance().getAction(name);
+		},
+
+		/**
+		* Returns the engine on top of which desk-ui is running.
+		* Possible values are : node, electron, nw
+		* @return {String} engine
+		*/
+		getEngine : function () {
+			return desk.Actions.getInstance().__engine;
 		}
+
 	},
 
 	properties : {
@@ -268,6 +278,8 @@ qx.Class.define("desk.Actions",
 		__firstReadFile : null,
 		__settingsButton : null,
 		__engine : false,
+
+		statifyCode : "ui/compiled/build",
 
 		/**
 		* sets emit log on/off
@@ -938,7 +950,7 @@ qx.Class.define("desk.Actions",
 
 			await desk.Actions.executeAsync( {
 				   action : "copy",
-				   source : "ui/compiled/build",
+				   source : this.statifyCode,
 				   destination : installDir,
 				   recursive : true
 			} );
@@ -972,7 +984,7 @@ qx.Class.define("desk.Actions",
 			for ( let file of Object.values(files) )  {
 
 				this.debug( "file : ", file );
-
+				if ( !file ) continue;
 				if ( !( await desk.FileSystem.existsAsync( file ) ) ) {
 
 					this.__statifyLog.log( "skipping " + file + " copy" + "\n" );
