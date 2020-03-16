@@ -27,6 +27,7 @@ qx.Class.define("desk.FileSystem",
 			}
 
 			this.__baseURL = ( typeof desk_startup_script === "string" ) ? href : qx.bom.Cookie.get("homeURL");
+			if ( !this.__baseURL ) this.__baseURL = href;
 		}
 	},
 
