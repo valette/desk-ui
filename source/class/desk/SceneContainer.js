@@ -545,7 +545,7 @@ qx.Class.define("desk.SceneContainer",
 			var mesh = new THREE.Mesh(geometry,material);
 			var listenerId = volumeSlice.addListener( 'changeImage', update, this );
 			var listener2Id = volumeSlice.addListener( 'changePosition', update, this );
-			const { colorFrame = false } = opts;
+			const { colorFrame = true } = opts;
 
 			function update () {
 
@@ -564,6 +564,7 @@ qx.Class.define("desk.SceneContainer",
 
 				if ( colorFrame )  {
 
+					var vertices2 = line.geometry.attributes.position;
 					/* LINE MESH */
 					for (var i = 0; i < 4 * 3; i++) {
 						vertices.array[i] = coords[i];
@@ -572,7 +573,6 @@ qx.Class.define("desk.SceneContainer",
 					var vecCoords = [];
 					for (var i =0 ; i < 4 ; i++)
 						vecCoords[i] = new THREE.Vector3(coords[3*i], coords[3*i+1], coords[3*i+2]);
-					var vertices2 = line.geometry.attributes.position;
 
 					line.position.addVectors(vecCoords[3], vecCoords[0]).divideScalar(2);
 					line.scale.set(1.03, 1.03, 1.03);
