@@ -527,9 +527,9 @@ qx.Class.define("desk.SceneContainer",
 		 * @param volumeSlices {Array} Array of deskVolumeSlice;
 		 * @return {Array} array of THREE.Mesh
 		 */
-		attachVolumeSlices : function (volumeSlices) {
+		attachVolumeSlices : function (volumeSlices, opts = {} ) {
 			return volumeSlices.map(function (slice) {
-				return this.attachVolumeSlice(slice);
+				return this.attachVolumeSlice(slice, opts);
 			}, this);
 		},
 
