@@ -983,6 +983,19 @@ qx.Class.define("desk.VolumeSlice",
 				return parseFloat(volume.getElementsByTagName("origin")[0].getAttribute(field));
 			});
 
+			if ( this.__opts.center ) {
+
+				// define custom origin to match center
+				for ( let i = 0; i < 3; i++ ) {
+
+					this.__origin[ i ] = this.__opts.center[ i ] -
+						0.5 * this.__spacing[ i ] * this.__dimensions[ i ];
+
+				}
+
+
+			}
+
 			var XMLscalars = volume.getElementsByTagName("scalars")[0];
 			this.__numberOfScalarComponents = parseInt(XMLscalars.getAttribute(	"numberOfScalarComponents"),10);
 			this.__scalarType = parseInt(XMLscalars.getAttribute("type"),10);
