@@ -18,8 +18,8 @@ THREE.TrackballControls2 = function ( object ) {
 
 	this.setSize();
 
-	this.rotateSpeed = 15;
-	this.zoomSpeed = 5;
+	this.rotateSpeed = 10;
+	this.zoomSpeed = 1;
 	this.panSpeed = 1;
 
 	this.noRotate = false;
@@ -361,7 +361,7 @@ THREE.TrackballControls2 = function ( object ) {
 			}
 			if ( sinAlpha > 0 )
 				alpha = - alpha;
-			this._alpha = 2 * alpha;
+			this._alpha = alpha;
 
 		}
 
