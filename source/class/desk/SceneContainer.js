@@ -68,6 +68,8 @@ qx.Class.define("desk.SceneContainer",
 		this.addListener("mousemove", this.__onMouseMove, this);
 		this.addListener("mouseup", this.__onMouseUp, this);
 		this.addListener("mousewheel", this.__onMouseWheel, this);
+		this.addListener("touchstart", this.__onTouchStart, this);
+		this.addListener("touchmove", this.__onTouchMove, this);
 
 		this.addListener('keydown', function (event) {
 			if ((event.getTarget() !== this.getCanvas()) ||
@@ -711,6 +713,44 @@ qx.Class.define("desk.SceneContainer",
 				element.ondragover = function() {return false;};
             }, this);
 		},
+
+		__filterTouchEvents : function ( events ) {
+
+			const t = events.getTargetTouches();
+			const origin = this.getContentLocation();
+
+			return t.filter( e => {
+
+				if ( e.pointerType === "mouse" ) return false;
+				if ( ( !e.x ) && ( !e.y ) ) return false;
+				return true;
+
+				} ).map( e  => {
+
+					return { x : e.x - origin.left, y : e.y - origin.top } ;
+
+			} );
+
+		},
+
+		__onTouchMove : function ( e ) {
+
+			const obj = this.__filterTouchEvents( e );
+			if ( !obj.length ) return;
+			this.getControls().touchMove( obj );
+			this.render();
+			this._propagateLinks();
+
+		},
+
+		__onTouchStart : function ( e ) {
+
+			const obj = this.__filterTouchEvents( e );
+			if ( !obj.length ) return;
+			this.getControls().touchStart( obj );
+
+		},
+
 
 		/**
 		 * fired whenever a button is clicked

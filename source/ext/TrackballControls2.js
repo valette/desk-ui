@@ -164,7 +164,6 @@ THREE.TrackballControls2 = function ( object ) {
 		} else {
 
 			factor = 1.0 + ( _zoomEnd - _zoomStart ) * this.zoomSpeed;
-
 			if ( factor !== 1.0 && factor > 0.0 ) {
 
 
@@ -301,6 +300,75 @@ THREE.TrackballControls2 = function ( object ) {
 		}
 
 	};
+
+    this.touchStart = function ( e ) {
+
+        if ( e.length == 1 ) {
+
+            this._xinit = e[ 0 ].x;
+            this._yinit = e[ 0 ].y;
+            this._touchStart = e;
+            return;
+
+        }
+
+        e.length = 2;
+        const [ v1, v2 ] = e.map( event => this.getMouseOnScreen( event.x, event.y ) );
+        this._touchStart = e;
+		_zoomStart = _zoomEnd = - v1.distanceTo( v2 );
+		_panStart = _panEnd = v1.clone().add( v2 ).multiplyScalar( 0.5 );
+        this._touchStart = e;
+        this._p2 = v2.sub( v1 );
+
+    }
+
+
+    this.touchMove = function ( e ) {
+
+        if ( e.length == 1 ) {
+
+			if ( this._touchStart.length != 1 ) return;
+			const { x, y } = e[ 0 ];
+			this._dx = x - this._xinit;
+			this._dy = y - this._yinit;
+			this._xinit = x;
+			this._yinit = y;
+			this.update();
+			return;
+
+        }
+
+		e.length = 2;
+		const [ v1, v2 ] = e.map( event => this.getMouseOnScreen( event.x, event.y ) );
+		_zoomEnd = - v1.distanceTo( v2 );
+		_panEnd = v1.add( v2 ).multiplyScalar( 0.5 );
+
+		const p1 = v2.sub( v1 );
+		const p2 = this._p2;
+
+		var n1 = p1.length();
+		var n2 = p2.length();
+		var n12 = n1 * n2;
+
+		if ( n12 > 0 ) {
+
+			var alpha = 0;
+			var cosAlpha = p1.dot( p2 ) / n12;
+			var sinAlpha = p2.y * p1.x - p2.x * p1.y;
+
+			if ( cosAlpha < 1 ){
+				alpha = Math.acos( cosAlpha );
+			}
+			if ( sinAlpha > 0 )
+				alpha = - alpha;
+			this._alpha = 2 * alpha;
+
+		}
+
+		this._p2 = p1;
+		this.update();
+
+    }
 
 	this.mouseMove = function ( x, y ) {
 

@@ -32,6 +32,8 @@ qx.Class.define("desk.SliceView",
 		this.addListener("mousemove", this.__onMouseMove, this);
 		this.addListener("mouseup", this.__onMouseUp, this);
 		this.addListener("mousewheel", this.__onMouseWheel, this);
+		this.addListener("touchstart", this.__onTouchStart, this);
+		this.addListener("touchmove", this.__onTouchMove, this);
 		this.setDecorator(new qx.ui.decoration.Decorator().set({
 			color : desk.VolumeSlice.COLORS[orientation], width : 3}));
 	},
@@ -894,6 +896,46 @@ qx.Class.define("desk.SliceView",
 		* */
 		__interactionMode : -1,
 
+		__filterTouchEvents : function ( events ) {
+
+			const t = events.getTargetTouches();
+			const origin = this.getContentLocation();
+
+			return t.filter( e => {
+
+				if ( e.pointerType === "mouse" ) return false;
+				if ( ( !e.x ) && ( !e.y ) ) return false;
+				return true;
+
+				} ).map( e  => {
+
+					return { x : e.x - origin.left, y : e.y - origin.top } ;
+
+			} );
+
+		},
+
+		__onTouchMove : function ( e ) {
+
+			const obj = this.__filterTouchEvents( e );
+			if ( !obj.length ) return;
+			this.getControls().touchMove( obj );
+			this.render();
+			this._propagateLinks();
+			var z = this.getCamera().position.z;
+			this.setCameraZ(z);
+			this.propagateCameraToLinks();
+
+		},
+
+		__onTouchStart : function ( e ) {
+
+			const obj = this.__filterTouchEvents( e );
+			if ( !obj.length ) return;
+			this.getControls().touchStart( obj );
+
+		},
+
 		/**
 		 * fired at each mouse down event
 		 * @param e {qx.event.type.Mouse} mouse event
@@ -1258,6 +1300,7 @@ qx.Class.define("desk.SliceView",
 			  this.getControls().setMaxZoom(this.options.maxZoom)
 			if (this.options.minZoom)
 			  this.getControls().setMinZoom(this.options.minZoom)
+			this.getControls().noRotate = true;
 
 			this.addListener("keypress", function (evt) {
 				var delta = 0;
