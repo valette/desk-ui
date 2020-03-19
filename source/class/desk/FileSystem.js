@@ -18,7 +18,7 @@ qx.Class.define("desk.FileSystem",
 		try {
 			this.__baseURL = 'file://' + require('desk-base').getRootDir();
 		} catch (e) {
-			var href = window.location.href;
+			var href = window.location.href.split( "?" ).shift();
 			var extension = href.split( '/' ).pop().split( '?' )[ 0 ].split('.' ).pop();
 			if ( extension === 'html' ) {
 				href = href.split( '/' );

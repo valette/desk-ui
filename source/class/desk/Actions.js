@@ -29,6 +29,7 @@ qx.Class.define("desk.Actions",
 	construct : function() {
 		this.base(arguments);
 		desk.AddPromises.getInstance();
+		desk.FileSystem.getInstance();
 		this.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
 		if ( typeof desk_startup_script !== "string" ) {
