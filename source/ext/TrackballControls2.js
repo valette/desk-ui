@@ -301,6 +301,9 @@ THREE.TrackballControls2 = function ( object ) {
 
 	};
 
+	this.touchZoomRatio = 0.2;
+	this.touchRotateRatio = 0.2;
+
     this.touchStart = function ( e ) {
 
         if ( e.length == 1 ) {
@@ -315,7 +318,7 @@ THREE.TrackballControls2 = function ( object ) {
         e.length = 2;
         const [ v1, v2 ] = e.map( event => this.getMouseOnScreen( event.x, event.y ) );
         this._touchStart = e;
-		_zoomStart = _zoomEnd = - v1.distanceTo( v2 );
+		_zoomStart = _zoomEnd = - v1.distanceTo( v2 ) * this.touchZoomRatio;
 		_panStart = _panEnd = v1.clone().add( v2 ).multiplyScalar( 0.5 );
         this._touchStart = e;
         this._p2 = v2.sub( v1 );
@@ -329,8 +332,8 @@ THREE.TrackballControls2 = function ( object ) {
 
 			if ( this._touchStart.length != 1 ) return;
 			const { x, y } = e[ 0 ];
-			this._dx = x - this._xinit;
-			this._dy = y - this._yinit;
+			this._dx = ( x - this._xinit ) * this.touchRotateRatio;
+			this._dy = ( y - this._yinit ) * this.touchRotateRatio;
 			this._xinit = x;
 			this._yinit = y;
 			this.update();
@@ -340,7 +343,7 @@ THREE.TrackballControls2 = function ( object ) {
 
 		e.length = 2;
 		const [ v1, v2 ] = e.map( event => this.getMouseOnScreen( event.x, event.y ) );
-		_zoomEnd = - v1.distanceTo( v2 );
+		_zoomEnd = - v1.distanceTo( v2 ) * this.touchZoomRatio ;
 		_panEnd = v1.add( v2 ).multiplyScalar( 0.5 );
 
 		const p1 = v2.sub( v1 );
