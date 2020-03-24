@@ -189,6 +189,9 @@ qx.Class.define("desk.VolumeSlice",
 			"uniform float imageType;",
 			"uniform float scalarMin;",
 			"uniform float scalarMax;",
+			"uniform float dimX;",
+			"uniform float dimY;",
+			"varying vec2 vUv;",
 
 			"highp float easeInOutQuad(highp float t) {",
 			"    return t<.5 ? 2.0*t*t : -1.0+(4.0-2.0*t)*t;",
@@ -202,16 +205,63 @@ qx.Class.define("desk.VolumeSlice",
 			"    return Result;",
 			"}",
 
+            "float getValueFloat( sampler2D texture, highp vec2 vUv ) {",
+			"vec4 rawData = texture2D( texture, vUv );",
+			"vec4 rawBytes = floor(rawData*vec4(255.0)+vec4(0.5));",
+			"float Sign = 1.0 - step(128.0,rawBytes[3])*2.0 ;",
+			"float Exponent = 2.0 * mod(rawBytes[3],128.0) + step(128.0,rawBytes[2]) - 127.0;",
+			"float Mantissa = mod(rawBytes[2],128.0)*65536.0 + rawBytes[1]*256.0 +rawBytes[0]+ 8388608.0;",
+			"return Sign * Mantissa * pow(2.0,Exponent - 23.0);",
+			"}",
 
-			"varying vec2 vUv;",
+            "float getValueUShort( sampler2D texture, highp vec2 vUv ) {",
+			"vec4 rawData = texture2D( texture, vUv );",
+			"vec4 rawBytes = floor(rawData*vec4(255.0)+vec4(0.5));",
+			"return rawBytes[0] + 256.0 * rawBytes[3];",
+			"}",
+
+            "float getValueShort( sampler2D texture, highp vec2 vUv ) {",
+			"vec4 rawData = texture2D( texture, vUv );",
+			"vec4 rawBytes = floor(rawData*vec4(255.0)+vec4(0.5));",
+			"return rawBytes[0]+ 256.0 * rawBytes[3] - 65536.0 * step ( 128.0, rawBytes[3] );",
+			"}",
+
+            "float getValueChar( sampler2D texture, highp vec2 vUv ) {",
+			"vec4 rawData = texture2D( texture, vUv );",
+			"vec4 rawBytes = floor(rawData*vec4(255.0)+vec4(0.5));",
+			"return rawBytes[0] - 256.0 * step ( 128.0, rawBytes[0] );",
+			"}",
+
 			"void main() {",
 				"vec4 rawData = texture2D( texture, vUv );",
-				"vec4 rawBytes = floor(rawData*vec4(255.0)+vec4(0.5));",
+				"vec4 rawBytes = floor(rawData*vec4(255.0)+vec4(0.5));"
 		].join("\n"),
 
-		FRAGMENTSHADERCHAR : [
+		FRAGMENTSHADERCHARNEAREST : [
 			"// for char",
 			"float value = rawBytes[0] - 256.0 * step ( 128.0, rawBytes[0] );"
+		].join("\n"),
+
+		FRAGMENTSHADERCHARLINEAR : [
+			"// for float",
+			"highp vec2 vUv2 = vec2( vUv[ 0 ] * dimX , vUv[ 1 ] * dimY );",
+			"highp vec2 vUvFloor = floor( vUv2 );",
+			"highp vec2 vUvCeil = vec2( vUvFloor[ 0 ] + 1.0, vUvFloor[ 1 ] + 1.0 );",
+			"highp vec2 vUvOffset = vUv2 - vUvFloor;",
+			"vUvFloor[ 0 ] /= dimX;",
+			"vUvFloor[ 1 ] /= dimY;",
+			"vUvCeil[ 0 ] /= dimX;",
+			"vUvCeil[ 1 ] /= dimY;",
+			"highp vec2 vUvTopLeft = vec2( vUvFloor[ 0 ], vUvCeil[ 1 ] );",
+			"highp vec2 vUvBottomRight = vec2( vUvCeil[ 0 ], vUvFloor[ 1 ] );",
+			"vec4 rawData2 = texture2D( texture, vUv );",
+            "float valueBottomLeft = getValueChar( texture, vUvFloor );",
+            "float valueTopRight = getValueChar( texture, vUvCeil );",
+            "float valueTopLeft = getValueChar( texture, vUvTopLeft );",
+            "float valueBottomRight = getValueChar( texture, vUvBottomRight );",
+            "float value1 = mix( valueBottomLeft, valueBottomRight, vUvOffset[ 0 ] );",
+            "float value2 = mix( valueTopLeft, valueTopRight, vUvOffset[ 0 ] );",
+            "float value = mix( value1, value2, vUvOffset[ 1 ] );"
 		].join("\n"),
 
 		FRAGMENTSHADERUCHAR : [
@@ -219,20 +269,85 @@ qx.Class.define("desk.VolumeSlice",
 			"float value = rawBytes[0];"
 		].join("\n"),
 
-		FRAGMENTSHADERSHORT : [
+		FRAGMENTSHADERSHORTNEAREST : [
 			"// for short",
 			"float value = rawBytes[0]+ 256.0 * rawBytes[3] - 65536.0 * step ( 128.0, rawBytes[3] );"
 		].join("\n"),
 
-		FRAGMENTSHADERUSHORT : [
+		FRAGMENTSHADERSHORTLINEAR : [
+			"// for float",
+			"highp vec2 vUv2 = vec2( vUv[ 0 ] * dimX , vUv[ 1 ] * dimY );",
+			"highp vec2 vUvFloor = floor( vUv2 );",
+			"highp vec2 vUvCeil = vec2( vUvFloor[ 0 ] + 1.0, vUvFloor[ 1 ] + 1.0 );",
+			"highp vec2 vUvOffset = vUv2 - vUvFloor;",
+			"vUvFloor[ 0 ] /= dimX;",
+			"vUvFloor[ 1 ] /= dimY;",
+			"vUvCeil[ 0 ] /= dimX;",
+			"vUvCeil[ 1 ] /= dimY;",
+			"highp vec2 vUvTopLeft = vec2( vUvFloor[ 0 ], vUvCeil[ 1 ] );",
+			"highp vec2 vUvBottomRight = vec2( vUvCeil[ 0 ], vUvFloor[ 1 ] );",
+			"vec4 rawData2 = texture2D( texture, vUv );",
+            "float valueBottomLeft = getValueShort( texture, vUvFloor );",
+            "float valueTopRight = getValueShort( texture, vUvCeil );",
+            "float valueTopLeft = getValueShort( texture, vUvTopLeft );",
+            "float valueBottomRight = getValueShort( texture, vUvBottomRight );",
+            "float value1 = mix( valueBottomLeft, valueBottomRight, vUvOffset[ 0 ] );",
+            "float value2 = mix( valueTopLeft, valueTopRight, vUvOffset[ 0 ] );",
+            "float value = mix( value1, value2, vUvOffset[ 1 ] );"
+		].join("\n"),
+
+
+		FRAGMENTSHADERUSHORTNEAREST : [
 			"// for ushort",
 			"float value = rawBytes[0] + 256.0 * rawBytes[3];"
 		].join("\n"),
 
-		FRAGMENTSHADERFLOAT : [
+		FRAGMENTSHADERUSHORTLINEAR : [
 			"// for float",
-		// just discard rawBytes if the type is not float, otherwise it might affect JPG results...
-//			"rawBytes=rawBytes* (1.0 - imageType);",
+			"highp vec2 vUv2 = vec2( vUv[ 0 ] * dimX , vUv[ 1 ] * dimY );",
+			"highp vec2 vUvFloor = floor( vUv2 );",
+			"highp vec2 vUvCeil = vec2( vUvFloor[ 0 ] + 1.0, vUvFloor[ 1 ] + 1.0 );",
+			"highp vec2 vUvOffset = vUv2 - vUvFloor;",
+			"vUvFloor[ 0 ] /= dimX;",
+			"vUvFloor[ 1 ] /= dimY;",
+			"vUvCeil[ 0 ] /= dimX;",
+			"vUvCeil[ 1 ] /= dimY;",
+			"highp vec2 vUvTopLeft = vec2( vUvFloor[ 0 ], vUvCeil[ 1 ] );",
+			"highp vec2 vUvBottomRight = vec2( vUvCeil[ 0 ], vUvFloor[ 1 ] );",
+			"vec4 rawData2 = texture2D( texture, vUv );",
+            "float valueBottomLeft = getValueUShort( texture, vUvFloor );",
+            "float valueTopRight = getValueUShort( texture, vUvCeil );",
+            "float valueTopLeft = getValueUShort( texture, vUvTopLeft );",
+            "float valueBottomRight = getValueUShort( texture, vUvBottomRight );",
+            "float value1 = mix( valueBottomLeft, valueBottomRight, vUvOffset[ 0 ] );",
+            "float value2 = mix( valueTopLeft, valueTopRight, vUvOffset[ 0 ] );",
+            "float value = mix( value1, value2, vUvOffset[ 1 ] );"
+		].join("\n"),
+
+		FRAGMENTSHADERFLOATLINEAR : [
+			"// for float",
+			"highp vec2 vUv2 = vec2( vUv[ 0 ] * dimX , vUv[ 1 ] * dimY );",
+			"highp vec2 vUvFloor = floor( vUv2 );",
+			"highp vec2 vUvCeil = vec2( vUvFloor[ 0 ] + 1.0, vUvFloor[ 1 ] + 1.0 );",
+			"highp vec2 vUvOffset = vUv2 - vUvFloor;",
+			"vUvFloor[ 0 ] /= dimX;",
+			"vUvFloor[ 1 ] /= dimY;",
+			"vUvCeil[ 0 ] /= dimX;",
+			"vUvCeil[ 1 ] /= dimY;",
+			"highp vec2 vUvTopLeft = vec2( vUvFloor[ 0 ], vUvCeil[ 1 ] );",
+			"highp vec2 vUvBottomRight = vec2( vUvCeil[ 0 ], vUvFloor[ 1 ] );",
+			"vec4 rawData2 = texture2D( texture, vUv );",
+            "float valueBottomLeft = getValueFloat( texture, vUvFloor );",
+            "float valueTopRight = getValueFloat( texture, vUvCeil );",
+            "float valueTopLeft = getValueFloat( texture, vUvTopLeft );",
+            "float valueBottomRight = getValueFloat( texture, vUvBottomRight );",
+            "float value1 = mix( valueBottomLeft, valueBottomRight, vUvOffset[ 0 ] );",
+            "float value2 = mix( valueTopLeft, valueTopRight, vUvOffset[ 0 ] );",
+            "float value = mix( value1, value2, vUvOffset[ 1 ] );"
+		].join("\n"),
+
+		FRAGMENTSHADERFLOATNEAREST : [
+			"// for float",
 			"float Sign = 1.0 - step(128.0,rawBytes[3])*2.0 ;",
 			"float Exponent = 2.0 * mod(rawBytes[3],128.0) + step(128.0,rawBytes[2]) - 127.0;",
 			"float Mantissa = mod(rawBytes[2],128.0)*65536.0 + rawBytes[1]*256.0 +rawBytes[0]+ 8388608.0;",
@@ -725,25 +840,41 @@ qx.Class.define("desk.VolumeSlice",
 		 * @return {THREE.ShaderMaterial} material
 		 */
 		 getMaterial : function () {
+			let middleShader;
 			switch (this.__scalarType) {
 			case 2 :
 			case 15:
 				//char / signed char
-				var middleShader = desk.VolumeSlice.FRAGMENTSHADERCHAR;
+                if ( this.__opts.__format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
+                middleShader = this.__opts.linearFilter ?
+                    desk.VolumeSlice.FRAGMENTSHADERCHARLINEAR
+                     : desk.VolumeSlice.FRAGMENTSHADERCHARNEAREST;
 				break;
 			case 3:
 				middleShader = desk.VolumeSlice.FRAGMENTSHADERUCHAR;
 				break;
 			case 4:
-				middleShader = desk.VolumeSlice.FRAGMENTSHADERSHORT;
+                if ( this.__opts.__format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
+                middleShader = this.__opts.linearFilter ?
+                    desk.VolumeSlice.FRAGMENTSHADERSHORTLINEAR
+                     : desk.VolumeSlice.FRAGMENTSHADERSHORTNEAREST;
 				break;
 			case 5:
-				middleShader = desk.VolumeSlice.FRAGMENTSHADERUSHORT;
+                if ( this.__opts.__format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
+                middleShader = this.__opts.linearFilter ?
+                    desk.VolumeSlice.FRAGMENTSHADERUSHORTLINEAR
+                     : desk.VolumeSlice.FRAGMENTSHADERUSHORTNEAREST;
 				break;
 			default:
-				middleShader = this.__opts.workerSlicer?
-					desk.VolumeSlice.FRAGMENTSHADERFLOATWORKER:
-					desk.VolumeSlice.FRAGMENTSHADERFLOAT;
+
+				if ( this.__opts.workerSlicer ) {
+					middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOATWORKER;
+				}
+
+                if ( this.__opts.format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
+                middleShader = this.__opts.linearFilter ?
+                    desk.VolumeSlice.FRAGMENTSHADERFLOATLINEAR
+                     : desk.VolumeSlice.FRAGMENTSHADERFLOATNEAREST;
 				break;
 			}
 
@@ -759,6 +890,8 @@ qx.Class.define("desk.VolumeSlice",
 				shader = desk.VolumeSlice.FRAGMENTSHADERENDMULTICHANNEL;
 			}
 
+            const [ dimX, dimY ] = this.get2DDimensions();
+
 			var baseUniforms = {
 					texture : {type : "t", slot: 0, value: this.__texture },
 					lookupTable : {type : "t", slot: 1, value: this.__lookupTable },
@@ -769,7 +902,9 @@ qx.Class.define("desk.VolumeSlice",
 					opacity : {type: "f", value: this.__opacity},
 					scalarMin : {type: "f", value: this.__scalarMin},
 					scalarMax : {type: "f", value: this.__scalarMax},
-					imageType : {type: "f", value: this.__availableImageFormat}
+					imageType : {type: "f", value: this.__availableImageFormat},
+					dimX : {type: "f", value: dimX},
+					dimY : {type: "f", value: dimY}
 				};
 
 			var baseShaderBegin = [desk.VolumeSlice.FRAGMENTSHADERBEGIN,
