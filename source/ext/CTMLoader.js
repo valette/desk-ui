@@ -238,11 +238,17 @@ THREE.CTMLoader.prototype._createGeometry = function ( file, callback ) {
 
 	}
 
-	var attrMaps = file.body.attrMaps;
+	for ( let attrMap of file.body.attrMaps || [] ) {
 
-	if ( attrMaps !== undefined && attrMaps.length > 0 && attrMaps[ 0 ].name === 'Color' ) {
+		if ( attrMap.name === "Color" ) {
 
-		colors = attrMaps[ 0 ].attr;
+			colors = attrMap.attr;
+			continue;
+
+		}
+
+		geometry.setAttribute( attrMap.name,
+				new THREE.BufferAttribute( attrMap.attr ) );
 
 	}
 
