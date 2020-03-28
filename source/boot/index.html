@@ -22,6 +22,12 @@ div.loading-visible{
 	width:100%;
 	text-align:center;
 }
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 </style>
 <link rel="icon" type="image/png" href="resource/desk/desk.png"/>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -29,13 +35,11 @@ div.loading-visible{
 </head>
 <body>
 <div id="loading" class="loading-visible">
+  <img src="resource/desk/desk_logo.png" alt="DESK" class="center">
   <p>Loading, please wait...</p>
 </div>
 
 <script type="text/javascript">
-window.onload = function(){
-	document.getElementById("loading").className = "loading-invisible";
-};
 
 //desk_startup_script = "path/to/my/script"
 </script>

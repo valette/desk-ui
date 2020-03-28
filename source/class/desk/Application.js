@@ -61,6 +61,7 @@ qx.Class.define("desk.Application",
 			await desk.Actions.initAsync();
 			actions.debug("actions initialized!");
 			desk.auto = false;
+			document.getElementById("loading").className = "loading-invisible";
 
 			// first try to automatically launch startup script if it exists
 			if ( !getParameter( "noauto" ) ) {
