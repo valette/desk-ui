@@ -1418,7 +1418,7 @@ qx.Class.define("desk.SegTools",
 				{
 					var cpFromSessParamMap = {
 												"action" : "copy",
-												"source" : srcSession + "/*",
+												"source" : srcSession + "/*.*",
 												"destination" : tools.getSessionDirectory()
 											};
 					desk.Actions.execute(cpFromSessParamMap, tools.loadSession, tools);
