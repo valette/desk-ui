@@ -867,15 +867,15 @@ qx.Class.define("desk.VolumeSlice",
 				break;
 			default:
 
-				if ( this.__opts.workerSlicer ) {
-					middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOATWORKER;
-				}
-
                 if ( this.__opts.format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
                 middleShader = this.__opts.linearFilter ?
                     desk.VolumeSlice.FRAGMENTSHADERFLOATLINEAR
                      : desk.VolumeSlice.FRAGMENTSHADERFLOATNEAREST;
 				break;
+			}
+
+			if ( this.__opts.workerSlicer ) {
+				middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOATWORKER;
 			}
 
 			var endShader = this.__opts.ooc ? desk.VolumeSlice.FRAGMENTSHADERENDOOC
@@ -1210,7 +1210,6 @@ qx.Class.define("desk.VolumeSlice",
 
 							that.__waitingFromWorker = false;
 							//that.__texture.image = imageData;
-
 							var tmp = { data: imgFloatArray, width: imageData.width, height: imageData.height };
 							if (typeof that.__opts.postProcessFunction === 'function') {
 								that.__opts.postProcessFunction(tmp, that.__worker);
