@@ -51,6 +51,7 @@ qx.Class.define("desk.SegTools",
 			listenersIds[ viewer ] = viewer.addListener( "changeSlice", async function ( event ) {
 
 				await this.__saveCurrentSeeds();
+				viewer.setUserData( "previousSlice", viewer.getSlice() );
 				this.__reloadSeedImage( viewer );
 
 			}, this );
@@ -1532,7 +1533,6 @@ qx.Class.define("desk.SegTools",
 
 				}
 
-				viewer.setUserData( "previousSlice", viewer.getSlice() );
 				viewer.setDrawingCanvasNotModified();
 
 			}
