@@ -3,7 +3,7 @@ self.async            = require('async');
 self._ = self.lodash  = require('lodash');
 self.EventEmitter     = require('events');
 self.heap = self.Heap = require('heap');
-self.jsSHA            = require("jssha");
+self.jsSHA            = require("jssha").default;
 self.kdTree           = require('kdt');
 self.numeric          = require('numeric');
 self.randomJS         = require('random-js');
