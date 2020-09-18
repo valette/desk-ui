@@ -166,7 +166,7 @@ qx.Class.define("desk.SceneContainer",
 	destruct : function(){
 		this.__setData = function () {};
 		qx.util.DisposeUtil.destroyContainer(this.__leftContainer);
-		this.removeMesh(this.getScene());
+		this.removeMeshes(this.getScene().children.slice() );
 		this.unlink();
 		this.__meshes.dispose();
 		this.__meshes.getDataModel().dispose();
