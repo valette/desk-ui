@@ -304,7 +304,7 @@ qx.Class.define("desk.SliceView",
 			if (mesh) {
 				this.getScene().remove(mesh);
 				//release GPU memory
-				mesh.material.uniforms.texture.value.dispose();
+				mesh.material.uniforms.imageTexture.value.dispose();
 				mesh.material.dispose();
 				mesh.geometry.dispose();
 				this.removeListenerById( slice.getUserData( "__sliceViewListener" ) );
