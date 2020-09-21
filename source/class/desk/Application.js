@@ -10,6 +10,7 @@
 
 /**
  * @asset(desk/*)
+ * @asset(webpack-bundle/bundle.js)
  * @ignore (async)
  * @ignore (async*)
  * @ignore (desk_startup_script)

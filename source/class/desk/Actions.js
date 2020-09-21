@@ -4,7 +4,6 @@
  * @asset(desk/desk.png)
  * @asset(qx/icon/${qx.icontheme}/16/categories/system.png) 
  * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-close.png)
- * @asset(webpack-bundle/bundle.js)
  * @ignore (require)
  * @ignore (io)
  * @ignore (_.*)
