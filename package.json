@@ -24,10 +24,10 @@
     "chalk": "4.1.0",
     "chroma-js": "2.1.0",
     "css-loader": "4.3.0",
-    "d3": "6.1.1",
+    "d3": "6.2.0",
     "heap": "0.2.6",
     "jssha": "3.1.2",
-    "jstat": "1.9.3",
+    "jstat": "1.9.4",
     "kdt": "0.1.0",
     "lodash": "4.17.20",
     "numeric": "1.2.6",
@@ -39,7 +39,7 @@
     "three": "0.120.1",
     "ttest": "1.1.0",
     "url-loader": "4.1.0",
-    "webpack": "4.44.1",
+    "webpack": "4.44.2",
     "webpack-cli": "3.3.12",
     "webworkify-webpack": "2.1.5",
     "xterm": "4.9.0"
@@ -53,9 +53,8 @@
     "bundle": "node source/build-worker.js && webpack",
     "clean": "rm -rf compiled",
     "compile": "qx compile --target source && qx compile --target build",
-    "deploy": "npx qx deploy --clean --out dist",
+    "deploy": "qx deploy --clean --out dist",
     "qooxdoo": "qx pkg update && qx pkg install && npm run compile",
-    "updateAll": "npm run updateQooxdoo && rm -rf node_modules && git pull && npm install && npm run build",
-    "updateQooxdoo": "cd qooxdoo && git pull && cd .."
+    "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }
 }
