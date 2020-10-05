@@ -676,7 +676,7 @@ qx.Class.define("desk.MPRContainer",
 					addVolumeToViewers(worker);
 				},
 				local: fileObject.constructor == File || typeof fileObject == "string" ,
-					noworker : options.noworker
+					worker : options.worker
 				};
 				worker = new desk.Slicer(fileObject, slicerOpts);
 
