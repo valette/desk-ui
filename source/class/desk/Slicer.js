@@ -17,7 +17,7 @@ qx.Class.define("desk.Slicer", {
 
 		this.__volume = volume;
 
-		if ( !opts.noworker ) {
+		if ( opts.worker ) {
 
 			// TODO!!!
 			const scriptFile = "desk-ui/workerSlicer.worker.js";
@@ -208,7 +208,7 @@ qx.Class.define("desk.Slicer", {
 
 		  var self = this;
 		  if (this.loaded && number < this.properties.dimensions[normales[orientation]]) {
-			if (this.opts.noworker) {
+			if ( !this.opts.worker) {
 				this.slicer.generateSlice([number, orientation], cb);
 			}
 			else

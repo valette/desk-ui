@@ -8,7 +8,7 @@
 * @ignore (async.forEachSeries)
 * @ignore (File)
 * @ignore (_.indexOf)
-* @ignore(WorkerSlicer)
+* @ignore(slicer)
 * @ignore(prompt)
 */
 qx.Class.define("desk.MPRContainer", 
@@ -663,27 +663,32 @@ qx.Class.define("desk.MPRContainer",
 				);
 			}.bind(this)
 
-			if (options.workerSlicer) {
+			if (options.slicer) {
 				var worker;
 
 				var slicerOpts = {
-				onprogress : function (text) {
-				//$('#progress').text(text);
-				//console.log(text);
-				},
-				onload : function (properties) {
-					console.log("Load finished ! properties : ", properties);
-					addVolumeToViewers(worker);
-				},
-				local: fileObject.constructor == File || typeof fileObject == "string" ,
+
+					onprogress : function (text) {
+					//$('#progress').text(text);
+					//console.log(text);
+					},
+
+					onload : function (properties) {
+						console.log("Load finished ! properties : ", properties);
+						addVolumeToViewers(worker);
+					},
+
+					local: fileObject.constructor == File || typeof fileObject == "string" ,
+
 					worker : options.worker
+
 				};
 				worker = new desk.Slicer(fileObject, slicerOpts);
 
-				// Change options.workerSlicer from "true" to reference to worker slicerWorker,
+				// Change options.slicer from "true" to reference to worker slicerWorker,
 				// allow to pass it to viewers
-				options.workerSlicer = worker;
-				volume.setUserData("workerSlicer", worker);
+				options.slicer = worker;
+				volume.setUserData("slicer", worker);
 
 			} else addVolumeToViewers();
 
@@ -1098,8 +1103,8 @@ qx.Class.define("desk.MPRContainer",
 			} else {
 				qx.util.DisposeUtil.destroyContainer(volume);
 // DEAD code????
-//				if (volume.getUserData("workerSlicer")) {
-//					volume.getUserData("workerSlicer").destroy();
+//				if (volume.getUserData("slicer")) {
+//					volume.getUserData("slicer").destroy();
 //				}
 			}
 		},

@@ -28,7 +28,7 @@ qx.Class.define("desk.VolumeSlice",
 	construct : function(file, orientation, opts, callback, context) {
 		this.base(arguments);
 
-		if ( !desk.Actions.getAction('slice_volume' ) && !opts.workerSlicer ) {
+		if ( !desk.Actions.getAction('slice_volume' ) && !opts.slicer ) {
 			var message = "Error : action volume_slice is not installed. Please install binary addons to slice volumes."
 			alert(message);
 			throw new Error(message);
@@ -40,7 +40,7 @@ qx.Class.define("desk.VolumeSlice",
 			opts = {};
 		}
 
-		if (opts.workerSlicer) {
+		if (opts.slicer) {
 			opts.format = 0;
 		}
 
@@ -74,7 +74,7 @@ qx.Class.define("desk.VolumeSlice",
 
 		this.__file = file;
 
-		if ( !opts.workerSlicer)  {
+		if ( !opts.slicer)  {
 
 			var image = this.__image = new Image();
 			image.onload = function() {
@@ -104,7 +104,7 @@ qx.Class.define("desk.VolumeSlice",
 
 		this.__lookupTable = new THREE.DataTexture(this.__dummyLut, 2, 1, THREE.RGBAFormat);
 
-		if ( !opts.workerSlicer)  {
+		if ( !opts.slicer)  {
 
 			[this.__lookupTable, this.__texture].forEach(function (texture) {
 				texture.generateMipmaps = false;
@@ -593,14 +593,14 @@ qx.Class.define("desk.VolumeSlice",
 		},
 
 		/**
-		* reloads the volume (workerSlicer version)
+		* reloads the volume (slicer version)
 		* @param callback {Function} callback when done
 		* @param context {Object} optional callback context
 		*/
-		__updateWorkerSlicer : function ( callback, context ) {
+		__updateslicer : function ( callback, context ) {
 
 			//Todo : get Image parameters
-			var prop = this.__opts.workerSlicer.properties;
+			var prop = this.__opts.slicer.properties;
 			this.__dimensions = prop.dimensions;
 			this.__origin = [0, 0, 0]; //prop.origin;
 			this.__spacing = prop.spacing;
@@ -647,9 +647,9 @@ qx.Class.define("desk.VolumeSlice",
 			    params.format = this.getImageFormat();
 			}
 
-			if ( this.__opts.workerSlicer ) {
+			if ( this.__opts.slicer ) {
 
-				this.__updateWorkerSlicer( callback, context );
+				this.__updateslicer( callback, context );
 				return;
 
 			}
@@ -874,7 +874,7 @@ qx.Class.define("desk.VolumeSlice",
 				break;
 			}
 
-			if ( this.__opts.workerSlicer ) {
+			if ( this.__opts.slicer ) {
 				middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOATWORKER;
 			}
 
@@ -1184,7 +1184,7 @@ qx.Class.define("desk.VolumeSlice",
 		 */
 		__updateImage : function () {
 			clearTimeout(this.__timeout);
-			if ( !this.__opts.workerSlicer)
+			if ( !this.__opts.slicer)
 				this.__timeout = setTimeout(this.__updateImage.bind(this), 10000);
 			this.__texture.needsUpdate = false;
 			this.__texture.version = this.__texture.lastVersion;
@@ -1198,7 +1198,7 @@ qx.Class.define("desk.VolumeSlice",
 
 			var that = this;
 
-			if (this.__opts.workerSlicer) {
+			if (this.__opts.slicer) {
 
 				if (!this.__waitingFromWorker) {
 
