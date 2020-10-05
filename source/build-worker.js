@@ -4,7 +4,7 @@ var fs = require('fs');
 var js_files =  [
   //"../Papaya/lib/daikon.js",
   //"../Papaya/lib/base64-binary.js",
-  //"Papaya/lib/bowser.js",
+  "node_modules/papaya-viewer/lib/bowser.js",
   //"../Papaya/lib/numerics.js",
   "node_modules/papaya-viewer/lib/pako-inflate.js",
   "node_modules/papaya-viewer/lib/nifti-reader.js",
@@ -15,7 +15,7 @@ var js_files =  [
   "node_modules/papaya-viewer/src/js/utilities/array-utils.js",
   "node_modules/papaya-viewer/src/js/utilities/math-utils.js",
   "node_modules/papaya-viewer/src/js/utilities/object-utils.js",
-  //"Papaya/src/js/utilities/platform-utils.js",
+  "node_modules/papaya-viewer/src/js/utilities/platform-utils.js",
   "node_modules/papaya-viewer/src/js/utilities/string-utils.js",
   //"../Papaya/src/js/utilities/url-utils.js",
   "node_modules/papaya-viewer/src/js/core/coordinate.js",
@@ -43,11 +43,11 @@ var output = js_files.map((f)=>{
   return fs.readFileSync(f).toString();
 }).join(';')
 
-output += `
+/*output += `
 papaya.utilities.PlatformUtils = {
 isPlatformLittleEndian : () => true
 }
 `;
-
+*/
 fs.writeFileSync( __dirname + "/ext/workerSlicer.worker.js",output, "utf8");
 
