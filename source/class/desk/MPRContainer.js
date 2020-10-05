@@ -1097,9 +1097,10 @@ qx.Class.define("desk.MPRContainer",
 				volume.setUserData("toDelete", true);
 			} else {
 				qx.util.DisposeUtil.destroyContainer(volume);
-				if (volume.getUserData("workerSlicer")) {
-					volume.getUserData("workerSlicer").destroy();
-				}
+// DEAD code????
+//				if (volume.getUserData("workerSlicer")) {
+//					volume.getUserData("workerSlicer").destroy();
+//				}
 			}
 		},
 
