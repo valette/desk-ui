@@ -42,6 +42,7 @@ qx.Class.define("desk.VolumeSlice",
 
 		if (opts.slicer) {
 			opts.format = 0;
+			this.__slicer = opts.slicer;
 		}
 
 		this.setOrientation(orientation);
@@ -354,8 +355,8 @@ qx.Class.define("desk.VolumeSlice",
 			"float value = Sign * Mantissa * pow(2.0,Exponent - 23.0);"
 		].join("\n"),
 
-		FRAGMENTSHADERFLOATWORKER : [
-			"// for float with local worker",
+		FRAGMENTSHADERFLOATSLICER : [
+			"// for float with local slicer",
 			"vec4 rawFloats = texture2D( imageTexture, vUv );",
 			"float value = rawFloats.x;"
 		].join("\n"),
@@ -420,7 +421,7 @@ qx.Class.define("desk.VolumeSlice",
 
 	members : {
 		__opts : null,
-		__worker : null,
+		__slicer : null,
 		__orientationNames : ['XY', 'ZY', 'XZ'],
 
 		__availableImageFormat : 1,
@@ -612,12 +613,6 @@ qx.Class.define("desk.VolumeSlice",
 			this.__scalarMax = prop.scalarBounds[1];
 			this.__finalizeUpdate();
 			setTimeout( function () { callback.call(context); }, 0 );
-
-		},
-
-		setWorker : function ( worker ) {
-
-			this.__worker = worker;
 
 		},
 
@@ -875,7 +870,7 @@ qx.Class.define("desk.VolumeSlice",
 			}
 
 			if ( this.__opts.slicer ) {
-				middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOATWORKER;
+				middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOATSLICER;
 			}
 
 			var endShader = this.__opts.ooc ? desk.VolumeSlice.FRAGMENTSHADERENDOOC
@@ -1200,19 +1195,19 @@ qx.Class.define("desk.VolumeSlice",
 
 			if (this.__opts.slicer) {
 
-				if (!this.__waitingFromWorker) {
+				if (!this.__waitingForSlicer) {
 
 					window.setTimeout(function() {
-						that.__worker.getSlice(that.getOrientation(), that.getSlice(), function (err, imageData, imgFloatArray) {
+						that.__slicer.getSlice(that.getOrientation(), that.getSlice(), function (err, imageData, imgFloatArray) {
 							if (err) {
 							console.warn(err);
 							}
 
-							that.__waitingFromWorker = false;
+							that.__waitingForSlicer = false;
 							//that.__texture.image = imageData;
 							var tmp = { data: imgFloatArray, width: imageData.width, height: imageData.height };
 							if (typeof that.__opts.postProcessFunction === 'function') {
-								that.__opts.postProcessFunction(tmp, that.__worker);
+								that.__opts.postProcessFunction(tmp, that.__slicer);
 							}
 
 							that.__texture.image = tmp;
@@ -1236,7 +1231,7 @@ qx.Class.define("desk.VolumeSlice",
 					}, 1);
 				}
 
-				this.__waitingFromWorker = [ this.getOrientation(), this.getSlice() ];
+				this.__waitingForSlicer = [ this.getOrientation(), this.getSlice() ];
 				return;
 			}
 

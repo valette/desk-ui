@@ -639,13 +639,11 @@ qx.Class.define("desk.MPRContainer",
             label.setTextAlign("left");
 			labelcontainer.add(label, {flex : 1});
 
-			var addVolumeToViewers = function () {
+			var addVolumeToViewers = function ( slicer ) {
 				async.forEachSeries(this.__viewers,
 						function (viewer, callback) {
 						var tmp = volumeSlices[viewer.getOrientation()] = viewer.addVolume(
 						file, options, callback);
-						if (worker)
-						tmp.setWorker(worker);
 					},
 					function (err) {
 						if (options.visible !== undefined) {
@@ -664,7 +662,7 @@ qx.Class.define("desk.MPRContainer",
 			}.bind(this)
 
 			if (options.slicer) {
-				var worker;
+				var slicer;
 
 				var slicerOpts = {
 
@@ -675,20 +673,18 @@ qx.Class.define("desk.MPRContainer",
 
 					onload : function (properties) {
 						console.log("Load finished ! properties : ", properties);
-						addVolumeToViewers(worker);
+						addVolumeToViewers(slicer);
 					},
 
 					local: fileObject.constructor == File || typeof fileObject == "string" ,
-
 					worker : options.worker
-
 				};
-				worker = new desk.Slicer(fileObject, slicerOpts);
+				slicer = new desk.Slicer(fileObject, slicerOpts);
 
 				// Change options.slicer from "true" to reference to worker slicerWorker,
 				// allow to pass it to viewers
-				options.slicer = worker;
-				volume.setUserData("slicer", worker);
+				options.slicer = slicer;
+				volume.setUserData("slicer", slicer);
 
 			} else addVolumeToViewers();
 
