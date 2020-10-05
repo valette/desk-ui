@@ -16,6 +16,9 @@ qx.Class.define("desk.Slicer", {
     construct: function( volume, opts ) {
 
 		this.__volume = volume;
+		this.opts = opts;
+		this.loaded = false;
+		this.callbacks = {};
 
 		if ( opts.worker ) {
 
@@ -59,119 +62,111 @@ qx.Class.define("desk.Slicer", {
 				this.worker.postMessage(["loadLocalImage", volume]);
 			else this.worker.postMessage(["loadImage", volume]);
 
-		} else {
+			return;
 
-			var that = this;
-
-			//require( __dirname + '/workerSlicer.worker.js'); !!!!!
-
-			next();
-			function next() {
-
-				var root = qx.core.Init.getApplication().getRoot();
-				var win = new qx.ui.window.Window("Chargement de l'image");
-				win.set({
-					width : 300,
-					height : 100,
-					alwaysOnTop : true,
-					showMinimize : false,
-					showMaximize : false,
-					centerOnAppear : true,
-					modal : true,
-					movable : false,
-					allowMaximize : false,
-					allowMinimize : false,
-					resizable : false,
-					showClose : false
-				});
-
-				win.setLayout(new qx.ui.layout.VBox(10));
-				var progressText = new qx.ui.basic.Label("Initialisation...");
-				win.add(progressText);
-
-				var pb = new desk.ProgressBar();
-				win.add(pb);
-				root.add(win);
-				win.open();
-
-				var progressFunc = function (frac, text) {
-
-					if (text == "Unpacking") text = "Décompression";
-					var txt = text+" "+(frac*100).toFixed(1)+"%";
-					progressText.setValue(txt);
-					pb.setValue(frac*100);
-
-				};
-
-				that.slicer = new PapayaSlicer(progressFunc);
-
-				if (opts.local) {
-
-					if (typeof volume == "string") {
-
-						var str = 'fs';
-						var fs = require( str )
-						var concat = require('concat-stream')
-						var readStream = fs.createReadStream(volume)
-						var concatStream = concat(gotPicture)
-						readStream.on('error', handleError)
-
-						// Get the size of the file
-						var stats = fs.statSync(volume);
-						var fileSize         = stats.size;
-						var readSize    = 0; // Incremented by on('data') to keep track of the amount of data we've uploaded
-
-						readStream.on('data', function(buffer) {
-							var segmentLength   = buffer.length;
-							// Increment the uploaded data counter
-							readSize        += segmentLength;
-							progressFunc(readSize/fileSize, "Chargement");
-						});
-
-						readStream.pipe(concatStream)
-
-						function gotPicture(buffer) {
-							that.slicer.vol.fileName = require("path").basename(volume);
-							that.slicer.vol.rawData[0] = buffer;//fileBuffer.buffer;
-							//const b = Buffer.from(fileBuffer);
-							//var arrayBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
-							that.slicer.vol.decompress( that.slicer.vol);
-
-
-							that.slicer.vol.onFinishedRead = function () {
-								that.properties = that.slicer.initProperties();
-								that.loaded = true;
-								opts.onload(that.properties);
-								win.close();
-							}
-						}
-
-						function handleError(err) {
-							// handle your error appropriately here, e.g.:
-							console.error(err) // print the error to STDERR
-						}
-
-
-					} else {
-
-						that.slicer.vol.readFiles([volume], function () {
-						that.properties = that.slicer.initProperties();
-						that.loaded = true;
-						opts.onload(that.properties);
-						win.close();
-						});
-
-					}
-
-				}
-			}//);
 		}
 
-		this.opts = opts;
-		this.loaded = false;
+		var root = qx.core.Init.getApplication().getRoot();
+		var win = new qx.ui.window.Window("Chargement de l'image");
 
-		this.callbacks = {};
+		win.set({
+			width : 300,
+			height : 100,
+			alwaysOnTop : true,
+			showMinimize : false,
+			showMaximize : false,
+			centerOnAppear : true,
+			modal : true,
+			movable : false,
+			allowMaximize : false,
+			allowMinimize : false,
+			resizable : false,
+			showClose : false,
+			layout : new qx.ui.layout.VBox( 10 )
+		});
 
+		var progressText = new qx.ui.basic.Label("Initialisation...");
+		win.add(progressText);
+
+		var pb = new desk.ProgressBar();
+		win.add(pb);
+		root.add(win);
+		win.open();
+
+		var progressFunc = function (frac, text) {
+
+			if (text == "Unpacking") text = "Décompression";
+			var txt = text+" "+(frac*100).toFixed(1)+"%";
+			progressText.setValue(txt);
+			pb.setValue(frac*100);
+
+		};
+
+		this.slicer = new PapayaSlicer(progressFunc);
+
+		if ( opts.local ) {
+
+			if (typeof volume == "string") {
+
+				var str = 'fs';
+				var fs = require( str )
+				var concat = require('concat-stream')
+				var readStream = fs.createReadStream(volume)
+
+				const gotPicture = buffer => {
+					this.slicer.vol.fileName = require("path").basename(volume);
+					this.slicer.vol.rawData[0] = buffer;//fileBuffer.buffer;
+					//const b = Buffer.from(fileBuffer);
+					//var arrayBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+					this.slicer.vol.decompress( this.slicer.vol);
+
+
+					this.slicer.vol.onFinishedRead = () => {
+						this.properties = this.slicer.initProperties();
+						this.loaded = true;
+						opts.onload(this.properties);
+						win.close();
+					}
+				};
+
+
+				var concatStream = concat(gotPicture)
+				readStream.on('error', handleError)
+
+				// Get the size of the file
+				var stats = fs.statSync(volume);
+				var fileSize         = stats.size;
+				var readSize    = 0; // Incremented by on('data') to keep track of the amount of data we've uploaded
+
+				readStream.on('data', function(buffer) {
+					var segmentLength   = buffer.length;
+					// Increment the uploaded data counter
+					readSize        += segmentLength;
+					progressFunc(readSize/fileSize, "Chargement");
+				});
+
+				readStream.pipe(concatStream)
+
+				function handleError(err) {
+					// handle your error appropriately here, e.g.:
+					console.error(err) // print the error to STDERR
+				}
+
+
+			} else {
+
+				this.slicer.vol.readFiles( [ volume ], () => {
+
+					this.properties = this.slicer.initProperties();
+					this.loaded = true;
+					opts.onload( this.properties );
+					win.close();
+
+				} );
+
+			}
+
+		}
 
     },
 
