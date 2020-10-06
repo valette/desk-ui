@@ -120,7 +120,7 @@ qx.Class.define("desk.VolumeSlice",
 			this.__texture.format = THREE.LuminanceFormat;
 			this.__texture.flipY = true;
 			this.__lookupTable.generateMipmaps = false;
-			this.__lookupTable.magFilter = this.__lookupTable.minFilter = THREE.NearestFilter;
+			this.__lookupTable.magFilter = this.__lookupTable.minFilter = filter;
 
 		}
 
@@ -840,7 +840,6 @@ qx.Class.define("desk.VolumeSlice",
 			case 2 :
 			case 15:
 				//char / signed char
-                if ( this.__opts.__format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
                 middleShader = this.__opts.linearFilter ?
                     desk.VolumeSlice.FRAGMENTSHADERCHARLINEAR
                      : desk.VolumeSlice.FRAGMENTSHADERCHARNEAREST;
@@ -849,20 +848,17 @@ qx.Class.define("desk.VolumeSlice",
 				middleShader = desk.VolumeSlice.FRAGMENTSHADERUCHAR;
 				break;
 			case 4:
-                if ( this.__opts.__format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
                 middleShader = this.__opts.linearFilter ?
                     desk.VolumeSlice.FRAGMENTSHADERSHORTLINEAR
                      : desk.VolumeSlice.FRAGMENTSHADERSHORTNEAREST;
 				break;
 			case 5:
-                if ( this.__opts.__format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
                 middleShader = this.__opts.linearFilter ?
                     desk.VolumeSlice.FRAGMENTSHADERUSHORTLINEAR
                      : desk.VolumeSlice.FRAGMENTSHADERUSHORTNEAREST;
 				break;
 			default:
 
-                if ( this.__opts.format === 0 ) this.__texture.magFilter = this.__texture.minFilter =  THREE.NearestFilter;
                 middleShader = this.__opts.linearFilter ?
                     desk.VolumeSlice.FRAGMENTSHADERFLOATLINEAR
                      : desk.VolumeSlice.FRAGMENTSHADERFLOATNEAREST;

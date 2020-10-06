@@ -639,7 +639,7 @@ qx.Class.define("desk.MPRContainer",
             label.setTextAlign("left");
 			labelcontainer.add(label, {flex : 1});
 
-			var addVolumeToViewers = function ( slicer ) {
+			var addVolumeToViewers = function () {
 				async.forEachSeries(this.__viewers,
 						function (viewer, callback) {
 						var tmp = volumeSlices[viewer.getOrientation()] = viewer.addVolume(
