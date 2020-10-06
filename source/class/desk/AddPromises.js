@@ -2,6 +2,7 @@
  * Singleton class which adds promisified versions of different asynchronous desk functions
  * @ignore (require)
  * @ignore (async.*)
+ * @ignore (bluebird.promisify)
  */
 qx.Class.define( "desk.AddPromises", 
 {
@@ -15,7 +16,7 @@ qx.Class.define( "desk.AddPromises",
 	construct : function() {
 
 		this.base(arguments);
-		Promise.promisify = require('bluebird').promisify;
+		Promise.promisify = bluebird.promisify;
 
 		var toPromisify = [
 			"desk.Actions.execute",
