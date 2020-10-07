@@ -96,7 +96,7 @@ qx.Class.define("desk.Slicer", {
 		var progressFunc = function (frac, text) {
 
 			if (text == "Unpacking") text = "Décompression";
-			var txt = text+" "+(frac*100).toFixed(1)+"%";
+			var txt = text+" "+ Math.min( 100, (frac*100).toFixed(1) )+"%";
 			progressText.setValue(txt);
 			pb.setValue(frac*100);
 
@@ -110,48 +110,21 @@ qx.Class.define("desk.Slicer", {
 
 				var str = 'fs';
 				var fs = require( str )
-				var concat = require('concat-stream')
-				var readStream = fs.createReadStream(volume)
+				const buffer = fs.readFileSync( volume );
+				this.slicer.vol.fileName = require("path").basename(volume);
+				this.slicer.vol.rawData[0] = buffer;//fileBuffer.buffer;
+				//const b = Buffer.from(fileBuffer);
+				//var arrayBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+				this.slicer.vol.decompress( this.slicer.vol);
 
-				const gotPicture = buffer => {
-					this.slicer.vol.fileName = require("path").basename(volume);
-					this.slicer.vol.rawData[0] = buffer;//fileBuffer.buffer;
-					//const b = Buffer.from(fileBuffer);
-					//var arrayBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
-					this.slicer.vol.decompress( this.slicer.vol);
+				this.slicer.vol.onFinishedRead = () => {
 
+					this.properties = this.slicer.initProperties();
+					this.loaded = true;
+					opts.onload(this.properties);
+					win.close();
 
-					this.slicer.vol.onFinishedRead = () => {
-						this.properties = this.slicer.initProperties();
-						this.loaded = true;
-						opts.onload(this.properties);
-						win.close();
-					}
-				};
-
-
-				var concatStream = concat(gotPicture)
-				readStream.on('error', handleError)
-
-				// Get the size of the file
-				var stats = fs.statSync(volume);
-				var fileSize         = stats.size;
-				var readSize    = 0; // Incremented by on('data') to keep track of the amount of data we've uploaded
-
-				readStream.on('data', function(buffer) {
-					var segmentLength   = buffer.length;
-					// Increment the uploaded data counter
-					readSize        += segmentLength;
-					progressFunc(readSize/fileSize, "Chargement");
-				});
-
-				readStream.pipe(concatStream)
-
-				function handleError(err) {
-					// handle your error appropriately here, e.g.:
-					console.error(err) // print the error to STDERR
 				}
-
 
 			} else {
 
