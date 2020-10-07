@@ -107,15 +107,16 @@ qx.Class.define("desk.VolumeSlice",
 
 		if ( !opts.slicer)  {
 
-			[this.__lookupTable, this.__texture].forEach(function (texture) {
+			[this.__lookupTable, this.__texture].forEach( texture => {
 				texture.generateMipmaps = false;
-				texture.magFilter = texture.minFilter = filter;
+				texture.magFilter = texture.minFilter =
+					this.getImageFormat() ? filter : THREE.NearestFilter;
 			});
 
 		} else {
 
 			this.__texture.generateMipmaps = false;
-			this.__texture.magFilter = this.__texture.minFilter = THREE.LinearFilter;
+			this.__texture.magFilter = this.__texture.minFilter = filter;
 			this.__texture.type = THREE.FloatType;
 			this.__texture.format = THREE.LuminanceFormat;
 			this.__texture.flipY = true;

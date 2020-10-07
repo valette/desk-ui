@@ -559,7 +559,6 @@ qx.Class.define("desk.MPRContainer",
 
 
 			if (typeof file == "string" && desk.FileSystem.getFileExtension(file) === "json") {
-//			if (desk.FileSystem.getFileExtension(file) === "json") {
 				desk.FileSystem.readFile(file, function (err, viewpoints) {
 					this.setViewPoints(JSON.parse(viewpoints).viewpoints);
 				}, this);
@@ -570,7 +569,7 @@ qx.Class.define("desk.MPRContainer",
 
 				fileObject = file;
 				file = file.name;
-				console.log("FileObject loading !");
+
 			}
 
 
