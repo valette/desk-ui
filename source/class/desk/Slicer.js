@@ -88,9 +88,9 @@ qx.Class.define("desk.Slicer", {
 		var progressText = new qx.ui.basic.Label("Initialisation...");
 		win.add(progressText);
 
-		var pb = new desk.ProgressBar();
-		win.add(pb);
-		root.add(win);
+		const progressBar = new qx.ui.indicator.ProgressBar();
+		win.add( progressBar );
+		root.add( win );
 		win.open();
 
 		var progressFunc = function (frac, text) {
@@ -98,7 +98,7 @@ qx.Class.define("desk.Slicer", {
 			if (text == "Unpacking") text = "Décompression";
 			var txt = text+" "+ Math.min( 100, (frac*100).toFixed(1) )+"%";
 			progressText.setValue(txt);
-			pb.setValue(frac*100);
+			progressBar.setValue(frac*100);
 
 		};
 
