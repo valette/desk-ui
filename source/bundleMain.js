@@ -8,6 +8,7 @@ require( __dirname + '/ext/WebGL.js');
 self.Terminal = require( 'xterm' ).Terminal;
 require ('xterm/css/xterm.css');
 self.chroma = require( 'chroma-js' );
+self.bowser = require( 'bowser' );
 require( __dirname + '/ext/workerSlicer.worker.js' );
 
 function getCookie (name) {

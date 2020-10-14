@@ -1,10 +1,10 @@
 var fs = require('fs');
 
 //Got list from https://github.com/rii-mango/Papaya-Builder/blob/master/src/edu/uthscsa/ric/papaya/builder/Builder.java
-var js_files =  [
+const files =  [
   //"../Papaya/lib/daikon.js",
   //"../Papaya/lib/base64-binary.js",
-  "node_modules/papaya-viewer/lib/bowser.js",
+  //"node_modules/papaya-viewer/lib/bowser.js",
   //"../Papaya/lib/numerics.js",
   "node_modules/papaya-viewer/lib/pako-inflate.js",
   "node_modules/papaya-viewer/lib/nifti-reader.js",
@@ -39,15 +39,6 @@ var js_files =  [
   //"../Papaya/src/js/surface/surface-vtk.js",
   __dirname + "/ext/workerSlicer.manager.js"];
 
-var output = js_files.map((f)=>{
-  return fs.readFileSync(f).toString();
-}).join(';')
-
-/*output += `
-papaya.utilities.PlatformUtils = {
-isPlatformLittleEndian : () => true
-}
-`;
-*/
+const output = files.map( f => fs.readFileSync( f ).toString() ).join( ';' );
 fs.writeFileSync( __dirname + "/ext/workerSlicer.worker.js",output, "utf8");
 
