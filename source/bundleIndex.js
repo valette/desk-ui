@@ -20,7 +20,6 @@ self.THREE.TransformControls = TransformControls;
 self.bluebird = self.Promise = require('bluebird');
 self.chalk            = require('chalk');
 self.jstat            = require('jstat');
-self.ttest            = require('ttest');
 require('./ext/mhdParse.js');
 
 if (typeof importScripts !== 'function') {
