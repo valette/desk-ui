@@ -1230,14 +1230,14 @@ qx.Class.define("desk.SliceView",
 			qx.util.DisposeUtil.disposeTriggeredBy(font, this);
 
 			var labels = [
-				["Ve", "Ga", "Do", "Dr"],
-				["Av", "Ve", "Ar", "Do"],
-				["Av", "Ga", "Ar", "Dr"]][this.__orientation];
+				[this.tr("Fr"), this.tr("Le"), this.tr("Ba"), this.tr("Ri")],
+				[this.tr("Su"), this.tr("Fr"), this.tr("In"), this.tr("Ba")],
+				[this.tr("Su"), this.tr("Le"), this.tr("In"), this.tr("Ri")]][this.__orientation];
 
 			var name = [
-				"Axial",
-				"Sagittal",
-				"Coronal"
+				this.tr("Axial" ),
+				this.tr("Sagittal"),
+				this.tr("Coronal" )
 			][this.__orientation];
 
 			var directionOverlays = this.__directionOverlays = [

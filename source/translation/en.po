@@ -1,0 +1,35 @@
+#: desk/SliceView.js
+msgid "Fr"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "Le"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "Ba"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "Ri"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "Su"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "In"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "Axial"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "Sagittal"
+msgstr ""
+
+#: desk/SliceView.js
+msgid "Coronal"
+msgstr ""
