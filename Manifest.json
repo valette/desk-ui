@@ -23,8 +23,8 @@
   "requires": {
     "johnspackman/UploadMgr": "1.0.4",
     "qooxdoo/qxl.apiviewer": "1.0.13",
-    "@qooxdoo/compiler" : "1.0.0-beta-20201003-1033",
-    "@qooxdoo/framework": "6.0.0-beta-20201003-1033"
+    "@qooxdoo/compiler": "^1.0.0-beta-20201022-0844",
+    "@qooxdoo/framework": "^6.0.0-beta-20201022-0844"
   },
   "$schema": "https://qooxdoo.org/schema/Manifest-1-0-0.json"
 }
