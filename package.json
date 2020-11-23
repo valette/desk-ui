@@ -14,8 +14,8 @@
     "shelljs": "0.8.4"
   },
   "devDependencies": {
-    "@qooxdoo/compiler": "1.0.0-beta-20201106-1652",
-    "@qooxdoo/framework": "6.0.0-beta-20201106-1652",
+    "@qooxdoo/compiler": "1.0.0-beta-20201116-0651",
+    "@qooxdoo/framework": "6.0.0-beta-20201116-0651",
     "ace-builds": "1.4.12",
     "async": "3.2.0",
     "bluebird": "3.7.2",
@@ -36,13 +36,13 @@
     "operative": "0.4.6",
     "papaya-viewer": "1.0.1449",
     "random-js": "2.1.0",
-    "socket.io-client": "2.3.1",
+    "socket.io-client": "3.0.2",
     "source-map-loader": "1.1.2",
     "stream-browserify": "3.0.0",
     "style-loader": "2.0.0",
     "three": "0.122.0",
     "url-loader": "4.1.1",
-    "webpack": "5.4.0",
+    "webpack": "5.5.0",
     "webpack-cli": "4.2.0",
     "webworkify-webpack": "2.1.5",
     "xterm": "4.9.0"
