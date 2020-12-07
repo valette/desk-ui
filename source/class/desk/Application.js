@@ -47,17 +47,6 @@ qx.Class.define("desk.Application",
 				qx.log.appender.Console;
 			}
 
-			function getParameter( parameterName ) {
-				parameterName = parameterName.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-				var regex = new RegExp( "[\\?&]" + parameterName + "=([^&#]*)" );
-				var results = regex.exec( window.location.href );
-				if (results == null) {
-					return null;
-				} else {
-					return results[1];
-				}
-			}
-
 			const actions = desk.Actions.getInstance()
 			await desk.Actions.initAsync();
 			actions.debug("actions initialized!");
@@ -65,7 +54,7 @@ qx.Class.define("desk.Application",
 			document.getElementById("loading").className = "loading-invisible";
 
 			// first try to automatically launch startup script if it exists
-			if ( !getParameter( "noauto" ) ) {
+			if ( !desk.URLParameters.getParameter( "noauto" ) ) {
 
 				if ( typeof desk_startup_script === "string" ) {
 
@@ -87,7 +76,7 @@ qx.Class.define("desk.Application",
 
 			}
 
-			const startupScript = getParameter( "script" );
+			const startupScript = desk.URLParameters.getParameter( "script" );
 
 			if ( startupScript ) {
 
@@ -98,7 +87,7 @@ qx.Class.define("desk.Application",
 			}
 
 			actions.buildUI();
-			new desk.FileBrowser( getParameter( "rootDir" ), { standalone : true } );
+			new desk.FileBrowser( desk.URLParameters.getParameter( "rootDir" ), { standalone : true } );
 
 		}
 
