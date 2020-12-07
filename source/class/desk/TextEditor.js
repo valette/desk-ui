@@ -170,7 +170,12 @@ qx.Class.define("desk.TextEditor",
 			body.appendChild(this.__script);
 
 			if (desk.TextEditor.codeInTextEditor) {
+
+				try {
+
 				desk.TextEditor.codeInTextEditor(desk.FileSystem.getFileDirectory(this.__file));
+
+				} catch ( e ) { console.warn( e ) }
 			} else {
 				alert('Error while parsing your code, please check syntax');
 			}
