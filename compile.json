@@ -34,10 +34,7 @@
       "name": "apiviewer",
       "title": "Qooxdoo API Viewer",
       "environment": {
-        "qx.icontheme": "Tango",
-        "excludeFromAPIViewer": [
-          "qxl.apiviewer.*"
-        ]
+        "qx.icontheme": "Tango"
       },
       "include": [
         "qx.*"
