@@ -69,12 +69,8 @@ qx.Class.define("desk.Terminal",
 
 		__getSocket : function ( namespace ) {
 
-			for ( let socket of desk.Actions.getInstance().getSocket().io.connecting ) {
-
-				if (socket.nsp === namespace ) return socket
-			}
-
-			return  io( namespace );
+			const socket = desk.Actions.getInstance().getSocket().io.nsps[ namespace ];
+			return  socket ? socket : io( namespace );
 
 		},
 
