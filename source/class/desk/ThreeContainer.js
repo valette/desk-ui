@@ -328,8 +328,8 @@ qx.Class.define("desk.ThreeContainer",
 		* @param viewpoint {Object} the viewpoint
 		*/
 		setViewpoint : function (viewpoint) {
-			this.__camera.near = viewpoint.camera.near;
-			this.__camera.far = viewpoint.camera.far;
+			this.__camera.near = viewpoint.camera.object.near;
+			this.__camera.far = viewpoint.camera.object.far;
 			this.__controls.setState(viewpoint.controls);
 			this.__boudingBoxDiagonalLength = viewpoint.bbdl;
 		},
