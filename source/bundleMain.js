@@ -24,8 +24,9 @@ operative.setBaseURL(self.location.protocol + '//'
 
 self.io = require('socket.io-client');
 self.d3	= require ('d3');
-self.c3 = require ('c3');
-	require ('c3/c3.css');
+
+self.c3 = self.bb = require ('billboard.js/dist/billboard.js').bb;
+	require ('billboard.js/dist/billboard.css');
 
 self.ace = require('ace-builds/src-noconflict/ace');
 self.ace.config.setModuleUrl( "ace/mode/javascript_worker", jsWorkerUrl );
