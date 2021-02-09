@@ -111,7 +111,7 @@ qx.Class.define("desk.SceneContainer",
 			button.addListener("changeValue", function () {
 				leftContainer.setVisibility(button.getValue() ? "visible" : "excluded");
 				button.setLabel(button.getValue() ? "-" : "+");
-				var color = this.getRenderer().getClearColor();
+				var color = this.getRenderer().getClearColor( new THREE.Color() );
 				var colors = this.__meshes.getDataRowRenderer()._colors;
 				colors.colNormal = "rgb(" + (255 * (1 - color.r)) + "," +
 				(255 * (1 - color.g)) + "," + (255 * (1 - color.b)) + ")";
@@ -1353,14 +1353,9 @@ qx.Class.define("desk.SceneContainer",
 				if (!geometry) return;
 
 				var nV = 0, nT = 0;
-				if ( geometry instanceof THREE.Geometry ) {
-					nV = geometry.vertices.length;
-					nT = geometry.faces.length;
-				} else {
-					nV = geometry.attributes.position.count;
-					if (geometry.index) {
-						nT = geometry.index.count;
-					}
+				nV = geometry.attributes.position.count;
+				if (geometry.index) {
+					nT = geometry.index.count / 3;
 				}
 				console.log("Mesh with " + nV + " vertices and " + nT + " triangles");
 			}, this);

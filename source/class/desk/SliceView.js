@@ -450,30 +450,43 @@ qx.Class.define("desk.SliceView",
 		 * @param volumeSlice {desk.VolumeSlice} the reference slice
 		 */
 		__createCrossMeshes : function (volumeSlice) {
-			var coord = volumeSlice.get2DCornersCoordinates();
-			var material = new THREE.LineBasicMaterial({color : 0x4169FF,
-				linewidth : 2, opacity : 0.5, transparent : true,
-			  polygonOffset: true,
-        polygonOffsetFactor: -2.0,
-        polygonOffsetUnits: -10.0});
 
-			this.__crossMeshes.forEach(function (mesh) {
+			const material = new THREE.LineBasicMaterial({
+				color : 0x4169FF,
+				linewidth : 2,
+				opacity : 0.5,
+				transparent : true,
+				polygonOffset: true,
+				polygonOffsetFactor: -2.0,
+				polygonOffsetUnits: -10.0
+			});
+
+			for ( let mesh of this.__crossMeshes) {
+
 				this.getScene().remove(mesh);
 				mesh.geometry.dispose();
-			}, this);
 
-			function v(x,y,z) {return new THREE.Vector3(x,y,z)}
+			}
+
+			const coord = volumeSlice.get2DCornersCoordinates();
+
 			this.__crossMeshes =  [
-				[v(coord[0], 0, 1), v(coord[2], 0, 1)],
-				[v(0, coord[1], 1), v(0, coord[5], 1)]
-			].map(function (coords) {
-				var geometry = new THREE.Geometry();
-				geometry.vertices.push(coords[0], coords[1]);
-				var line = new THREE.Line(geometry, material);
+
+				[ coord[ 0 ], 0, 1, coord[ 2 ], 0, 1],
+				[ 0, coord[ 1 ], 1, 0, coord[ 5 ], 1 ]
+
+			].map( coords => {
+
+				const geometry = new THREE.BufferGeometry();
+				const vertices = new Float32Array( coords );
+				geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+				const line = new THREE.Line( geometry, material );
 				line.renderOrder = 900;
 				this.getScene().add(line);
 				return line;
-			}, this);
+
+			} );
+
 		},
 
 		__coordinatesRatio : null,
