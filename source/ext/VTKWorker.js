@@ -67,7 +67,8 @@ module.exports = function () {
 			pattern.lastIndex = pattern2.lastIndex;
 			result = pattern.exec( data );
 
-			pattern2 = /[\s]*([\-\+]?[0-9]*[\.]?[0-9]+)/g;
+			//pattern2 = /[\s]*([\-\+]?[0-9]*[\.]?[0-9]+)/g;
+			pattern2 = /[\s]*(-?[\d.]+(?:e-?\d+)?)/g;
 			pattern2.lastIndex = pattern.lastIndex;
 			
 			var pointData = new Float32Array(numV);
