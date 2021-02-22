@@ -55,7 +55,7 @@ qx.Class.define("desk.TextEditor",
 			this.__text.getAce().getSession().foldAll(null, null, 0);
 		}, this);
 
-		var spinner = this.__spinner = new qx.ui.form.Spinner(5, 14, 50);
+		var spinner = this.__spinner = new qx.ui.form.Spinner(5, 15, 50);
 		spinner.addListener('changeValue', function (e) {
 			this.__text.setFontSize(e.getData());
 		}, this);
