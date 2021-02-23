@@ -58,7 +58,7 @@
     "compile": "qx compile --target source && qx compile --target build",
     "deploy": "qx deploy --clean --out compiled/dist",
     "dev": "qx compile --target source --watch",
-    "qooxdoo": "qx pkg update && qx pkg install && npm run compile && npm run deploy",
+    "qooxdoo": "qx pkg update && qx pkg upgrade && qx pkg install && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }
 }
