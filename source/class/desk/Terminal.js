@@ -70,7 +70,7 @@ qx.Class.define("desk.Terminal",
 		__getSocket : function ( namespace ) {
 
 			const socket = desk.Actions.getInstance().getSocket().io.nsps[ namespace ];
-			return  socket ? socket : io( namespace );
+			return  socket ? socket : io( namespace, {path : desk.FileSystem.getBaseURL() + 'socket.io'} );
 
 		},
 
