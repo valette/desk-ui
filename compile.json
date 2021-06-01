@@ -27,23 +27,6 @@
       "environment": {
         "qx.icontheme": "Tango"
       }
-    },
-    {
-      "class": "qxl.apiviewer.Application",
-      "theme": "qxl.apiviewer.Theme",
-      "name": "apiviewer",
-      "title": "Qooxdoo API Viewer",
-      "environment": {
-        "qx.icontheme": "Tango"
-      },
-      "include": [
-        "qx.*"
-      ],
-      "exclude": [
-        "qx.test.*",
-        "qx.module.Blocker",
-        "qx.module.Placement"
-      ]
     }
   ],
   "$schema": "https://qooxdoo.org/schema/compile-1-0-0.json"

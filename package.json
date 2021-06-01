@@ -15,7 +15,6 @@
   },
   "devDependencies": {
     "@qooxdoo/compiler": "1.0.0",
-    "@qooxdoo/framework": "6.0.1",
     "ace-builds": "1.4.12",
     "async": "3.2.0",
     "billboard.js": "3.0.3",
@@ -23,9 +22,9 @@
     "bowser": "2.11.0",
     "buffer": "6.0.3",
     "chalk": "4.1.1",
-    "chroma-js": "2.1.1",
+    "chroma-js": "2.1.2",
     "crypto-browserify": "3.12.0",
-    "css-loader": "5.2.4",
+    "css-loader": "5.2.6",
     "d3": "6.7",
     "heap": "0.2.6",
     "jssha": "3.2.0",
@@ -37,12 +36,12 @@
     "papaya-viewer": "1.0.1449",
     "random-js": "2.1.0",
     "socket.io-client": "4.1.2",
-    "source-map-loader": "2.0.2",
+    "source-map-loader": "3.0.0",
     "stream-browserify": "3.0.0",
     "style-loader": "2.0.0",
-    "three": "0.128.0",
+    "three": "0.129.0",
     "url-loader": "4.1.1",
-    "webpack": "5.37.0",
+    "webpack": "5.38.1",
     "webpack-cli": "4.7.0",
     "webworkify-webpack": "2.1.5",
     "xterm": "4.12.0"
@@ -58,7 +57,7 @@
     "compile": "qx compile --target source && qx compile --target build",
     "deploy": "qx deploy --clean --out compiled/dist",
     "dev": "qx compile --target source --watch",
-    "qooxdoo": "qx pkg update && qx pkg upgrade && qx pkg install && npm run compile && npm run deploy",
+    "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }
 }
