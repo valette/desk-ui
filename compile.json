@@ -11,7 +11,8 @@
   ],
   "defaultTarget": "source",
   "locales": [
-    "en", "fr"
+    "en",
+    "fr"
   ],
   "environment": {
     "qx.icontheme": "Tango"
@@ -19,14 +20,36 @@
   "applications": [
     {
       "class": "desk.Application",
-      "resourcePath" : "resource",
+      "resourcePath": "resource",
       "theme": "desk.theme.Theme",
       "name": "desk-ui",
       "bootPath": "source/boot",
-      "default" : true,
+      "default": true,
       "environment": {
         "qx.icontheme": "Tango"
       }
+    },
+    {
+      "class": "qxl.apiviewer.Application",
+      "theme": "qxl.apiviewer.Theme",
+      "name": "apiviewer",
+      "title": "Qooxdoo API Viewer",
+      "environment": {
+        "qx.icontheme": "Tango",
+        "qxl.apiviewer.applicationName": "",
+        "qxl.apiviewer.exclude": [
+          "qxl.apiviewer.*"
+        ],
+        "qxl.apiviewer.include": []
+      },
+      "include": [
+        "qx.*"
+      ],
+      "exclude": [
+        "qx.test.*",
+        "qx.module.Blocker",
+        "qx.module.Placement"
+      ]
     }
   ],
   "$schema": "https://qooxdoo.org/schema/compile-1-0-0.json"
