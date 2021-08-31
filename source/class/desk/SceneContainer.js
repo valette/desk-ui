@@ -561,7 +561,6 @@ qx.Class.define("desk.SceneContainer",
 
 				vertices.needsUpdate = true;
 				geometry.computeBoundingBox();
-				geometry.computeFaceNormals();
 				geometry.computeBoundingSphere();
 
 				if ( colorFrame )  {

@@ -629,7 +629,6 @@ qx.Class.define("desk.SliceView",
 			}
 			this.__drawingMesh = mesh;
 
-			geometry.computeFaceNormals();
 			geometry.computeVertexNormals();
 			geometry.computeBoundingSphere();
 
@@ -710,7 +709,6 @@ qx.Class.define("desk.SliceView",
 			var mesh = new THREE.Mesh( geometry, material );
 			mesh.renderOrder = this.__slices.length;
 			slice.setUserData( "mesh", mesh );
-			geometry.computeFaceNormals();
 			geometry.computeVertexNormals();
 			geometry.computeBoundingSphere();
 
