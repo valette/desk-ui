@@ -103,7 +103,7 @@ qx.Class.define("desk.VolumeSlice",
 		}.bind(this);
 		this.__texture.lastVersion = 0;
 
-		this.__lookupTable = new THREE.DataTexture(this.__dummyLut, 2, 1, THREE.RGBAFormat);
+		this.__lookupTable = new THREE.DataTexture(new Uint8Array(8), 2, 1, THREE.RGBAFormat);
 
 		if ( !opts.slicer)  {
 
@@ -828,8 +828,6 @@ qx.Class.define("desk.VolumeSlice",
 			material.fragmentShader += "\n" + material.baseShader.baseShaderEnd;
 			material.needsUpdate = true;
 		},
-
-		__dummyLut : new Uint8Array(8),// [255, 0, 0, 255, 0, 0, 255, 255],
 
 		/**
 		 * returns a three.js material fit for rendering
