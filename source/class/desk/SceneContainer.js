@@ -864,7 +864,7 @@ qx.Class.define("desk.SceneContainer",
 			var intersects = this.getIntersections(slices)[0];
 			var delta = event.getWheelDelta() > 0 ? 1 : -1;
 			if (intersects && ( this.options.sliceOnWheel != false )) {
-				var slice = intersects.object.userData.viewerProperties.volumeSlice;
+				var slice = intersects?.object?.userData?.viewerProperties?.volumeSlice || intersects?.object?.parent?.userData?.viewerProperties?.volumeSlice;
 				var maximum = slice.getNumberOfSlices() - 1;
 				var newValue = slice.getSlice() + delta;
 				slice.setSlice(Math.max(Math.min(newValue, maximum), 0));
