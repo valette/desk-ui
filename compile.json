@@ -46,11 +46,22 @@
         "qx.*"
       ],
       "exclude": [
-        "qx.test.*",
         "qx.module.Blocker",
         "qx.module.Placement"
-      ]
-    }
+      ],
+      "parts": {
+         "boot" : {
+           "include": [
+             "qx.*"
+           ]
+         },
+         "tool" : {
+           "include": [
+             "qx.tool.*"
+           ]
+         }
+       }
+     }
   ],
   "$schema": "https://qooxdoo.org/schema/compile-1-0-0.json"
 }
