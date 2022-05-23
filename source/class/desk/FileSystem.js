@@ -435,6 +435,23 @@ qx.Class.define("desk.FileSystem",
 		*/
 		getBaseURL : function () {
 			return desk.FileSystem.getInstance().__baseURL;
+		},
+
+		/**
+		* Download a file
+		*
+		* @param file {String} file path
+		* @param downloadName {String} optional file download name
+		*/
+		downloadFile : function ( file, downloadName ) {
+
+			const a = document.createElement('a');
+			a.href = desk.FileSystem.getFileURL( file );
+			document.body.appendChild(a);
+			a.download = downloadName || desk.FileSystem.getFileName( file );
+			a.click();
+			document.body.removeChild(a);
+
 		}
 
 	},
