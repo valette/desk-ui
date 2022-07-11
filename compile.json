@@ -20,7 +20,6 @@
   "applications": [
     {
       "class": "desk.Application",
-      "resourcePath": "resource",
       "theme": "desk.theme.Theme",
       "name": "desk-ui",
       "bootPath": "source/boot",
