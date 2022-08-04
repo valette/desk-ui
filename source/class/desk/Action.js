@@ -369,6 +369,7 @@ qx.Class.define("desk.Action",
 
 				this.__status.setValue( "Error" );
 				response = { response : { error } };
+				console.warn( error );
 
 			} finally {
 
