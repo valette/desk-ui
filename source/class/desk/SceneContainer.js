@@ -62,7 +62,7 @@ qx.Class.define("desk.SceneContainer",
 		var leftContainer = this.__leftContainer = new qx.ui.container.Composite();
 		leftContainer.setLayout(new qx.ui.layout.VBox());
 		this.add(leftContainer, {left : 0, top : 30});
-		leftContainer.setVisibility("excluded");
+		leftContainer.setVisibility("hidden");
 
 		this.addListener("mousedown", this.__onMouseDown, this);
 		this.addListener("mousemove", this.__onMouseMove, this);
@@ -109,7 +109,7 @@ qx.Class.define("desk.SceneContainer",
 		if (opts.noOpts === undefined || !opts.noOpts) {
 			this.add(button, {left : 0, top : 0});
 			button.addListener("changeValue", function () {
-				leftContainer.setVisibility(button.getValue() ? "visible" : "excluded");
+				leftContainer.setVisibility(button.getValue() ? "visible" : "hidden");
 				button.setLabel(button.getValue() ? "-" : "+");
 				var color = this.getRenderer().getClearColor( new THREE.Color() );
 				var colors = this.__meshes.getDataRowRenderer()._colors;
