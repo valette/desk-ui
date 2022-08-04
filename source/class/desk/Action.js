@@ -618,7 +618,7 @@ qx.Class.define("desk.Action",
 				}
 
 				var toolTip = '';
-				["info", "min", "max", "defaultValue"].forEach(function (field) {
+				["info", "description", "min", "max", "defaultValue"].forEach(function (field) {
 					if (parameter[field]) {
 						toolTip += field + ' : ' + parameter[field] + '<br>';
 					}
