@@ -481,7 +481,12 @@ qx.Class.define("desk.Action",
 
 			this.fireDataEvent( "actionTriggered", { id, params } );
 			const response = await desk.Actions.executeAsync( params, options );
-			this.__status.setValue( response.status );
+			this.__status.setValue( response.status +
+				( response.status == "CACHED" ?
+					( " (" + Math.round( response.duration / 1000 ) + "s.)" )
+					: ""
+					)
+				);
 
 			if ( started ) {
 
