@@ -61,7 +61,7 @@ qx.Class.define("desk.SceneContainer",
 
 		var leftContainer = this.__leftContainer = new qx.ui.container.Composite();
 		leftContainer.setLayout(new qx.ui.layout.VBox());
-		this.add(leftContainer, {left : 0, top : 30});
+		this.add(leftContainer, {left : 0, top : 30, height : "50%" });
 		leftContainer.setVisibility("hidden");
 
 		this.addListener("mousedown", this.__onMouseDown, this);
@@ -134,7 +134,6 @@ qx.Class.define("desk.SceneContainer",
 		this.__meshes = new qx.ui.treevirtual.TreeVirtual(["meshes"]);
 		this.__meshes.set({
 			width  : 180,
-			rowHeight: 22,
 			columnVisibilityButtonVisible : false,
             statusBarVisible : false,
             backgroundColor : "transparent",
