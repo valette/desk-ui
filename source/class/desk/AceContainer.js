@@ -54,6 +54,21 @@ qx.Class.define("desk.AceContainer", {
 		__onAppear : function() {
 			var editor = this.__ace = ace.edit(this.__editor.getContentElement().getDomElement());
 			editor.$blockScrolling = Infinity;
+			editor.session.on('changeMode', function(e, session){
+				if ("ace/mode/javascript" === session.getMode().$id) {
+					if (!!session.$worker) {
+						session.$worker.send("setOptions", [{
+							esversion: 9,
+							esnext: false,
+							globalstrict: true,
+							browser: true,
+							globals : {
+								"console" : true
+							}
+						}]);
+					}
+				}
+			});
 			this.__editor.addListener("resize", this.__onResize, this);
 
 			if (this.__mode) {
