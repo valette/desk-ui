@@ -337,6 +337,11 @@ qx.Class.define("desk.FileBrowser",
 			dirs.sort(this.__caseInsensitiveSort);
 			var hiddenDirs = [];
 			dirs.forEach(function (dir) {
+
+				const settings = dataDirs[ dir ];
+				if ( ( settings.listed != undefined ) && !settings.listed )
+					return;
+
 				if ((dir === "cache") || (dir === "application") ||
 					((permissions === 0) && (dir ==="actions")) ||
 					dataDirs[dir].hidden) {

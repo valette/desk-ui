@@ -326,13 +326,19 @@ qx.Class.define("desk.Actions",
 			var filesButton = new qx.ui.menu.Button("Files", null, null, filesMenu);
 			menu.add(filesButton);
 
-			Object.keys(this.__settings.dataDirs).sort().forEach(function (dir) {
-				var button = new qx.ui.menu.Button(dir);
+
+			for ( let dir of Object.keys(this.__settings.dataDirs).sort() ) {
+
+				const settings = this.__settings.dataDirs[ dir ];
+				if ( ( settings.listed != undefined ) && !settings.listed )
+					continue;
+
+				const button = new qx.ui.menu.Button(dir);
 				button.addListener("execute", function (e) {
 					new desk.FileBrowser(dir, {standalone : true});
 				});
 				filesMenu.add(button);
-			});
+			}
 
 			var terminalButton = new qx.ui.menu.Button("Terminal");
 			terminalButton.setBlockToolTip(false);
