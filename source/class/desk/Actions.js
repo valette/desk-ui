@@ -839,10 +839,9 @@ qx.Class.define("desk.Actions",
 						settings.init.push(initDir + '/' + file.name);
 				}
 
-				await desk.FileSystem.includeScriptsAsync(
-					settings.init.map( file => desk.FileSystem.getFileURL(file) ) );
-
 			}
+			await desk.FileSystem.includeScriptsAsync(
+				settings.init.map( file => desk.FileSystem.getFileURL(file) ) );
 
 			this.fireEvent('changeReady');
 
