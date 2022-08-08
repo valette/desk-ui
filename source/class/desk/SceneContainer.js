@@ -61,8 +61,8 @@ qx.Class.define("desk.SceneContainer",
 
 		var leftContainer = this.__leftContainer = new qx.ui.container.Composite();
 		leftContainer.setLayout(new qx.ui.layout.VBox());
-		this.add(leftContainer, {left : 0, top : 30, height : "50%" });
-		leftContainer.setVisibility("hidden");
+		this.add(leftContainer, {left : 0, top : 30, width : "60%", height : "60%" });
+		leftContainer.set( { visibility : "hidden", maxWidth : 300, maxHeight : 600 } );
 
 		this.addListener("mousedown", this.__onMouseDown, this);
 		this.addListener("mousemove", this.__onMouseMove, this);
@@ -88,7 +88,7 @@ qx.Class.define("desk.SceneContainer",
 			var count = 0;
 			var nFrames = 30;
 			async.whilst(
-				function () { return count < nFrames; },
+				cb => cb( null,  count < nFrames ),
 				function (callback) {
 					controls.target.addVectors(
 						fin.clone().multiplyScalar(count / nFrames),
@@ -127,13 +127,16 @@ qx.Class.define("desk.SceneContainer",
 		buttons.add(this.__getSaveViewButton(), {flex : 1});
 		buttons.add(this.__getResetViewButton(), {flex : 1});
 		buttons.add(this.__getSnapViewButton(), {flex : 1});
-		buttons.add(this.__getSnapshotButton());
-		buttons.add(this.__getCameraPropertiesButton());
+		buttons.add(this.__getSnapshotButton(), { flex : 1 });
+		buttons.add(this.__getCameraPropertiesButton(), { flex : 1 } );
+		for ( let [ index, b ] of buttons.getChildren().entries() )
+			if ( index > 0 ) b.setWidth( 0 );
 		leftContainer.add(buttons);
 
 		this.__meshes = new qx.ui.treevirtual.TreeVirtual(["meshes"]);
 		this.__meshes.set({
-			width  : 180,
+			width  : 0,
+			height : 0,
 			columnVisibilityButtonVisible : false,
             statusBarVisible : false,
             backgroundColor : "transparent",
