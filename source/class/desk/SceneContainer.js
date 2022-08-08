@@ -71,37 +71,27 @@ qx.Class.define("desk.SceneContainer",
 		this.addListener("touchstart", this.__onTouchStart, this);
 		this.addListener("touchmove", this.__onTouchMove, this);
 
-		this.addListener('keydown', function (event) {
+		this.addListener('keydown', async function (event) {
 			if ((event.getTarget() !== this.getCanvas()) ||
                 (event.getKeyIdentifier() !== 'G')) {
 					return;
 			}
 
-			var mesh = this.getIntersections()[0];
+			const mesh = this.getIntersections()[0];
 			if (mesh === undefined) return;
 			console.log("picked mesh : ");
 			console.log(mesh);
-			var controls = this.getControls();
-			var init = controls.target.clone();
-			var fin = mesh.point.clone();
-			var current = init.clone();
-			var count = 0;
-			var nFrames = 30;
-			async.whilst(
-				cb => cb( null,  count < nFrames ),
-				function (callback) {
-					controls.target.addVectors(
-						fin.clone().multiplyScalar(count / nFrames),
-						init.clone().multiplyScalar(1 - (count / nFrames))
-						);
-					controls.update();
-					this.render();
-					setTimeout(callback, 10);
-					count++;
-					this._propagateLinks();
-				}.bind(this),
-				function () {}
-			);
+			const controls = this.getControls();
+			const init = controls.target.clone();
+			const final = mesh.point.clone();
+			const nFrames = 30;
+			for ( let i = 0; i <= nFrames; i++ ) {
+				controls.target.lerpVectors ( init, final, i / nFrames );
+				controls.update();
+				this.render();
+				this._propagateLinks();
+				await new Promise ( r => setTimeout( r, 10 ) );
+			}
 
 		}, this);
 
