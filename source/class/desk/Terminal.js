@@ -93,7 +93,7 @@ qx.Class.define("desk.Terminal",
 			term._getMessage = term.write.bind( term );
 			socket.addEventListener( 'message', term._getMessage );
 			term.onData( socket.send.bind( socket ) );
-			term.open( container, { focus : true } ); // fixes https://github.com/xtermjs/xterm.js/issues/1194
+			term.open( container );
 			term.setOption('cursorBlink', true );
 			this.__resize();
 			setTimeout( term.focus.bind( term ), 1 );
