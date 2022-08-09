@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@qooxdoo/framework": "7.2.1",
-    "ace-builds": "1.8.1",
+    "ace-builds": "1.9.3",
     "async": "3.2.4",
     "billboard.js": "3.5.1",
     "bluebird": "3.7.2",
