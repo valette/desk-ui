@@ -110,7 +110,7 @@ qx.Class.define("desk.Terminal",
 
 			const size = this.__html.getInnerSize();
 			const nCols = Math.floor( ( size.width - 15 ) / 9 );
-			const nRows = Math.floor( size.height / 17 );
+			const nRows = Math.floor( size.height / 18 );
 
 			if ( ( this.__nCols == nCols ) && ( this.__nRows === nRows) )
 				return;
