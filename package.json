@@ -56,7 +56,7 @@
     "bundle": "node source/build-worker.js && webpack",
     "clean": "rm -rf compiled",
     "compile": "qx compile --target source && qx compile --target build",
-    "deploy": "qx deploy --clean --out compiled/dist",
+    "deploy": "qx deploy --source-maps --clean --out compiled/dist",
     "dev": "qx compile --target source --watch",
     "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
