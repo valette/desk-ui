@@ -1,5 +1,9 @@
+import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
+self.THREE  = THREE;
+self.THREE.STLLoader = STLLoader;
+self.THREE.TransformControls = TransformControls;
 
 self.async            = require('async');
 self._ = self.lodash  = require('lodash');
@@ -9,13 +13,9 @@ self.jsSHA            = require("jssha");
 self.kdTree           = require('kdt');
 self.numeric          = require('numeric');
 self.randomJS         = require('random-js');
-self.THREE            =	require('three');
 	require('./ext/CTMLoader.js');
 	require('./ext/VTKLoader.js');
 	require('./ext/TrackballControls2.js');
-
-self.THREE.STLLoader = STLLoader;
-self.THREE.TransformControls = TransformControls;
 
 self.bluebird = self.Promise = require('bluebird');
 self.chalk            = require('chalk');
