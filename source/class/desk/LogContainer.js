@@ -17,7 +17,7 @@ qx.Class.define("desk.LogContainer", {
 		this.setHtml( '<div id = "' + this.__rand + '"></div>' );
 		this.__terminal = new Terminal();
 		this.addListenerOnce( 'appear', this.__onAppear, this );
-		this.__chalk = new ( require( 'chalk' ).Instance )( { level: 3 } );
+		this.__chalk = window.chalk;
 
 	},
 
@@ -69,7 +69,7 @@ members : {
     */
     log : function ( message, color ) {
 
-		if ( color ) message = this.__chalk.keyword( color )( message );
+		if ( color ) message = this.__chalk[color]( message );
 		var lines = message.split( '\n' );
 		var lastLine = lines.pop();
 

@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
+import chalk from 'chalk';
+
 self.THREE  = THREE;
 self.THREE.STLLoader = STLLoader;
 self.THREE.TransformControls = TransformControls;
+self.chalk = chalk;
 
 self.async            = require('async');
 self._ = self.lodash  = require('lodash');
@@ -18,7 +21,6 @@ self.randomJS         = require('random-js');
 	require('./ext/TrackballControls2.js');
 
 self.bluebird = self.Promise = require('bluebird');
-self.chalk            = require('chalk');
 self.jstat            = require('jstat');
 require('./ext/mhdParse.js');
 
