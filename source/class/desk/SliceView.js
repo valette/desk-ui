@@ -1019,7 +1019,7 @@ qx.Class.define("desk.SliceView",
 
 			if (!this.__alwaysDisplaySlider) {
 				this.__rightContainer.setVisibility("hidden");
-				this.__directionOverlays[3].setLayoutProperties({right: 1, top:"45%"});
+				this.__directionOverlays[3].setLayoutProperties({right: 2, top:"45%"});
 			}
 
 			this.render();
@@ -1033,7 +1033,7 @@ qx.Class.define("desk.SliceView",
 			this.__viewOn = true;
 			var controls = this.getControls();
 			if (this.__rightContainer.getVisibility() === "hidden") {
-				this.__directionOverlays[3].setLayoutProperties({right: "8%", top: "45%"});
+				this.__directionOverlays[3].setLayoutProperties({right: 40, top: "45%"});
 				this.__rightContainer.setVisibility("visible");
 			}
 
@@ -1118,6 +1118,13 @@ qx.Class.define("desk.SliceView",
 				this.updateDrawingCanvas();
 			}
 			this.__interactionMode = -1;
+
+			const origin = this.getContentLocation();
+			const x = event.getDocumentLeft() - origin.left;
+			const y = event.getDocumentTop() - origin.top;
+			const s = this.getInnerSize();
+			if ( ( x < 0 ) || ( y < 0 ) || ( x > s.width ) || ( y > s.height ) )
+				this.__onMouseOut( event );
 		},
 
 		/**
