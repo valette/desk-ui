@@ -990,6 +990,7 @@ qx.Class.define("desk.SceneContainer",
 				dir.multiplyScalar( dir.dot( eye ) );
 				camera.position.copy( target ).add( dir );
 				this.render();
+				this._propagateLinks();
 			}, this );
 			return button;
 		},
