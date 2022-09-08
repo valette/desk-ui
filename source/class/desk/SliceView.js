@@ -1013,7 +1013,15 @@ qx.Class.define("desk.SliceView",
 		 * @param event {qx.event.type.Mouse} mouse event
 		 */
 		__onMouseOut : function (event) {
-			if (this.__sliderInUse) {return;}
+
+			if (this.__sliderInUse) return;
+			const origin = this.getContentLocation();
+			const x = event.getDocumentLeft() - origin.left;
+			const y = event.getDocumentTop() - origin.top;
+			const s = this.getInnerSize();
+			if ( ( x >= 0 ) && ( y >= 0 ) && ( x <= s.width ) && ( y <= s.height ) )
+				return;
+
 			this.__viewOn = false;
 			if (this.__brushMesh) this.__brushMesh.visible = false;
 
@@ -1118,13 +1126,8 @@ qx.Class.define("desk.SliceView",
 				this.updateDrawingCanvas();
 			}
 			this.__interactionMode = -1;
+			this.__onMouseOut( event );
 
-			const origin = this.getContentLocation();
-			const x = event.getDocumentLeft() - origin.left;
-			const y = event.getDocumentTop() - origin.top;
-			const s = this.getInnerSize();
-			if ( ( x < 0 ) || ( y < 0 ) || ( x > s.width ) || ( y > s.height ) )
-				this.__onMouseOut( event );
 		},
 
 		/**
@@ -1299,20 +1302,15 @@ qx.Class.define("desk.SliceView",
 			slider.addListener('mousedown', function () {
 				this.__sliderInUse = true;
 			}, this)
-			slider.addListener('mouseup', function () {
+			slider.addListener('pointerup', function (event) {
 				this.__sliderInUse = false;
+				this.__onMouseUp( event );
 			}, this)
 			slider.addListener("changeValue",function(e){
 				var slice = this.getFirstSlice();
 				if (!slice) return;
 				this.setSlice(slice.getNumberOfSlices() - 1 - e.getData());
 			}, this);
-
-			slider.addListener("mouseover",function(e){
-				slider.focus();
-			}, this);
-
-			slider.addListener('mousewheel', function(e) { e.stopPropagation()});
 
 			if (this.options.maxZoom)
 			  this.getControls().setMaxZoom(this.options.maxZoom)
