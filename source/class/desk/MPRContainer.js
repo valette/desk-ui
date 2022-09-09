@@ -1108,22 +1108,28 @@ qx.Class.define("desk.MPRContainer",
 		 * creates the top toolbar
 		 * @return {qx.ui.container.Composite} the toolbar
 		 */
-		 __getToolBar : function () {
-			var container = new qx.ui.container.Composite();
+		__getToolBar : function () {
+
+			const container = new qx.ui.container.Composite();
 			container.setLayout(new qx.ui.layout.HBox());
 			container.add(this.__getLinkButton());
-			container.add(this.__getSaveViewButton());
 			container.add(new qx.ui.core.Spacer(10), {flex: 1});
-			container.add(this.__getOrientationButton());
+			const settingsMenu = new qx.ui.menu.Menu();
+			settingsMenu.add(this.__getSaveViewButton());
+			settingsMenu.add(this.__getOrientationButton());
+			const settingsButton = new qx.ui.form.MenuButton(
+				null, "icon/16/categories/system.png", settingsMenu );
+			container.add( settingsButton );
 			return (container);
+
 		},
 
 		/**
 		 * creates the orientation button
-		 * @return {qx.ui.form.Button} the button
+		 * @return {qx.ui.menu.Button} the button
 		 */
 		__getOrientationButton : function () {
-			var button = new qx.ui.form.Button("Layout/Orientation");
+			var button = new qx.ui.menu.Button("Layout/Orientation");
 			button.addListener ("execute", function () {
 				this.getOrientationWindow().center()
 				this.getOrientationWindow().open();
@@ -1255,10 +1261,10 @@ qx.Class.define("desk.MPRContainer",
 
 		/**
 		 * creates the save camera viewpoint button
-		 * @return {qx.ui.form.Button} the button
+		 * @return {qx.ui.menu.Button} the button
 		 */
 		__getSaveViewButton : function () {
-			var button = new qx.ui.form.Button("save view");
+			var button = new qx.ui.menu.Button("save view");
 			button.addListener("execute", function () {
 				var file = prompt("Enter file name to save camera view point", "data/viewpoints.json")
 				if (file != null) {
