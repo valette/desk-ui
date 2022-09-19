@@ -269,7 +269,7 @@ qx.Class.define("desk.SceneContainer",
 			this.__meshes.nodeGet(leaf).viewerProperties = mesh.userData.viewerProperties = opt;
 			if (opt.updateCamera !== false) {
 				this.viewAll();
-			}
+			} else this.render();
 		},
 
 		/**
