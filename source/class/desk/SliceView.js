@@ -497,7 +497,7 @@ qx.Class.define("desk.SliceView",
 		 * @param volumeSlice {desk.VolumeSlice} the reference slice
 		 */
 		__createBrushMesh : function (volumeSlice) {
-			var geometry = new THREE.PlaneBufferGeometry( 1, 1);
+			var geometry = new THREE.PlaneGeometry( 1, 1);
 			var coordinates = volumeSlice.get2DCornersCoordinates();
 			var dimensions = volumeSlice.get2DDimensions();
 
@@ -586,7 +586,7 @@ qx.Class.define("desk.SliceView",
 		 * @param volumeSlice {desk.VolumeSlice} the reference slice
 		 */
 		__setDrawingMesh : function (volumeSlice) {
-			var geometry = new THREE.PlaneBufferGeometry(1, 1);
+			var geometry = new THREE.PlaneGeometry(1, 1);
 			var coords = volumeSlice.get2DCornersCoordinates();
 			var vertices = geometry.attributes.position;
 
@@ -674,7 +674,7 @@ qx.Class.define("desk.SliceView",
 		 * @param context {Object} optional callback context
 		 */
 		__addSlice : function ( slice, callback, context ) {
-			var geometry = new THREE.PlaneBufferGeometry( 1, 1 );
+			var geometry = new THREE.PlaneGeometry( 1, 1 );
 			var coords = slice.get2DCornersCoordinates();
 			var vertices = geometry.attributes.position;
 

@@ -46,7 +46,7 @@ qx.Class.define("desk.Terminal",
 		}
 
 		this.__html = new qx.ui.embed.Html();
-		this.__html.setHtml( '<div id = "' + this.__rand + '"></div>' );
+		this.__html.setHtml( '<div style="width: 100%; height: 100%" id = "' + this.__rand + '"></div>' );
 		this.__html.addListenerOnce( 'appear', this.__onAppear, this );
 		this.add( this.__html, { flex : 1 } );
 	},
@@ -93,8 +93,10 @@ qx.Class.define("desk.Terminal",
 			term._getMessage = term.write.bind( term );
 			socket.addEventListener( 'message', term._getMessage );
 			term.onData( socket.send.bind( socket ) );
+			const fitAddon = this.__fitAddon = new TerminalFitAddon();
+			term.loadAddon(fitAddon);
 			term.open( container );
-			term.setOption('cursorBlink', true );
+			fitAddon.fit();
 			this.__resize();
 			setTimeout( term.focus.bind( term ), 1 );
 			this.addListener( 'appear', this.__resize, this );
@@ -106,11 +108,12 @@ qx.Class.define("desk.Terminal",
 			}, this );
 		},
 
-		__resize : function () {
+		__resize : async function () {
 
-			const size = this.__html.getInnerSize();
-			const nCols = Math.floor( ( size.width - 15 ) / 9 );
-			const nRows = Math.floor( size.height / 18 );
+			await new Promise ( res => setTimeout( res, 2 ) );
+			this.__fitAddon.fit();
+			const nCols = this.__term.cols;
+			const nRows = this.__term.rows;
 
 			if ( ( this.__nCols == nCols ) && ( this.__nRows === nRows) )
 				return;
@@ -118,7 +121,6 @@ qx.Class.define("desk.Terminal",
 			this.__nCols = nCols;
 			this.__nRows = nRows;
 			this.debug('resize : ', nCols, nRows);
-			this.__term.resize( nCols, nRows );
 			this.__socket.emit( "resize", { nCols, nRows } );
 			this.__term.focus();
 

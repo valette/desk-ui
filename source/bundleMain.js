@@ -4,8 +4,11 @@ import jsWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-javascript.
 import jsonWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-json.js";
 import htmlWorkerUrl from "url-loader!ace-builds/src-noconflict/worker-html.js";
 
+import { FitAddon } from 'xterm-addon-fit';
+
 require( __dirname + '/ext/WebGL.js');
 self.Terminal = require( 'xterm' ).Terminal;
+self.TerminalFitAddon = FitAddon;
 require ('xterm/css/xterm.css');
 self.chroma = require( 'chroma-js' );
 self.bowser = require( 'bowser' );

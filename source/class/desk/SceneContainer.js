@@ -535,7 +535,7 @@ qx.Class.define("desk.SceneContainer",
 		 */
 		attachVolumeSlice : function ( volumeSlice, opts = {} ) {
 
-			const geometry = new THREE.PlaneBufferGeometry( 1, 1 );
+			const geometry = new THREE.PlaneGeometry( 1, 1 );
 			const vertices = geometry.attributes.position.array;
 			const indices = desk.VolumeSlice.indices;
 			const orientation = volumeSlice.getOrientation();
