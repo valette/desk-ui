@@ -58,6 +58,9 @@ qx.Class.define("desk.SliceView",
 
 	properties : {
 
+		/** locks cross position i.e. does not react to left click */
+		crossLocked : { init : false, check: "Boolean" },
+
 		/** current display slice */
 		slice : { init : 0, check: "Number", event : "changeSlice", apply : "__applyChangeSlice"},
 
@@ -456,9 +459,7 @@ qx.Class.define("desk.SliceView",
 				linewidth : 2,
 				opacity : 0.5,
 				transparent : true,
-				polygonOffset: true,
-				polygonOffsetFactor: -2.0,
-				polygonOffsetUnits: -10.0
+				depthTest : false
 			});
 
 			for ( let mesh of this.__crossMeshes) {
@@ -472,8 +473,8 @@ qx.Class.define("desk.SliceView",
 
 			this.__crossMeshes =  [
 
-				[ coord[ 0 ], 0, 1, coord[ 2 ], 0, 1],
-				[ 0, coord[ 1 ], 1, 0, coord[ 5 ], 1 ]
+				[ coord[ 0 ], 0, 0, coord[ 2 ], 0, 0],
+				[ 0, coord[ 1 ], 0, 0, coord[ 5 ], 0 ]
 
 			].map( coords => {
 
@@ -953,7 +954,6 @@ qx.Class.define("desk.SliceView",
 		 */
 		 __onMouseDown : function (e) {
 			var controls = this.getControls();
-			this.__interactionMode = 0;
 			var origin, position, width;
 			if (e.isRightPressed() || e.isCtrlPressed()) {
 				this.__interactionMode = 1;
@@ -1004,6 +1004,8 @@ qx.Class.define("desk.SliceView",
 				this.__drawingCanvasModified = true;
 				this.updateDrawingCanvas();
 			} else {
+				if ( this.isCrossLocked() ) return;
+				this.__interactionMode = 0;
 				this.__setCrossPositionFromEvent(e);
 			}
 		},
