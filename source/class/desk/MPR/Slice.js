@@ -13,7 +13,7 @@
 	2 : XZ Y
 */
 
-qx.Class.define("desk.VolumeSlice", 
+qx.Class.define("desk.MPR.Slice", 
 {
 	extend : qx.core.Object,
 
@@ -54,7 +54,7 @@ qx.Class.define("desk.VolumeSlice",
 		}
 		if (opts.imageFormat != null) {
 			this.setImageFormat(opts.imageFormat);
-			console.error('desk.VolumeSlice : option "imageFormat" is deprecated. Use option "format"');
+			console.error('desk.MPR.Slice : option "imageFormat" is deprecated. Use option "format"');
 		}
 
 		if (opts.opacity != null) {
@@ -92,7 +92,7 @@ qx.Class.define("desk.VolumeSlice",
 				this.setBrightnessAndContrast(this.__brightness, this.__contrast);
 			}.bind(this);
 			image.onerror = image.onabort = this.update.bind(this);
-		this.__texture = new THREE.Texture(image);
+			this.__texture = new THREE.Texture(image);
 
 		} else
 			this.__texture = new THREE.DataTexture();
@@ -525,8 +525,8 @@ qx.Class.define("desk.VolumeSlice",
 		 */
 		 get2DSpacing : function () {
 			var o = this.getOrientation();
-			return [this.__spacing[desk.VolumeSlice.indices.x[o]],
-				this.__spacing[desk.VolumeSlice.indices.y[o]]];
+			return [this.__spacing[desk.MPR.Slice.indices.x[o]],
+				this.__spacing[desk.MPR.Slice.indices.y[o]]];
 		},
 
 		/**
@@ -840,44 +840,44 @@ qx.Class.define("desk.VolumeSlice",
 			case 15:
 				//char / signed char
                 middleShader = this.__opts.linearFilter ?
-                    desk.VolumeSlice.FRAGMENTSHADERCHARLINEAR
-                     : desk.VolumeSlice.FRAGMENTSHADERCHARNEAREST;
+                    desk.MPR.Slice.FRAGMENTSHADERCHARLINEAR
+                     : desk.MPR.Slice.FRAGMENTSHADERCHARNEAREST;
 				break;
 			case 3:
-				middleShader = desk.VolumeSlice.FRAGMENTSHADERUCHAR;
+				middleShader = desk.MPR.Slice.FRAGMENTSHADERUCHAR;
 				break;
 			case 4:
                 middleShader = this.__opts.linearFilter ?
-                    desk.VolumeSlice.FRAGMENTSHADERSHORTLINEAR
-                     : desk.VolumeSlice.FRAGMENTSHADERSHORTNEAREST;
+                    desk.MPR.Slice.FRAGMENTSHADERSHORTLINEAR
+                     : desk.MPR.Slice.FRAGMENTSHADERSHORTNEAREST;
 				break;
 			case 5:
                 middleShader = this.__opts.linearFilter ?
-                    desk.VolumeSlice.FRAGMENTSHADERUSHORTLINEAR
-                     : desk.VolumeSlice.FRAGMENTSHADERUSHORTNEAREST;
+                    desk.MPR.Slice.FRAGMENTSHADERUSHORTLINEAR
+                     : desk.MPR.Slice.FRAGMENTSHADERUSHORTNEAREST;
 				break;
 			default:
 
                 middleShader = this.__opts.linearFilter ?
-                    desk.VolumeSlice.FRAGMENTSHADERFLOATLINEAR
-                     : desk.VolumeSlice.FRAGMENTSHADERFLOATNEAREST;
+                    desk.MPR.Slice.FRAGMENTSHADERFLOATLINEAR
+                     : desk.MPR.Slice.FRAGMENTSHADERFLOATNEAREST;
 				break;
 			}
 
 			if ( this.__opts.slicer ) {
-				middleShader = desk.VolumeSlice.FRAGMENTSHADERFLOATSLICER;
+				middleShader = desk.MPR.Slice.FRAGMENTSHADERFLOATSLICER;
 			}
 
-			var endShader = this.__opts.ooc ? desk.VolumeSlice.FRAGMENTSHADERENDOOC
-				: desk.VolumeSlice.FRAGMENTSHADEREND;
+			var endShader = this.__opts.ooc ? desk.MPR.Slice.FRAGMENTSHADERENDOOC
+				: desk.MPR.Slice.FRAGMENTSHADEREND;
 
 			if (this.__numberOfScalarComponents == 1) {
-				var shader = [desk.VolumeSlice.FRAGMENTSHADERBEGIN,
+				var shader = [desk.MPR.Slice.FRAGMENTSHADERBEGIN,
 						middleShader,
 						endShader,
-						desk.VolumeSlice.FRAGMENTSHADERFINISH].join("\n");
+						desk.MPR.Slice.FRAGMENTSHADERFINISH].join("\n");
 			} else {
-				shader = desk.VolumeSlice.FRAGMENTSHADERENDMULTICHANNEL;
+				shader = desk.MPR.Slice.FRAGMENTSHADERENDMULTICHANNEL;
 			}
 
             const [ dimX, dimY ] = this.get2DDimensions();
@@ -897,15 +897,15 @@ qx.Class.define("desk.VolumeSlice",
 					dimY : {type: "f", value: dimY}
 				};
 
-			var baseShaderBegin = [desk.VolumeSlice.FRAGMENTSHADERBEGIN,
+			var baseShaderBegin = [desk.MPR.Slice.FRAGMENTSHADERBEGIN,
 				middleShader,
 				endShader].join("\n");
 
-			var baseShaderEnd = desk.VolumeSlice.FRAGMENTSHADERFINISH;
+			var baseShaderEnd = desk.MPR.Slice.FRAGMENTSHADERFINISH;
 
 			var material = new THREE.ShaderMaterial({
 				uniforms: baseUniforms,
-				vertexShader: desk.VolumeSlice.VERTEXSHADER,
+				vertexShader: desk.MPR.Slice.VERTEXSHADER,
 				fragmentShader: shader,
 				transparent : true
 			});
@@ -967,7 +967,7 @@ qx.Class.define("desk.VolumeSlice",
 
 			var bounds = this.getBounds(),
 				coords = [],
-				indices = desk.VolumeSlice.indices,
+				indices = desk.MPR.Slice.indices,
 				orientation = this.getOrientation();
 
 			var xi = indices.x[orientation];
@@ -1008,7 +1008,7 @@ qx.Class.define("desk.VolumeSlice",
 		 * @return {Int} index of the z axis
 		 */
 		getZIndex : function () {
-			return desk.VolumeSlice.indices.z[this.getOrientation()];
+			return desk.MPR.Slice.indices.z[this.getOrientation()];
 		},
 
 		/**
@@ -1017,8 +1017,8 @@ qx.Class.define("desk.VolumeSlice",
 		 */
 		 get2DDimensions: function () {
 			var o = this.getOrientation();
-			return [this.__dimensions[desk.VolumeSlice.indices.x[o]],
-				this.__dimensions[desk.VolumeSlice.indices.y[o]]];
+			return [this.__dimensions[desk.MPR.Slice.indices.x[o]],
+				this.__dimensions[desk.MPR.Slice.indices.y[o]]];
 		},
 
 		/**
@@ -1027,8 +1027,8 @@ qx.Class.define("desk.VolumeSlice",
 		 */
 		 get2DCornersCoordinates : function () {
 			var bounds = this.getBounds();
-			var xi = 2 * desk.VolumeSlice.indices.x[this.getOrientation()];
-			var yi = 2 * desk.VolumeSlice.indices.y[this.getOrientation()];
+			var xi = 2 * desk.MPR.Slice.indices.x[this.getOrientation()];
+			var yi = 2 * desk.MPR.Slice.indices.y[this.getOrientation()];
 
 			return [bounds[xi], bounds[yi],
 					bounds[xi + 1], bounds[yi],

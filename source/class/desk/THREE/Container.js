@@ -1,5 +1,5 @@
 /**
-* A widget containing a THREE.scene to visualize 3D meshes
+* A widget containing a THREE.Canvas to visualize 3D meshes
 *
 * @asset(desk/camera-photo.png)
 * @asset(qx/icon/${qx.icontheme}/16/categories/system.png)
@@ -15,9 +15,9 @@
 * @ignore (Float32Array)
 */
 
-qx.Class.define("desk.SceneContainer",
+qx.Class.define("desk.THREE.Container",
 {
-    extend : desk.ThreeContainer,
+    extend : desk.THREE.Scene,
 
 	/**
 	 * constructor
@@ -517,8 +517,8 @@ qx.Class.define("desk.SceneContainer",
 		},
 
 		/**
-		 * Attaches a set of desk.VolumeSlice to the scene
-		 * @param volumeSlices {Array} Array of deskVolumeSlice;
+		 * Attaches a set of desk.MPR.Slice to the scene
+		 * @param volumeSlices {Array} Array of desk.MPR.Slice;
 		 * @return {Array} array of THREE.Mesh
 		 */
 		attachVolumeSlices : function (volumeSlices, opts = {} ) {
@@ -528,8 +528,8 @@ qx.Class.define("desk.SceneContainer",
 		},
 
 		/**
-		 * Attaches a set of desk.VolumeSlice to the scene
-		 * @param volumeSlice {desk.VolumeSlice} volume slice to attach;
+		 * Attaches a set of desk.MPR.Slice to the scene
+		 * @param volumeSlice {desk.MPR.Slice} volume slice to attach;
 		 * @param opts {Object} options;
 		 * @return {THREE.Mesh} the created mesh;
 		 */
@@ -537,7 +537,7 @@ qx.Class.define("desk.SceneContainer",
 
 			const geometry = new THREE.PlaneGeometry( 1, 1 );
 			const vertices = geometry.attributes.position.array;
-			const indices = desk.VolumeSlice.indices;
+			const indices = desk.MPR.Slice.indices;
 			const orientation = volumeSlice.getOrientation();
 			const origin = volumeSlice.getOrigin();
 			const extent = volumeSlice.getExtent();
@@ -566,7 +566,7 @@ qx.Class.define("desk.SceneContainer",
 			if ( colorFrame )  {
 
 				lineMaterial = new THREE.MeshBasicMaterial({
-					color: desk.VolumeSlice.COLORS[ orientation ],
+					color: desk.MPR.Slice.COLORS[ orientation ],
 					side:THREE.DoubleSide,
 					polygonOffset: true,
 					polygonOffsetFactor: 1.0,
@@ -630,7 +630,7 @@ qx.Class.define("desk.SceneContainer",
 			var group = new THREE.Group();
 			this.addMesh(group, _.extend({branch : true, label : file}, opts));
 			async.eachSeries(opts.orientations || [0, 1, 2], function (orientation, callback) {
-				var slice = new desk.VolumeSlice(file, orientation, opts,
+				var slice = new desk.MPR.Slice(file, orientation, opts,
 					function (err) {
 					if (err) {
 						callback(err);

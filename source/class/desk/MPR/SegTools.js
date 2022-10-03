@@ -7,12 +7,12 @@
 * @ignore (_.find)
 */
 
-qx.Class.define("desk.SegTools",
+qx.Class.define("desk.MPR.SegTools",
 {
   extend : qx.ui.window.Window,
 
 	/** constructor
-	 * @param master {desk.MPRContainer} the MPRContainer to attach to
+	 * @param master {desk.MPR.Container} the MPRContainer to attach to
 	 * @param file {String} file to segment
 	 * @param options {Object} options, like {segmentationMethod : 0}
 	 */
@@ -156,7 +156,7 @@ qx.Class.define("desk.SegTools",
 
 		/**
 		 * returns the mesh viewer used to visualize meshes
-		 * @return {desk.MeshViewer} the mesh viewer
+		 * @return {desk.THREE.Viewer} the mesh viewer
 		 */
 		getMeshViewer : function() {
 
@@ -166,7 +166,7 @@ qx.Class.define("desk.SegTools",
 
 		/**
 		 * Reloads the seed image for a given viewer
-		 * @param sliceView {desk.SliceView} the viewer to update
+		 * @param sliceView {desk.MPR.SliceView} the viewer to update
 		 */
 		__reloadSeedImage : function ( sliceView ) {
 
@@ -553,7 +553,7 @@ qx.Class.define("desk.SegTools",
 
 				if ( !this.__meshViewer ) {
 
-					this.__meshViewer = new desk.MeshViewer( this.getSessionDirectory() + "/meshes/meshes.xml" );
+					this.__meshViewer = new desk.THREE.Viewer( this.getSessionDirectory() + "/meshes/meshes.xml" );
 
 					this.__meshViewer.getWindow().addListener( "close", function () {
 
@@ -702,10 +702,10 @@ qx.Class.define("desk.SegTools",
 		__loadColors : async function ( file ) {
 
 			let colors;
-			file = file || desk.SegTools.defaultColorFile;
+			file = file || desk.MPR.SegTools.defaultColorFile;
 
 			if ( !file ) 
-				colors = desk.SegTools.defaultColors;
+				colors = desk.MPR.SegTools.defaultColors;
 			else
 				colors = await desk.FileSystem.readFileAsync( file );
 

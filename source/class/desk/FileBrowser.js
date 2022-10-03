@@ -476,13 +476,13 @@ qx.Class.define("desk.FileBrowser",
 			case "stl":
 			case "ctm":
 			case "off":
-				new desk.MeshViewer(file);
+				new desk.THREE.Viewer(file);
 				break;
 			case "xml":
 				desk.FileSystem.readFile(file, function (error, xmlDoc) {
 					xmlDoc = (new DOMParser()).parseFromString(xmlDoc, "text/xml")
 					if (xmlDoc.getElementsByTagName("mesh").length !== 0) {
-						new desk.MeshViewer(file);
+						new desk.THREE.Viewer(file);
 					} else {
 						alert ('xml file of unknown type!');
 					}
@@ -497,11 +497,11 @@ qx.Class.define("desk.FileBrowser",
 			case "nii":
 			case "hdr":
 			case "tif":
-				new desk.VolumeViewer(file);
+				new desk.MPR.Viewer(file);
 				break;
 			case "vol": 
 				if (desk.Actions.getInstance().getAction("vol_slice") != null) {
-					new desk.VolumeViewer(file);
+					new desk.MPR.Viewer(file);
 				} else {
 					console.log("vol_slice action does not exist. Skipping this filetype handler.")
 				}
@@ -521,7 +521,7 @@ qx.Class.define("desk.FileBrowser",
 		*/
 		__OOCViewAction : function (node) {
 			if (!node.getChildren) {
-				new desk.VolumeViewer(node.getFullName(), {
+				new desk.MPR.Viewer(node.getFullName(), {
 					ooc : true,
 					format : 0,
 					nbOrientations : 1

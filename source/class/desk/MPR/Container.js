@@ -11,14 +11,14 @@
 * @ignore(slicer)
 * @ignore(prompt)
 */
-qx.Class.define("desk.MPRContainer", 
+qx.Class.define("desk.MPR.Container", 
 {
     extend : qx.ui.container.Composite,
 
 	/**
 	* constructor
 	* @param file {String} : file to visualize
-	* @param options {Object} : options, see desk.MPRContainer.addVolume() for more doc
+	* @param options {Object} : options, see desk.MPR.Container.addVolume() for more doc
 	* @see desk.MPRContainer#addVolume for options description
 	* @param callback {Function} : callback when done.
 	* @param context {Object} : optional callback context
@@ -190,7 +190,7 @@ qx.Class.define("desk.MPRContainer",
 		},
 
 		/**
-		 * Returns the array containing all desk.SliceView
+		 * Returns the array containing all desk.MPR.SliceView
 		 * @return {Array} all views in the Container
 		 */
 		getViewers : function () {
@@ -249,7 +249,7 @@ qx.Class.define("desk.MPRContainer",
 		__addViewers : function (options) {
 			this.__viewers = [];
 			for(var i = 0; i < this.__nbUsedOrientations; i++) {
-				var sliceView = new desk.SliceView(i, options);
+				var sliceView = new desk.MPR.SliceView(i, options);
 				this.__viewers.push(sliceView);
 				sliceView.addListener("changeCrossPosition", this.__onChangeCrossPosition, this);
 				sliceView.addListener("changeCameraZ", this.__onChangeCameraZ, this);
@@ -267,7 +267,7 @@ qx.Class.define("desk.MPRContainer",
 
 		/**
 		 * setups viewer maximize buttons on a viewer
-		 * @param sliceView {desk.SliceView} viewer to setup
+		 * @param sliceView {desk.MPR.SliceView} viewer to setup
 		 */
 		__setupMaximize : function (sliceView) {
 			sliceView.addListener('keypress', function (e) {
@@ -513,7 +513,7 @@ qx.Class.define("desk.MPRContainer",
 		/**
 		 * returns an array containing volumes slices for a loaded volume
 		 * @param volume {qx.ui.container.Composite} : volume
-		 * @return {Array} array of desk.VolumeSlice
+		 * @return {Array} array of desk.MPR.Slice
 		 */
 		getVolumeSlices : function (volume) {
 			return volume.getUserData("slices");
@@ -678,7 +678,7 @@ qx.Class.define("desk.MPRContainer",
 					local: fileObject.constructor == File || typeof fileObject == "string" ,
 					worker : options.worker
 				};
-				slicer = new desk.Slicer(fileObject, slicerOpts);
+				slicer = new desk.MPR.Slicer(fileObject, slicerOpts);
 
 				// Change options.slicer from "true" to reference to worker slicerWorker,
 				// allow to pass it to viewers
@@ -923,25 +923,25 @@ qx.Class.define("desk.MPRContainer",
 
 				var segmentButton = new qx.ui.menu.Button("segment(GC)");
 				segmentButton.addListener("execute", function () {
-					new desk.SegTools(this, this.getVolumeFile(volumeListItem));
+					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem));
 				},this);
 				segmentMenu.add(segmentButton);
 
 				var segmentButtonGC = new qx.ui.menu.Button("segment");
 				segmentButtonGC.addListener("execute", function () {
-					new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 1});
+					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 1});
 				},this);
 				segmentMenu.add(segmentButtonGC);
 
 				var segmentButtonCVT = new qx.ui.menu.Button("segment (fast)");
 				segmentButtonCVT.addListener("execute", function () {
-					new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 3});
+					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 3});
 				},this);
 				segmentMenu.add(segmentButtonCVT);
 
 				var editButton = new qx.ui.menu.Button("edit");
 				editButton.addListener("execute", function () {
-					new desk.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 2});
+					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 2});
 				},this);
 				segmentMenu.add(editButton);
 

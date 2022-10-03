@@ -1,9 +1,9 @@
 /**
  * A Standalone volume viewer. It it simply a desk.MPRContainer embeded in a window
 */
-qx.Class.define("desk.VolumeViewer", 
+qx.Class.define("desk.MPR.Viewer", 
 {
-	extend : desk.MPRContainer,
+	extend : desk.MPR.Container,
 	include : desk.WindowMixin,
 
     construct : function(file, parameters, callback) {

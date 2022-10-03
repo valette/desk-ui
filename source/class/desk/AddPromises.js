@@ -1,5 +1,5 @@
 /**
- * Singleton class which adds promisified versions of different asynchronous desk functions
+ * Singleton class which adds promisified versions of different asynchronous desk functions, and adds back deprecated classes
  * @ignore (require)
  * @ignore (async.*)
  * @ignore (bluebird.promisify)
@@ -37,19 +37,18 @@ qx.Class.define( "desk.AddPromises",
 
 		var membersToPromisify = [
 			"desk.Action.execute",
-			"desk.MPRContainer.addVolume",
-			"desk.SceneContainer.addFile",
-			"desk.SceneContainer.addVolume",
-			"desk.SceneContainer.loadURL",
-			"desk.SliceView.addVolume",
-			"desk.MPRContainer.addVolume",
-			"desk.ThreeContainer.render"
+			"desk.MPR.Container.addVolume",
+			"desk.MPR.SliceView.addVolume",
+			"desk.THREE.Container.addFile",
+			"desk.THREE.Container.addVolume",
+			"desk.THREE.Container.loadURL",
+			"desk.THREE.Scene.render"
 		];
 
 		this.promisify( toPromisify );
 		this.promisify( membersToPromisify, { members : true } );
 
-		desk.SceneContainer.prototype.snapshotAsync = Promise.promisify ( function ( opts, callback ) {
+		desk.THREE.Container.prototype.snapshotAsync = Promise.promisify ( function ( opts, callback ) {
 			this.snapshot( Object.assign( {}, opts, { callback : callback } ) );
 		} );
 
@@ -82,6 +81,29 @@ qx.Class.define( "desk.AddPromises",
 				});
 			});
 		};
+
+		const toDeprecate = {
+			"desk.Slicer" : "desk.MPR.Slicer",
+			"desk.VolumeSlice" : "desk.MPR.Slice",
+			"desk.VolumeViewer" : "desk.MPR.Viewer",
+			"desk.MPRContainer" : "desk.MPR.Container",
+			"desk.ThreeContainer" : "desk.THREE.Scene",
+			"desk.SceneContainer" : "desk.THREE.Container",
+			"desk.MeshViewer" : "desk.THREE.Viewer"
+		};
+
+		for ( let [ deprecated, replacement ] of Object.entries( toDeprecate ) ) {
+
+			eval( `qx.Class.define("${deprecated}", {
+				extend : ${replacement},
+				construct : function(...args) {
+					${replacement}.constructor.call(this, ...args);
+					console.warn( "${deprecated} is deprecated. Use ${replacement} instead.");
+				}
+			});`);
+
+		}
+
 	},
 	members : {
 

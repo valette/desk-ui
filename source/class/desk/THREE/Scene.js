@@ -8,7 +8,7 @@
  * @ignore(Uint8Array)
  * @lint ignoreDeprecated (alert)
 */
-qx.Class.define("desk.ThreeContainer", 
+qx.Class.define("desk.THREE.Scene", 
 {
 	extend : qx.ui.container.Composite,
 	include : desk.LinkMixin,
@@ -33,11 +33,11 @@ qx.Class.define("desk.ThreeContainer",
 			Array.isArray( opts.cameraUp ) ? this.__initialCameraUp.fromArray( opts.cameraUp ) : this.__initialCameraUp.copy( opts.cameraUp )
 		}
 
-		if ( !desk.ThreeContainer.__garbageContainer) {
-			desk.ThreeContainer.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
+		if ( !desk.THREE.Scene.__garbageContainer) {
+			desk.THREE.Scene.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 		}
 
-		var threeCanvas = this.__threeCanvas = desk.ThreeContainer.__garbageContainer.getChildren()[0] 
+		var threeCanvas = this.__threeCanvas = desk.THREE.Scene.__garbageContainer.getChildren()[0] 
 			|| new qx.ui.embed.Canvas();
 
 		threeCanvas.set({syncDimension : true, zIndex : 0});
@@ -87,7 +87,7 @@ qx.Class.define("desk.ThreeContainer",
 
 		this.__scene = null;
 		this.__threeCanvas.removeListenerById(this.__listenerId);
-		desk.ThreeContainer.__garbageContainer.add(this.__threeCanvas);
+		desk.THREE.Scene.__garbageContainer.add(this.__threeCanvas);
 		//clean the scene
 		this.__renderer.dispose();
 		this.__renderer = null;

@@ -6,9 +6,9 @@
 * @ignore(_.*)
 */
 
-qx.Class.define("desk.SliceView",
+qx.Class.define("desk.MPR.SliceView",
 {
-	extend : desk.ThreeContainer,
+	extend : desk.THREE.Scene,
 	include : desk.LinkMixin,
 
 	/**
@@ -35,7 +35,7 @@ qx.Class.define("desk.SliceView",
 		this.addListener("touchstart", this.__onTouchStart, this);
 		this.addListener("touchmove", this.__onTouchMove, this);
 		this.setDecorator(new qx.ui.decoration.Decorator().set({
-			color : desk.VolumeSlice.COLORS[orientation], width : 3}));
+			color : desk.MPR.Slice.COLORS[orientation], width : 3}));
 	},
 
 	destruct : function(){
@@ -171,7 +171,7 @@ qx.Class.define("desk.SliceView",
 		 * @return {Object} coordinates in an object like {x : 10, y : 100}
 		 */
 		projectOnSlice : function (x, y, z) {
-			var indices = desk.VolumeSlice.indices;
+			var indices = desk.MPR.Slice.indices;
 			return {x : indices.x[this.__orientation],
 				y : indices.y[this.__orientation]};
 		},
@@ -259,7 +259,7 @@ qx.Class.define("desk.SliceView",
 		/**
 		 * Returns the first slice present in the view. This slice defines
 		 * the volume bounding box, spacing etc..
-		 * @return {desk.VolumeSlice} first volume slice present in the view.
+		 * @return {desk.MPR.Slice} first volume slice present in the view.
 		 *  Returns 'null' if no slice is present
 		*/
 		getFirstSlice : function () {
@@ -297,7 +297,7 @@ qx.Class.define("desk.SliceView",
 
 		/**
 		 * Removes a volume from the view.
-		 * @param slice {desk.VolumeSlice} slice to remove
+		 * @param slice {desk.MPR.Slice} slice to remove
 		*/
 		removeVolume : function (slice) {
 			if (!_.includes(this.__slices, slice)) return;
@@ -450,7 +450,7 @@ qx.Class.define("desk.SliceView",
 
 		/**
 		 * creates the blue cross meshes
-		 * @param volumeSlice {desk.VolumeSlice} the reference slice
+		 * @param volumeSlice {desk.MPR.Slice} the reference slice
 		 */
 		__createCrossMeshes : function (volumeSlice) {
 
@@ -495,7 +495,7 @@ qx.Class.define("desk.SliceView",
 
 		/**
 		 * creates the brush mesh
-		 * @param volumeSlice {desk.VolumeSlice} the reference slice
+		 * @param volumeSlice {desk.MPR.Slice} the reference slice
 		 */
 		__createBrushMesh : function (volumeSlice) {
 			var geometry = new THREE.PlaneGeometry( 1, 1);
@@ -584,7 +584,7 @@ qx.Class.define("desk.SliceView",
 
 		/**
 		 * creates the drawing mesh
-		 * @param volumeSlice {desk.VolumeSlice} the reference slice
+		 * @param volumeSlice {desk.MPR.Slice} the reference slice
 		 */
 		__setDrawingMesh : function (volumeSlice) {
 			var geometry = new THREE.PlaneGeometry(1, 1);
@@ -656,7 +656,7 @@ qx.Class.define("desk.SliceView",
 
 		/**
 		 * changes slice position
-		 * @param volumeSlice {desk.VolumeSlice} the slice to update
+		 * @param volumeSlice {desk.MPR.Slice} the slice to update
 		 */
 		__updateVolumeSlicePosition : function ( volumeSlice ) {
 
@@ -670,7 +670,7 @@ qx.Class.define("desk.SliceView",
 
 		/**
 		 * adds a slice to the scene
-		 * @param slice {desk.VolumeSlice} the slice to add
+		 * @param slice {desk.MPR.Slice} the slice to add
 		 * @param callback {Function} callback when done
 		 * @param context {Object} optional callback context
 		 */
@@ -743,7 +743,7 @@ qx.Class.define("desk.SliceView",
 
 		/**
 		 * Inits all objects from given slice
-		 * @param slice {desk.VolumeSlice} first slice
+		 * @param slice {desk.MPR.Slice} first slice
 		 */
 		__initFromVolume : function ( slice ) {
 			this.__initDrawingDone = false;
@@ -798,7 +798,7 @@ qx.Class.define("desk.SliceView",
 		 * @param parameters {Object} : optional parameters
 		 * @param callback {Function} : node.js-style callback when done
 		 * @param context {Object} : optional callback context
-		 * @return {desk.VolumeSlice} : displayed volume
+		 * @return {desk.MPR.Slice} : displayed volume
 		 */
 		addVolume : function (file, parameters, callback, context) {
 			if ( typeof parameters === "function" ) {
@@ -812,7 +812,7 @@ qx.Class.define("desk.SliceView",
 				return slice.getUserData( 'toDelete' ) === true;
 			} );
 
-			var slice = new desk.VolumeSlice(file,
+			var slice = new desk.MPR.Slice(file,
 				this.__orientation, parameters, function () {
 					if ( slice.getUserData( 'toDelete' ) ) {
 						this.__slices = _.without( this.__slices, slice );
@@ -1299,7 +1299,7 @@ qx.Class.define("desk.SliceView",
 
 			var slider = this.__slider = new qx.ui.form.Slider().set (
 				{minimum : 0, maximum : 100, value : 0,	width :30,
-					opacity : 0.5, backgroundColor : desk.VolumeSlice.COLORS[this.__orientation],
+					opacity : 0.5, backgroundColor : desk.MPR.Slice.COLORS[this.__orientation],
 					orientation : "vertical"
 			});
 			slider.addListener('mousedown', function () {

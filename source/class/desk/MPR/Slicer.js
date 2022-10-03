@@ -6,7 +6,7 @@
 */
 
 
-qx.Class.define("desk.Slicer", {
+qx.Class.define("desk.MPR.Slicer", {
 
 	extend : qx.core.Object,
 
