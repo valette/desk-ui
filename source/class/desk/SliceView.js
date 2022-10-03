@@ -953,6 +953,7 @@ qx.Class.define("desk.SliceView",
 		 * @param e {qx.event.type.Mouse} mouse event
 		 */
 		 __onMouseDown : function (e) {
+			if ( e.getTarget() != this.getCanvas() ) return;
 			var controls = this.getControls();
 			var origin, position, width;
 			if (e.isRightPressed() || e.isCtrlPressed()) {
