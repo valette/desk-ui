@@ -89,7 +89,18 @@ qx.Class.define("desk.MPR.SliceView",
 		/**
 		 * Fired whenever the cross position changes
 		 */
-		"changeCrossPosition" : "qx.event.type.Event"
+		"changeCrossPosition" : "qx.event.type.Event",
+
+		/**
+		 * Fired whenever a slice has been added
+		 */
+		"addSlice" : "qx.event.type.Data",
+
+		/**
+		 * Fired whenever a slice has been removed
+		 */
+		"removeSlice" : "qx.event.type.Data"
+
 	},
 
 	members : {
@@ -318,6 +329,8 @@ qx.Class.define("desk.MPR.SliceView",
 				// the slice has not been loaded yet, postpone deletetion
 				slice.setUserData('toDelete', true);
 			}
+			this.__initFromFirstSlice();
+			this.fireDataEvent( "removeSlice", slice );
 		},
 
 		/**
@@ -708,23 +721,20 @@ qx.Class.define("desk.MPR.SliceView",
 
 			var material = slice.getMaterial();
 			var mesh = new THREE.Mesh( geometry, material );
-			mesh.renderOrder = this.__slices.length;
 			slice.setUserData( "mesh", mesh );
 			geometry.computeVertexNormals();
 			geometry.computeBoundingSphere();
 
-			slice.addListenerOnce( 'changeImage', function () {
+			slice.addListenerOnce( 'changeImage', () => {
 
 				this.getScene().add( mesh );
-				callback.call( context );
+//				this.fireDataEvent( "addSlice", slice );
+				callback.call( context, null, slice );
 
-			}, this );
+			} );
 
-			slice.addListener( 'changeImage', function () {
-
-				this.render();
-
-			}, this);
+			slice.addListener( 'changeImage', () =>	this.render() );
+			this.fireDataEvent( "addSlice", slice );
 
 		},
 
@@ -741,11 +751,17 @@ qx.Class.define("desk.MPR.SliceView",
 			this.__initDrawingDone = true;
 		},
 
+		__firstSlice : null,
+
 		/**
 		 * Inits all objects from given slice
 		 * @param slice {desk.MPR.Slice} first slice
 		 */
-		__initFromVolume : function ( slice ) {
+		__initFromFirstSlice : function () {
+			const slice = this.getFirstSlice();
+			if ( slice === this.__firstSlice ) return;
+			this.__firstSlice = slice;
+			if ( !slice ) return;
 			this.__initDrawingDone = false;
 			this.__slider.setMaximum(slice.getNumberOfSlices() - 1);
 			if (!this.__alwaysDisplaySlider) {
@@ -808,20 +824,17 @@ qx.Class.define("desk.MPR.SliceView",
 			}
 			callback = callback || function () {};
 
-			var isFirstSlice = this.__slices.every( function ( slice ) {
-				return slice.getUserData( 'toDelete' ) === true;
-			} );
-
-			var slice = new desk.MPR.Slice(file,
-				this.__orientation, parameters, function () {
+			var slice = new desk.MPR.Slice(file, this.__orientation,
+				parameters, () => {
 					if ( slice.getUserData( 'toDelete' ) ) {
 						this.__slices = _.without( this.__slices, slice );
 						slice.dispose();
+						this.__initFromFirstSlice();
 						return;
 					}
-					if ( isFirstSlice ) { this.__initFromVolume( slice ); }
+					this.__initFromFirstSlice();
 					this.__addSlice( slice, callback, context );
-			}, this );
+			} );
 			this.__slices.push( slice );
 			return slice;
 		},

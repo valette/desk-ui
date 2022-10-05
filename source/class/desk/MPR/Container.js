@@ -163,14 +163,6 @@ qx.Class.define("desk.MPR.Container",
 			});
 		},
 
-		/** Returns the file corresponding to the given volume
-		 * @param volume {qx.ui.container.Composite}  volume
-		 * @return {String} file corresponding to the volume
-		 */
-		getVolumeFile : function (volume) {
-			return volume.getUserData('file');
-		},
-
 		/** Returns the grid containing viewers
 		 * @return {qx.ui.container.Composite} grid container
 		 */
@@ -210,20 +202,93 @@ qx.Class.define("desk.MPR.Container",
 		 * Reorders volumes rendering
 		 */
 		__reorderMeshes : function () {
-			this.__volumes.getChildren().forEach(function (volume, rank) {
-				this.getVolumeSlices(volume).forEach(function (slice) {
-                    // slice might not be loaded yet
-					if (!slice) { return }
-					var mesh = slice.getUserData("mesh");
-					if (mesh) {
-						mesh.renderOrder = rank;
-					}
-				});
-			}, this);
+			for ( let [ rank, volume ] of this.__volumes.getChildren().entries() )
+				for ( let mesh of volume.getMeshes() ) mesh.renderOrder = rank;
+
 			this.render();
 		},
 
         __scroll : null,
+
+		__addOptionsToVolumeButton : function ( volume ) {
+
+			const menu = volume.getOptionsButton().getMenu();
+
+			if( this.__standalone && desk.Actions.getInstance().getSettings().permissions ) {
+
+				var segmentMenu = new qx.ui.menu.Menu();
+				menu.add(new qx.ui.menu.Button("segmentation", null, null, segmentMenu));
+
+				var segmentButton = new qx.ui.menu.Button("segment(GC)");
+				segmentButton.addListener("execute", function () {
+					new desk.MPR.SegTools(this, this.getVolumeFile(volume));
+				},this);
+				segmentMenu.add(segmentButton);
+
+				var segmentButtonGC = new qx.ui.menu.Button("segment");
+				segmentButtonGC.addListener("execute", function () {
+					new desk.MPR.SegTools(this, this.getVolumeFile(volume), {segmentationMethod : 1});
+				},this);
+				segmentMenu.add(segmentButtonGC);
+
+				var segmentButtonCVT = new qx.ui.menu.Button("segment (fast)");
+				segmentButtonCVT.addListener("execute", function () {
+					new desk.MPR.SegTools(this, this.getVolumeFile(volume), {segmentationMethod : 3});
+				},this);
+				segmentMenu.add(segmentButtonCVT);
+
+				var editButton = new qx.ui.menu.Button("edit");
+				editButton.addListener("execute", function () {
+					new desk.MPR.SegTools(this, this.getVolumeFile(volume), {segmentationMethod : 2});
+				},this);
+				segmentMenu.add(editButton);
+
+			}
+
+			var moveForwardButton = new qx.ui.menu.Button("move forward");
+			moveForwardButton.addListener("execute", function () {
+				var volumes=this.__volumes.getChildren();
+				for (var index=0;index<volumes.length; index++) {
+					if (volumes[index]==volume) {
+						break;
+					}
+				}
+
+				if (index<volumes.length-1) {
+					this.__volumes.remove(volume);
+					this.__volumes.addAt(volume, index+1);
+				}
+				this.__reorderMeshes();
+				this.render();
+			},this);
+
+			menu.add(moveForwardButton);
+
+			var moveBackwardButton = new qx.ui.menu.Button("move backward");
+			moveBackwardButton.addListener("execute", function (){
+				var volumes = this.__volumes.getChildren();
+				for ( var index = 0; index < volumes.length; index++ ) {
+					if ( volumes[index] == volume ) {
+						break;
+					}
+				}
+
+				if ( index > 0 ) {
+					this.__volumes.remove(volume);
+					this.__volumes.addAt(volume, index-1);
+				}
+				this.__reorderMeshes();
+				this.render();
+				},this);
+			menu.add(moveBackwardButton);
+
+			var removeButton = new qx.ui.menu.Button("remove");
+			removeButton.addListener("execute", () => {
+				this.removeVolume(volume);
+				},this);
+			menu.add(removeButton);
+
+		},
 
 		/**
 		 * Creates the volumes list
@@ -262,6 +327,8 @@ qx.Class.define("desk.MPR.Container",
 				sliceView.getRightContainer().add(button);
 				this.__maximizeButtons.push(button);
 				qx.util.DisposeUtil.disposeTriggeredBy(button, sliceView);
+				sliceView.addListener( "addSlice", this.__reorderMeshes, this );
+				sliceView.addListener( "removeSlice", this.__reorderMeshes, this );
 			}
 		},
 
@@ -510,26 +577,6 @@ qx.Class.define("desk.MPR.Container",
 			this.fireDataEvent("switchFullScreen", false);
 		},
 
-		/**
-		 * returns an array containing volumes slices for a loaded volume
-		 * @param volume {qx.ui.container.Composite} : volume
-		 * @return {Array} array of desk.MPR.Slice
-		 */
-		getVolumeSlices : function (volume) {
-			return volume.getUserData("slices");
-		},
-
-		/**
-		 * returns an array containing meshes for a loaded volume
-		 * @param volume {qx.ui.container.Composite} : volume
-		 * @return {Array} array of THREE.Mesh
-		 */
-		getVolumeMeshes : function (volume) {
-			return this.getVolumeSlices(volume).map(function (slice) {
-				return slice.getUserData("mesh");
-			});
-		},
-
         /**
 		* adds a file into the viewer
 		* @param file {String} : file to load
@@ -548,471 +595,24 @@ qx.Class.define("desk.MPR.Container",
 		*/
 		addVolume : function (file, options, callback, context) {
 
-			if (typeof options === "function") {
-				callback = options;
-				options = {};
-				context = callback;
-			}
-
-			callback = callback || function () {};
-			var fileObject;
-
-
-			if (typeof file == "string" && desk.FileSystem.getFileExtension(file) === "json") {
-				desk.FileSystem.readFile(file, function (err, viewpoints) {
+			if (typeof this.__file == "string" && desk.FileSystem.getFileExtension(this.__file) === "json") {
+				desk.FileSystem.readFileAsync(this.__file, ( err, viewpoints ) => {
 					this.setViewPoints(JSON.parse(viewpoints).viewpoints);
-				}, this);
-				return null;
-			} else if (typeof file == "string") {
-				fileObject = file;
-			} else if (file.constructor == File) {
-
-				fileObject = file;
-				file = file.name;
-
-			}
-
-
-			var volumeSlices = [];
-
-			var opacity = 1;
-			var imageFormat = 1;
-
-            options = options || {};
-            if ( options.opacity != null ) {
-				opacity = options.opacity;
-			}
-			if ( options.format != null ) {
-				imageFormat = options.format;
-			}
-
-			var volume = new qx.ui.container.Composite();
-			volume.setLayout( new qx.ui.layout.VBox() );
-			volume.setDecorator("main");
-			volume.set({toolTipText : file});
-			volume.setUserData("slices", volumeSlices);
-			volume.setUserData("file", file);
-
-			// drag and drop support
-			volume.setDraggable(true);
-			volume.addListener("dragstart", function(e) {
-				e.addAction("alias");
-				e.addType("volumeSlices");
-				e.addType("VolumeViewer");
-				e.addType("file");
-			});
-
-			volume.addListener("droprequest", function(e) {
-				var type = e.getCurrentType();
-				switch (type) {
-					case "volumeSlices":
-						e.addData(type, volumeSlices);
-						break;
-					case "VolumeViewer":
-						e.addData(type, this);
-						break;
-					case "file":
-						e.addData(type, file);
-						break;
-					default :
-						alert ("type "+type+"not supported for drag and drop");
-						break;
-				}
-			}, this);
-
-			var baseName = desk.FileSystem.getFileName(file);
-			var baseLength = baseName.length;
-			if (baseLength > 25) {
-				baseName = baseName.substring(0, 10) + '...' +
-					baseName.substring(baseLength - 10);
-			}
-
-			var labelcontainer = new qx.ui.container.Composite();
-			labelcontainer.setLayout(new qx.ui.layout.HBox());
-			volume.add(labelcontainer);
-
-            var label = new qx.ui.basic.Label(baseName);
-            if (options.label) {
-                label.setValue(options.label);
-            }
-            label.setTextAlign("left");
-			labelcontainer.add(label, {flex : 1});
-
-			var addVolumeToViewers = function () {
-				async.forEachSeries(this.__viewers,
-						function (viewer, callback) {
-						var tmp = volumeSlices[viewer.getOrientation()] = viewer.addVolume(
-						file, options, callback);
-					},
-					function (err) {
-						if (options.visible !== undefined) {
-							hideShowCheckbox.setValue(options.visible);
-						}
-						//                                     scalarBounds = volumeSlice.getScalarBounds();
-						//                                     updateWindowLevel();
-						volume.setUserData("loadingInProgress", false);
-						if (volume.getUserData("toDelete")) {
-							this.removeVolume(volume);
-						}
-						this.__reorderMeshes();
-						callback.call(context, err, volume);
-					}.bind(this)
-				);
-			}.bind(this)
-
-			if (options.slicer) {
-				var slicer;
-
-				var slicerOpts = {
-
-					onprogress : function (text) {
-					//$('#progress').text(text);
-					//console.log(text);
-					},
-
-					onload : function (properties) {
-						console.log("Load finished ! properties : ", properties);
-						addVolumeToViewers(slicer);
-					},
-
-					local: fileObject.constructor == File || typeof fileObject == "string" ,
-					worker : options.worker
-				};
-				slicer = new desk.MPR.Slicer(fileObject, slicerOpts);
-
-				// Change options.slicer from "true" to reference to worker slicerWorker,
-				// allow to pass it to viewers
-				options.slicer = slicer;
-				volume.setUserData("slicer", slicer);
-
-			} else addVolumeToViewers();
-
-			var settingsContainer = new qx.ui.container.Composite();
-			settingsContainer.setLayout(new qx.ui.layout.HBox());
-			volume.add(settingsContainer);
-
-			// create hide/show widget
-			var hideShowCheckbox = new qx.ui.form.CheckBox();
-			hideShowCheckbox.set({value : true,toolTipText : "visible/hidden"});
-			hideShowCheckbox.addListener( "changeValue", function (e) {
-				volumeSlices.forEach(function (volumeSlice) {
-					volumeSlice.getUserData("mesh").visible = e.getData();
-				});
-				this.render();
-			}, this );
-
-			const optsMenu = this.__getVolumeOptionMenu( volume, imageFormat )
-			const optsButton = new qx.ui.form.MenuButton( null, "icon/16/categories/system.png", optsMenu );
-
-			// create opacity widget
-            var opacitySlider = new qx.ui.form.Slider();
-			opacitySlider.set({value : opacity * 100, toolTipText : "change opacity"});
-			opacitySlider.addListener("changeValue", function(event) {
-				this.setVolumeOpacity(volume, event.getData() / 100);
-			},this);
-			
-			////Create brightness/contrast fixing
-			var brightnessButton = new qx.ui.form.Button(null, "desk/contrast.png");
-			brightnessButton.set({toolTipText : "Click and drag to change brightnes, right-click to reset brightness"});
-
-			var x, y;
-
-			brightnessButton.addListener("pointerdown", function(event)	{
-				if (event.isRightPressed()) {
-					volumeSlices.forEach(function (slice) {
-						slice.setBrightnessAndContrast(0, 1);
-					});
-//						updateWindowLevel();
-				} else {
-					x = event.getScreenLeft();
-					y = event.getScreenTop();
-				}
-			}, this);
-
-			brightnessButton.addListener("pointermove", function(event) {
-				if (!brightnessButton.isCapturing()) {
-					return;
-				}
-				var newX = event.getScreenLeft();
-				var newY = event.getScreenTop();
-				var deltaX = newX - x;
-				var deltaY = newY - y;
-				var contrast = volumeSlices[0].getContrast();
-				var brightness = volumeSlices[0].getBrightness();
-
-				brightness -= deltaY / 300;
-				contrast *= 1 + deltaX / 300;
-				x = newX;
-				y = newY;
-				volumeSlices.forEach(function (slice) {
-					slice.setBrightnessAndContrast(brightness,contrast);
-				});
-//					updateWindowLevel();
-			}, this);
-
-/*			var scalarBounds;
-			var windowLevelContainer = new qx.ui.container.Composite();
-			windowLevelContainer.setLayout(new qx.ui.layout.VBox());
-			var font= new qx.bom.Font(12, ["Arial"]);
-			var windowLabel = new qx.ui.basic.Label();
-			windowLabel.setFont(font);
-			var levelLabel = new qx.ui.basic.Label();
-			levelLabel.setFont(font);
-			windowLevelContainer.add(windowLabel);
-			windowLevelContainer.add(levelLabel);
-
-			
-			function updateWindowLevel() {
-				var brightness = volumeSlices[0].getBrightness();
-				var contrast = volumeSlices[0].getContrast();
-				var scalarWidth = scalarBounds[1] - scalarBounds[0];
-				// insert correct formula here...
-				var window = Math.abs((scalarWidth / contrast) + scalarBounds[0]);
-				var level = ((1 / (contrast * 2) - brightness) * scalarWidth) + scalarBounds[0];
-				windowLabel.setValue('W : ' + window.toFixed(0));
-				levelLabel.setValue('L : ' + level.toFixed(0));
-			}*/
-
-			settingsContainer.add(brightnessButton);
-			settingsContainer.add(optsButton);
-//			settingsContainer.add(windowLevelContainer);
-			settingsContainer.add(opacitySlider, {flex : 1});
-			settingsContainer.add(hideShowCheckbox);
-			// add this user data to avoid race conditions
-			volume.setUserData("loadingInProgress", true);
-			this.__volumes.add(volume);
-			return volume;
-		},
-
-		/**
-		 * returns the brightness for a given volume
-		 * @param volume { qx.ui.container.Composite } volume to get brightness from
-		 * @return {Number} brightness
-		 */
-		getBrightness : function ( volume ) {
-
-			return volume.getUserData( 'slices' )[0].getBrightness();
-
-		},
-
-		/**
-		 * sets brightness for a given volume
-		 * @param volume { qx.ui.container.Composite } to modify
-		 * @param brightness {Number} brightness
-		 */
-		setBrightness : function ( volume, brightness ) {
-
-			volume.getUserData( 'slices' ).forEach( function ( volumeSlice ) {
-
-				volumeSlice.setBrightness( brightness );
-
-			} );
-
-		},
-
-		/**
-		 * returns the contrast for a given volume
-		 * @param volume { qx.ui.container.Composite } volume to get contrast from
-		 * @return {Number} contrast
-		 */
-		getContrast : function ( volume ) {
-
-			return volume.getUserData( 'slices' )[0].getContrast();
-
-		},
-
-		/**
-		 * sets brightness for a given volume
-		 * @param volume { qx.ui.container.Composite } to modify
-		 * @param contrast {Number} contrast
-		 */
-		setContrast : function ( volume, contrast ) {
-
-			volume.getUserData( 'slices' ).forEach( function ( volumeSlice ) {
-
-				volumeSlice.setContrast( contrast );
-
-			} );
-
-		},
-
-		/**
-		 * creates a context menu
-		 * @param volumeListItem {qx.ui.container.Composite} : volume
-		 * @return {qx.ui.menu.Menu} the menu
-		 */
-		 __getVolumeOptionMenu : function ( volumeListItem, format ) {
-			//context menu to edit meshes appearance
-			var menu = new qx.ui.menu.Menu();
-			var propertiesButton = new qx.ui.menu.Button("properties");
-			propertiesButton.addListener("execute", function (){
-				function formatArray(array) {
-					var result="[";
-					for (var i=0;i<array.length;i++) {
-						result+=array[i];
-						if (i<array.length-1){
-							result+=", ";
-						}
-					}
-					result+="]";
-					return result;
-				}
-
-				var slice = volumeListItem.getUserData("slices")[0];
-				var window = new qx.ui.window.Window().set({
-					caption : slice.getFileName(),
-					layout : new qx.ui.layout.VBox(),
-					showMinimize : false});
-				window.setResizable(false,false,false,false);
-				window.add(new qx.ui.basic.Label("volume : "+slice.getFileName()));
-				window.add(new qx.ui.basic.Label("dimensions : "+formatArray(slice.getDimensions())));
-				window.add(new qx.ui.basic.Label("extent : "+formatArray(slice.getExtent())));
-				window.add(new qx.ui.basic.Label("origin : "+formatArray(slice.getOrigin())));
-				window.add(new qx.ui.basic.Label("spacing : "+formatArray(slice.getSpacing())));
-				window.add(new qx.ui.basic.Label("scalarType : "+slice.getScalarType()+" ("+slice.getScalarTypeAsString()+")"));
-				window.add(new qx.ui.basic.Label("scalar bounds : "+formatArray(slice.getScalarBounds())));
-				window.open();
-				window.center();
-			},this);
-			menu.add(propertiesButton);
-
-			if( desk.Actions.getInstance().getSettings().permissions ) {
-
-				const formatMenu = new qx.ui.menu.Menu();
-				menu.add(new qx.ui.menu.Button( "image format", null, null, formatMenu ) );
-
-				const formats = [ 'png', 'jpg' ];
-				const buttons = formats.map( format =>
-					new qx.ui.menu.RadioButton( format ) );
-
-				buttons[ format ].setValue( true );
-
-				buttons.forEach( ( button, format ) => {
-
-					formatMenu.add( button );
-
-					button.addListener( "changeValue", e => {
-
-						if ( !e.getData() ) return;
-						buttons[ 1 - format ].setValue( false );
-
-						this.getVolumeSlices( volumeListItem ).forEach( slice => slice.setImageFormat( format ) );
-
-
-					}, this );
-
-
-				}, this );
-
-				this.getVolumeSlices( volumeListItem ).forEach( slice => {
-
-					slice.addListener( "changeImageFormat", e => {
-
-						buttons[ e.getData() ].setValue( true );
-
-					} );
-
 				} );
-
+				return;
 			}
 
-			if( this.__standalone && desk.Actions.getInstance().getSettings().permissions ) {
-
-				var segmentMenu = new qx.ui.menu.Menu();
-				menu.add(new qx.ui.menu.Button("segmentation", null, null, segmentMenu));
-
-				var segmentButton = new qx.ui.menu.Button("segment(GC)");
-				segmentButton.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem));
-				},this);
-				segmentMenu.add(segmentButton);
-
-				var segmentButtonGC = new qx.ui.menu.Button("segment");
-				segmentButtonGC.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 1});
-				},this);
-				segmentMenu.add(segmentButtonGC);
-
-				var segmentButtonCVT = new qx.ui.menu.Button("segment (fast)");
-				segmentButtonCVT.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 3});
-				},this);
-				segmentMenu.add(segmentButtonCVT);
-
-				var editButton = new qx.ui.menu.Button("edit");
-				editButton.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volumeListItem), {segmentationMethod : 2});
-				},this);
-				segmentMenu.add(editButton);
-
-			}
-
-
-			var appearanceMenu = new qx.ui.menu.Menu();
-			menu.add(new qx.ui.menu.Button("appearance", null, null, appearanceMenu));
-
-			var colormapButton = new qx.ui.menu.Button("color map");
-			colormapButton.addListener("execute", function () {
-				this.__createColormapWindow(volumeListItem);
-				},this);
-			appearanceMenu.add(colormapButton);
-
-			var brightnessButton = new qx.ui.menu.Button("set brightness");
-			brightnessButton.addListener("execute", function () {
-				this.setBrightness( volumeListItem, parseFloat( prompt( "brightness?" ) ) );
-			},this);
-			appearanceMenu.add(brightnessButton);
-
-			var contrastButton = new qx.ui.menu.Button("set contrast");
-			contrastButton.addListener("execute", function () {
-				this.setContrast( volumeListItem, parseFloat( prompt( "contrast?" ) ) );
-			},this);
-			appearanceMenu.add(contrastButton);
-
-			var moveForwardButton = new qx.ui.menu.Button("move forward");
-			moveForwardButton.addListener("execute", function () {
-				var volumes=this.__volumes.getChildren();
-				for (var index=0;index<volumes.length; index++) {
-					if (volumes[index]==volumeListItem) {
-						break;
-					}
-				}
-
-				if (index<volumes.length-1) {
-					this.__volumes.remove(volumeListItem);
-					this.__volumes.addAt(volumeListItem, index+1);
-				}
+			const volume = new desk.MPR.Volume( file, this, options, callback, context);
+			this.__addOptionsToVolumeButton( volume );
+			this.__volumes.add(volume);
+			volume.ready().then( () => {
 				this.__reorderMeshes();
-				this.render();
-			},this);
+				if ( volume.getUserData("toDelete") )
+					this.removeVolume(volume);
+			} );
 
-			menu.add(moveForwardButton);
+			return volume;
 
-			var moveBackwardButton = new qx.ui.menu.Button("move backward");
-			moveBackwardButton.addListener("execute", function (){
-				var volumes = this.__volumes.getChildren();
-				for ( var index = 0; index < volumes.length; index++ ) {
-					if ( volumes[index] == volumeListItem ) {
-						break;
-					}
-				}
-
-				if ( index > 0 ) {
-					this.__volumes.remove(volumeListItem);
-					this.__volumes.addAt(volumeListItem, index-1);
-				}
-				this.__reorderMeshes();
-				this.render();
-				},this);
-			menu.add(moveBackwardButton);
-
-			var removeButton = new qx.ui.menu.Button("remove");
-			removeButton.addListener("execute", function (){
-				this.removeVolume(volumeListItem);
-				},this);
-			menu.add(removeButton);
-			qx.util.DisposeUtil.disposeTriggeredBy(menu, volumeListItem);
-			return menu;
 		},
 
 		/**
@@ -1059,16 +659,6 @@ qx.Class.define("desk.MPR.Container",
 		},
 
 		/**
-		 * Reloads a specific volume
-		 * @param volume {qx.ui.container.Composite} the volume to reload
-		 */
-		updateVolume : function (volume) {
-			volume.getUserData("slices").forEach(function (slice) {
-				slice.update();
-			});
-		},
-
-		/**
 		 * Clears all volumes in the view
 		 */
         removeAllVolumes : function () {
@@ -1083,18 +673,20 @@ qx.Class.define("desk.MPR.Container",
 		 * @param volume {qx.ui.container.Composite} volume to remove
 		 */
 		removeVolume : function (volume) {
+			let removed = false;
 			if (qx.ui.core.Widget.contains(this.__volumes, volume)) {
+				removed = true;
 				this.__volumes.remove(volume);
-				this.fireDataEvent("removeVolume", volume);
 			}
 
-			this.__viewers.forEach (function (viewer) {
-				viewer.removeVolumes(this.getVolumeSlices(volume));
-			}, this);
+			for ( let viewer of this.__viewers )
+				viewer.removeVolumes( volume.getSlices() );
+
+			if ( removed ) this.fireDataEvent("removeVolume", volume);
 
 			// test if volume is not totally loaded
-			if (volume.getUserData("loadingInProgress")) {
-				volume.setUserData("toDelete", true);
+			if ( !volume.isReady() ) {
+				volume.setUserData( "toDelete", true );
 			} else {
 				qx.util.DisposeUtil.destroyContainer(volume);
 // DEAD code????
@@ -1102,6 +694,9 @@ qx.Class.define("desk.MPR.Container",
 //					volume.getUserData("slicer").destroy();
 //				}
 			}
+
+			this.__reorderMeshes();
+
 		},
 
 		/**
@@ -1218,45 +813,6 @@ qx.Class.define("desk.MPR.Container",
 			}, this);
 		},
 
-		/**
-		 * sets a specific Lookup Table of a loaded volume
-		 * @param volume {qx.ui.container.Composite} the volume
-		 * @param LUT {Array} an array of 4 lookuup tables [red, green blue, alpha]
-		 */
-		setVolumeLUT : function (volume, LUT) {
-			this.getVolumeSlices(volume).forEach(function (slice) {
-				slice.setLookupTables(LUT);
-			});
-		},
-
-		/**
-		 * returns the Lookup Table of a volume
-		 * @param volume {qx.ui.container.Composite} the volume
-		 * @return {Array} an array of 4 lookuup tables [red, green blue, alpha]
-		 */
-		getVolumeLUT : function (volume) {
-			return this.getVolumeSlices(volume)[0].getLookupTables();
-		},
-
-		/**
-		 * sets opacity of a volume
-		 * @param volume {qx.ui.container.Composite} the volume
-		 * @param opacity {Number} opacity
-		 */
-		setVolumeOpacity : function (volume, opacity) {
-			this.getVolumeSlices(volume).forEach(function (slice) {
-				slice.setOpacity(opacity);
-			});
-		},
-
-		/**
-		 * returns the volume opacity
-		 * @param volume {qx.ui.container.Composite} the volume
-		 * @return {Number} opacity of the volume
-		 */
-		getVolumeOpacity : function (volume) {
-			return this.getVolumeSlices(volume)[0].getOpacity();
-		},
 
 
 		/**
@@ -1318,59 +874,6 @@ qx.Class.define("desk.MPR.Container",
 			}, this);
 			qx.util.DisposeUtil.disposeTriggeredBy(menu, this);
 			return (label);
-		},
-
-		/**
-		 * creates the 'colors' window
-		 * @param volume {qx.ui.container.Composite} the volume to modify
-		 */
-		__createColormapWindow : function(volume) {
-			var win = new qx.ui.window.Window().set ({
-				caption : "colors for " + this.getVolumeFile(volume),
-				layout : new qx.ui.layout.HBox(),
-				showClose : true,
-				showMinimize : false
-			});
-
-			var ramp = new Uint8Array(256);
-			var zeros = new Uint8Array(256);
-			var randomRed = new Uint8Array(256);
-			var randomGreen = new Uint8Array(256);
-			var randomBlue = new Uint8Array(256);
-
-			for (var i = 0; i < 256; i++) {
-				ramp[i] = i;
-				zeros[i] = 0;
-				randomRed[i] = Math.floor(Math.random()*255);
-				randomGreen[i] = Math.floor(Math.random()*255);
-				randomBlue[i] = Math.floor(Math.random()*255);
-			}
-
-			var group = new qx.ui.form.RadioButtonGroup().set({layout : new qx.ui.layout.VBox()});
-			win.add(group);
-
-			[{name : "reds", lut : [ramp, zeros, zeros]},
-				{name : "greens", lut : [zeros, ramp, zeros]},
-				{name : "blues", lut : [zeros, zeros, ramp]},
-				{name : "random reds", lut : [randomRed, zeros, zeros]},
-				{name : "random greens", lut : [zeros, randomGreen, zeros]},
-				{name : "random blues", lut : [zeros, zeros, randomBlue]},
-				{name : "random colors", lut : [randomRed, randomGreen, randomBlue]},
-				{name : "grey levels", lut : null},
-				{name : "other colors", lut : this.getVolumeLUT(volume)}
-			].forEach(function (colors, index) {
-				if (!colors.lut && (index > 7)) return;
-				var button = new qx.ui.form.RadioButton(colors.name);
-				button.setUserData('lut', colors.lut);
-				group.add(button);
-				group.setSelection([button]);
-			});
-
-			group.addListener("changeSelection", function (e) {
-				this.setVolumeLUT(volume, e.getData()[0].getUserData('lut'));
-			}, this);
-			win.open();
-			win.center();
 		},
 
 		/**

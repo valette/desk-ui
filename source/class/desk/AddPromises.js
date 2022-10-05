@@ -82,7 +82,7 @@ qx.Class.define( "desk.AddPromises",
 			});
 		};
 
-		const toDeprecate = {
+		const classesToDeprecate = {
 			"desk.Slicer" : "desk.MPR.Slicer",
 			"desk.VolumeSlice" : "desk.MPR.Slice",
 			"desk.VolumeViewer" : "desk.MPR.Viewer",
@@ -92,7 +92,7 @@ qx.Class.define( "desk.AddPromises",
 			"desk.MeshViewer" : "desk.THREE.Viewer"
 		};
 
-		for ( let [ deprecated, replacement ] of Object.entries( toDeprecate ) ) {
+		for ( let [ deprecated, replacement ] of Object.entries( classesToDeprecate ) ) {
 
 			eval( `qx.Class.define("${deprecated}", {
 				extend : ${replacement},
@@ -101,6 +101,38 @@ qx.Class.define( "desk.AddPromises",
 					console.warn( "${deprecated} is deprecated. Use ${replacement} instead.");
 				}
 			});`);
+
+		}
+
+		const MPRmembersToDeprecate = {
+
+			"desk.MPR.Container.setVolumeOpacity" : "desk.MPR.Volume.setVolumeOpacity",
+			"desk.MPR.Container.getVolumeOpacity" : "desk.MPR.Volume.getVolumeOpacity",
+			"desk.MPR.Container.setVolumeLUT" : "desk.MPR.Volume.setLUT",
+			"desk.MPR.Container.getVolumeLUT" : "desk.MPR.Volume.getLUT",
+			"desk.MPR.Container.setContrast" : "desk.MPR.Volume.setContrast",
+			"desk.MPR.Container.getContrast" : "desk.MPR.Volume.getContrast",
+			"desk.MPR.Container.setBrightness" : "desk.MPR.Volume.setBrightness",
+			"desk.MPR.Container.getBrightness" : "desk.MPR.Volume.getBrightness",
+			"desk.MPR.Container.getVolumeMeshes" : "desk.MPR.Volume.getMeshes",
+			"desk.MPR.Container.getVolumeSlices" : "desk.MPR.Volume.getSlices",
+			"desk.MPR.Container.getVolumeFile" : "desk.MPR.Volume.getFile",
+			"desk.MPR.Container.updateVolume" : "desk.MPR.Volume.update"
+
+		};
+
+		for ( let [ deprecated, replacement ] of Object.entries( MPRmembersToDeprecate ) ) {
+
+			const arr = deprecated.split( "." );
+			const member = arr.pop();
+			const source = arr.join( "." );
+			const arr2 = replacement.split( "." );
+			const target = arr2.pop();
+
+			eval( `${source}.prototype.${member} = function( item, ...args ) {
+				console.warn( "${deprecated}( item, ...args ) is deprecated. Use item.${target}( ...args ) instead" );
+				return item.${target}( ...args );
+			};`);
 
 		}
 
