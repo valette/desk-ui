@@ -20,6 +20,8 @@ qx.Class.define("desk.MPR.SliceView",
 		this.base(arguments);
 		this.getCamera().far = 10000;
 		this.__slices = [];
+		this.__meshes = new Map();
+		this.__slicesToDelete = new Set();
 		this.__orientation = orientation || 0;
 		this.options = options = options || {};
 		this.__textColor = options.textColor || "yellow";
@@ -39,7 +41,10 @@ qx.Class.define("desk.MPR.SliceView",
 	},
 
 	destruct : function(){
-		this.removeAllVolumes();
+		for ( let slice of this.__slices.slice() )
+			this.removeSlice( slice );
+
+		this.__slicesToDelete.clear();
 		this.unlink();
 		//clean the scene
 		qx.util.DisposeUtil.destroyContainer(this.__rightContainer);
@@ -104,6 +109,19 @@ qx.Class.define("desk.MPR.SliceView",
 	},
 
 	members : {
+
+
+		__meshes : null,
+
+		/**
+		 * Returns the mesh used to render a given slice in the view
+		 * @param mode {desk.MPR.Slice} the corresponding slice
+		 * @return {THREE.Mesh}
+		 */
+		getMesh : function ( slice ) {
+			return this.__meshes.get( slice );
+		},
+
 		/**
 		 * Returns true if the view is active (if the mouse pointer is over this view)
 		 * @return {boolean} true/false depending on the mouse pointer position
@@ -149,6 +167,7 @@ qx.Class.define("desk.MPR.SliceView",
 		},
 
 		__slices : null,
+		__slicesToDelete : null, // in order to solve race conditions
 
 		__slider : null,
 
@@ -274,9 +293,9 @@ qx.Class.define("desk.MPR.SliceView",
 		 *  Returns 'null' if no slice is present
 		*/
 		getFirstSlice : function () {
-			return _.find(this.__slices, function (slice) {
-				return !slice.getUserData('toDelete') && (slice.isReady());
-			});
+			return _.find(this.__slices, s => {
+				return !this.__slicesToDelete.has( s ) && s.isReady();
+			} );
 		},
 
 		/**
@@ -300,45 +319,46 @@ qx.Class.define("desk.MPR.SliceView",
 		},
 
 		/**
-		 * Removes all volumes from the view.
-		*/
-		removeAllVolumes : function () {
-			this.removeVolumes(this.__slices.map(function (o) {return o;}));
-		},
-
-		/**
 		 * Removes a volume from the view.
 		 * @param slice {desk.MPR.Slice} slice to remove
 		*/
-		removeVolume : function (slice) {
-			if (!_.includes(this.__slices, slice)) return;
+		removeSlice : function (slice) {
 
-			var mesh = slice.getUserData("mesh");
-
-			if (mesh) {
-				this.getScene().remove(mesh);
-				//release GPU memory
-				mesh.material.uniforms.imageTexture.value.dispose();
-				mesh.material.dispose();
-				mesh.geometry.dispose();
-				this.removeListenerById( slice.getUserData( "__sliceViewListener" ) );
-				this.render();
-				slice.dispose();
-				this.__slices = _.without(this.__slices, slice);
-			} else {
-				// the slice has not been loaded yet, postpone deletetion
-				slice.setUserData('toDelete', true);
+			const index = this.__slices.indexOf( slice );
+			if (index < 0 ) {
+				return; // only splice array when item is found
 			}
-			this.__initFromFirstSlice();
+
+//			const mesh = slice.getUserData("mesh");
+			const mesh = this.__meshes.get( slice );
+
+			if ( !mesh ) {
+				// the slice has not been loaded yet, postpone deletetion
+				this.__slicesToDelete.add( slice );
+				return;
+			}
+
+			this.__meshes.delete( slice );
+			this.getScene().remove(mesh);
+			//release GPU memory
+			mesh.material.uniforms.imageTexture.value.dispose();
+			mesh.material.dispose();
+			mesh.geometry.dispose();
+			this.removeListenerById( slice.getUserData( "__sliceViewListener" ) );
+			slice.dispose();
+			this.__slices.splice(index, 1);
 			this.fireDataEvent( "removeSlice", slice );
+			this.__initFromFirstSlice();
+			this.render();
+
 		},
 
 		/**
 		 * Removes volumes stored in an array from the view.
 		 * @param slices {Array} array of slices to remove
 		*/
-		removeVolumes : function (slices) {
-			if (slices) slices.forEach(this.removeVolume, this);
+		removeSlices : function (slices) {
+			for ( let s of slices ) this.removeSlice( s );
 		},
 
 		__reorientationContainer : null,
@@ -722,13 +742,13 @@ qx.Class.define("desk.MPR.SliceView",
 			var material = slice.getMaterial();
 			var mesh = new THREE.Mesh( geometry, material );
 			slice.setUserData( "mesh", mesh );
+			this.__meshes.set( slice, mesh );
 			geometry.computeVertexNormals();
 			geometry.computeBoundingSphere();
 
 			slice.addListenerOnce( 'changeImage', () => {
 
 				this.getScene().add( mesh );
-//				this.fireDataEvent( "addSlice", slice );
 				callback.call( context, null, slice );
 
 			} );
@@ -816,7 +836,7 @@ qx.Class.define("desk.MPR.SliceView",
 		 * @param context {Object} : optional callback context
 		 * @return {desk.MPR.Slice} : displayed volume
 		 */
-		addVolume : function (file, parameters, callback, context) {
+		addSlice : function (file, parameters, callback, context) {
 			if ( typeof parameters === "function" ) {
 				callback = parameters;
 				context = callback;
@@ -826,10 +846,11 @@ qx.Class.define("desk.MPR.SliceView",
 
 			var slice = new desk.MPR.Slice(file, this.__orientation,
 				parameters, () => {
-					if ( slice.getUserData( 'toDelete' ) ) {
+					if ( this.__slicesToDelete.has( slice ) ) {
 						this.__slices = _.without( this.__slices, slice );
 						slice.dispose();
 						this.__initFromFirstSlice();
+						this.__slicesToDelete.delete( slice )
 						return;
 					}
 					this.__initFromFirstSlice();
@@ -1260,7 +1281,7 @@ qx.Class.define("desk.MPR.SliceView",
 
 			this.getRenderer().setClearColor( 0x000000, 1 );
 
-			var font = new qx.bom.Font(16, ["Arial"]);
+			var font = new qx.bom.Font(16, ["Arial" ]);
 			font.setBold(true);
 			var settings = {textColor : this.__textColor,
 				font : font, opacity : 0.5};

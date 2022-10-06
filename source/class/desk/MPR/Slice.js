@@ -28,6 +28,9 @@ qx.Class.define("desk.MPR.Slice",
 	construct : function(file, orientation, opts, callback, context) {
 		this.base(arguments);
 
+		this.__oldGetUserData = this.getUserData; // deprecate getUserData( "mesh" )
+		this.getUserData = this.__newGetUserData; // deprecate getUserData( "mesh" )
+
 		if ( !desk.Actions.getAction('slice_volume' ) && !opts.slicer ) {
 			var message = "Error : action volume_slice is not installed. Please install binary addons to slice volumes."
 			alert(message);
@@ -462,6 +465,14 @@ qx.Class.define("desk.MPR.Slice",
 		__opacity : 1,
 
 		__ready : false,
+
+		__oldGetUserData : null,
+
+		__newGetUserData : function ( key ) {
+			if ( key == "mesh" )
+				console.warn( 'slice->getUserData( "mesh" ) is deprecated. Use MPR.SliceView.getMesh( slice ) instead ' );
+				return this.__oldGetUserData( key );
+		},
 
 		/**
 		 * informs whether the slice is ready (i.e. loaded);

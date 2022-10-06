@@ -603,14 +603,8 @@ qx.Class.define("desk.MPR.Container",
 			}
 
 			const volume = new desk.MPR.Volume( file, this, options, callback, context);
-			this.__addOptionsToVolumeButton( volume );
 			this.__volumes.add(volume);
-			volume.ready().then( () => {
-				this.__reorderMeshes();
-				if ( volume.getUserData("toDelete") )
-					this.removeVolume(volume);
-			} );
-
+			this.__addOptionsToVolumeButton( volume );
 			return volume;
 
 		},
@@ -661,11 +655,8 @@ qx.Class.define("desk.MPR.Container",
 		/**
 		 * Clears all volumes in the view
 		 */
-        removeAllVolumes : function () {
-            var volumes = this.__volumes.getChildren();
-            while (volumes.length) {
-                this.removeVolume(volumes[0]);
-            }
+		removeAllVolumes : function () {
+			this.__volumes.getChildren().slice().forEach( this.removeVolume, this );
         },
 
 		/**
@@ -673,29 +664,16 @@ qx.Class.define("desk.MPR.Container",
 		 * @param volume {qx.ui.container.Composite} volume to remove
 		 */
 		removeVolume : function (volume) {
-			let removed = false;
-			if (qx.ui.core.Widget.contains(this.__volumes, volume)) {
-				removed = true;
-				this.__volumes.remove(volume);
-			}
+
+			if ( qx.ui.core.Widget.contains( this.__volumes, volume ) )
+				this.__volumes.remove( volume );
 
 			for ( let viewer of this.__viewers )
-				viewer.removeVolumes( volume.getSlices() );
+				viewer.removeSlices( volume.getSlices() );
 
-			if ( removed ) this.fireDataEvent("removeVolume", volume);
-
-			// test if volume is not totally loaded
-			if ( !volume.isReady() ) {
-				volume.setUserData( "toDelete", true );
-			} else {
-				qx.util.DisposeUtil.destroyContainer(volume);
-// DEAD code????
-//				if (volume.getUserData("slicer")) {
-//					volume.getUserData("slicer").destroy();
-//				}
-			}
-
-			this.__reorderMeshes();
+			this.fireDataEvent( "removeVolume", volume );
+			qx.util.DisposeUtil.destroyContainer(volume);
+			volume.dispose();
 
 		},
 
@@ -795,7 +773,7 @@ qx.Class.define("desk.MPR.Container",
 				labelsContainer.add(viewLabel);
 				gridContainer.add(labelsContainer, viewGridCoor.viewers[i]);
 			}
-			return (gridContainer);
+			return gridContainer;
 		},
 
 		/**

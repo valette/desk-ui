@@ -38,7 +38,7 @@ qx.Class.define( "desk.AddPromises",
 		var membersToPromisify = [
 			"desk.Action.execute",
 			"desk.MPR.Container.addVolume",
-			"desk.MPR.SliceView.addVolume",
+			"desk.MPR.SliceView.addSlice",
 			"desk.THREE.Container.addFile",
 			"desk.THREE.Container.addVolume",
 			"desk.THREE.Container.loadURL",
