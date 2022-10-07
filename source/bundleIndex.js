@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
+import { DragControls } from 'three/examples/jsm/controls/DragControls.js';
 import chalk from 'chalk';
 
 self.THREE  = THREE;
 self.THREE.STLLoader = STLLoader;
 self.THREE.TransformControls = TransformControls;
+self.THREE.DragControls = DragControls;
 self.chalk = chalk;
 
 self.async            = require('async');
