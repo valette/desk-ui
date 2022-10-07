@@ -217,7 +217,7 @@ qx.Class.define("desk.MPR.Container",
 			if( this.__standalone && desk.Actions.getInstance().getSettings().permissions ) {
 
 				var segmentMenu = new qx.ui.menu.Menu();
-				menu.add(new qx.ui.menu.Button("segmentation", null, null, segmentMenu));
+				menu.add(new qx.ui.menu.Button("tools", null, null, segmentMenu));
 
 				var segmentButton = new qx.ui.menu.Button("segment(GC)");
 				segmentButton.addListener("execute", function () {
@@ -242,6 +242,12 @@ qx.Class.define("desk.MPR.Container",
 					new desk.MPR.SegTools(this, this.getVolumeFile(volume), {segmentationMethod : 2});
 				},this);
 				segmentMenu.add(editButton);
+
+				var cropButton = new qx.ui.menu.Button("crop");
+				cropButton.addListener("execute", () => {
+					new desk.MPR.CropTool(this, volume);
+				} );
+				segmentMenu.add(cropButton);
 
 			}
 
@@ -369,9 +375,29 @@ qx.Class.define("desk.MPR.Container",
 		 * @param e {qx.event.type.Event} event
 		 */
 		__onChangeCrossPosition : function (e) {
-			this.__viewers.forEach(function (viewer) {
-				viewer.setCrossPosition(e.getTarget().getCrossPosition());
-			});
+
+			this.setCrossPosition( e.getTarget().getCrossPosition() );
+
+		},
+
+		/**
+		 * Sets the cross position in object space i.e. x,y,z coordinates
+		 * @param pos {THREE.Vector3} xyz coordinates coordinates
+		 */
+		setCrossFloatPosition : function ( pos ) {
+
+			this.__viewers.forEach( v => v.setCrossFloatPosition( pos ) );
+
+		},
+
+		/**
+		 * Sets the cross position i.e. i,j,k coordinates
+		 * @param pos {Array} ijk coordinates
+		 */
+		setCrossPosition : function (pos) {
+
+			this.__viewers.forEach( v => v.setCrossPosition( pos ) );
+
 		},
 
 		/**

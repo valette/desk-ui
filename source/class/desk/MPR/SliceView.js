@@ -58,6 +58,7 @@ qx.Class.define("desk.MPR.SliceView",
 		this.__2DDimensions = null;
 		this.__2DSpacing = null;
 		this.__origin = null;
+		this.__dimensions = null;
 		this.__spacing = null;
 	},
 
@@ -805,6 +806,7 @@ qx.Class.define("desk.MPR.SliceView",
 			this.__2DDimensions = slice.get2DDimensions();
 			this.__origin = slice.getOrigin();
 			this.__spacing = slice.getSpacing();
+			this.__dimensions = slice.getDimensions();
 
 			this.__createCrossMeshes(slice);
 
@@ -897,6 +899,27 @@ qx.Class.define("desk.MPR.SliceView",
 				function (coord, index) {
 					return this.__origin[index] + coord * this.__spacing[index];
 			}, this));
+		},
+
+		/**
+		 * Sets the cross position in object space i.e. x,y,z coordinates
+		 * @param pos {THREE.Vector3} xyz coordinates coordinates
+		 */
+		setCrossFloatPosition : function ( pos ) {
+
+			const arr = [];
+			const posArray = pos.toArray();
+			for ( let i = 0; i < 3; i++ ) {
+
+				let c = ( posArray[ i ] - this.__origin[ i ] ) / this.__spacing[ i ];
+				c = Math.round( c );
+				c = Math.max( 0, Math.min( c, this.__dimensions[ i ] - 1 ) );
+				arr[ i ] = c;
+
+			}
+
+			this.setCrossPosition( arr );
+
 		},
 
 		/**
@@ -1197,6 +1220,7 @@ qx.Class.define("desk.MPR.SliceView",
 		__2DSpacing : null,
 		__origin : null,
 		__spacing : null,
+		__dimensions : null,
 
 		/**
 		 * returns the position from the mouse event
