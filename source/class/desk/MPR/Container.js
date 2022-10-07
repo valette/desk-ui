@@ -382,7 +382,7 @@ qx.Class.define("desk.MPR.Container",
 
 		/**
 		 * Sets the cross position in object space i.e. x,y,z coordinates
-		 * @param pos {THREE.Vector3} xyz coordinates coordinates
+		 * @param pos {THREE.Vector3} xyz coordinates
 		 */
 		setCrossFloatPosition : function ( pos ) {
 

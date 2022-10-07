@@ -83,19 +83,19 @@ qx.Class.define("desk.MPR.SliceView",
 		eraseMode : { init : false, check: "Boolean", event : "changeEraseMode", apply : "__applyEraseMode"},
 
 		/** Should the flip and rotate operations operate on camera or orientation markers*/
-		orientationChangesOperateOnCamera : { init : true, check: "Boolean"}
+		orientationChangesOperateOnCamera : { init : true, check: "Boolean"},
+
+		/** Cross position ( i,j,k integers ) */
+		crossPosition : { init : null, check: "Array", event : "changeCrossPosition", apply : "__applyChangeCrossPosition", transform : "__transformCrossPosition" }
+
 	},
 
 	events : {
+
 		/**
 		 * Fired whenever the drawing has changed
 		 */
 		"changeDrawing" : "qx.event.type.Event",
-
-		/**
-		 * Fired whenever the cross position changes
-		 */
-		"changeCrossPosition" : "qx.event.type.Event",
 
 		/**
 		 * Fired whenever a slice has been added
@@ -110,7 +110,6 @@ qx.Class.define("desk.MPR.SliceView",
 	},
 
 	members : {
-
 
 		__meshes : null,
 
@@ -330,7 +329,6 @@ qx.Class.define("desk.MPR.SliceView",
 				return; // only splice array when item is found
 			}
 
-//			const mesh = slice.getUserData("mesh");
 			const mesh = this.__meshes.get( slice );
 
 			if ( !mesh ) {
@@ -614,6 +612,7 @@ qx.Class.define("desk.MPR.SliceView",
 			positions.setXYZ(2, -r0, r1, 0);
 			positions.setXYZ(3, r0, r1, 0);
 			positions.needsUpdate = true;
+
 		},
 
 		/**
@@ -816,18 +815,13 @@ qx.Class.define("desk.MPR.SliceView",
 				this.flip(0);//
 			}
 
-			//this.flip(0);
-
-
-			//if (this.__orientation == 0) this.flip(1);
-
-
-			this.__position[0] = undefined; // to force cross position update
-
 			//Set at the middle
-			this.setCrossPosition(slice.getDimensions().map(function (dim) {
+			const arr = slice.getDimensions().map( dim => {
 				return dim === 1 ? 0 : Math.round(dim / 2);
-			}));
+			} )
+
+			this.setCrossPosition( arr );
+			this.__applyChangeCrossPosition( arr ); //to force cross position update
 
 		},
 
@@ -880,22 +874,12 @@ qx.Class.define("desk.MPR.SliceView",
 				[this.getSlice(), v[0], v[1]][this.__orientation]]);
 		},
 
-		__position : [],
-
-		/**
-		 * Return the cross position i.e. i,j,k coordinates
-		 * @return {Array} ijk coordinates
-		 */
-		getCrossPosition : function () {
-			return this.__position;
-		},
-
 		/**
 		 * Return the cross position i.e. x, y, z float coordinates
 		 * @return {THREE.Vector3} xyz coordinates
 		 */
 		getCrossFloatPosition : function () {
-			return new THREE.Vector3().fromArray(this.__position.map(
+			return new THREE.Vector3().fromArray(this.getCrossPosition().map(
 				function (coord, index) {
 					return this.__origin[index] + coord * this.__spacing[index];
 			}, this));
@@ -922,19 +906,23 @@ qx.Class.define("desk.MPR.SliceView",
 
 		},
 
+		__transformCrossPosition : function ( pos ) {
+
+			const position = this.getCrossPosition();
+			if ( !position ) return pos;
+			for ( let i = 0; i < 3; i++ )
+				if ( pos[ i ] != position[ i ] ) return pos;
+			return position;
+
+		},
+
 		/**
 		 * Sets the cross position i.e. i,j,k coordinates
 		 * @param pos {Array} ijk coordinates
 		 */
-		setCrossPosition : function (pos) {
-			if ((this.__position[0] === pos[0]) &&
-				(this.__position[1] === pos[1]) &&
-				(this.__position[2] === pos[2])) {
-					return;
-			}
-			this.__position = pos;
+		__applyChangeCrossPosition : function (pos) {
 
-			if (!this.__2DDimensions) {return;}
+			if (!this.__2DDimensions) return;
 
 			var x = pos[[0, 2, 0][this.__orientation]];
 			var y = this.__2DDimensions[1] - 1 - pos[[1, 1, 2][this.__orientation]];
@@ -946,12 +934,8 @@ qx.Class.define("desk.MPR.SliceView",
 			this.__crossMeshes[1].position.setX(x);
 			this.setSlice(pos[[2, 0, 1][this.__orientation]]);
 			this.render();
+			this.getLinks().forEach( l => l.setCrossPosition( pos ) );
 
-			this.fireEvent("changeCrossPosition");
-			this.getLinks().forEach(function (link) {
-				if (link === this) {return};
-				link.setCrossPosition(pos);
-			}, this);
 		},
 
 		/**
@@ -1433,7 +1417,7 @@ qx.Class.define("desk.MPR.SliceView",
 			this.__slider.setValue(Math.max(this.__slider.getMinimum(),
 				Math.min(value, this.__slider.getMaximum())));
 
-			var pos = this.__position.slice();
+			var pos = this.getCrossPosition().slice();
 			pos[[2, 0, 1][this.__orientation]] = sliceId;
 			this.setCrossPosition(pos);
 			this.propagateCameraToLinks();
