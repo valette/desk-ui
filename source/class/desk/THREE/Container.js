@@ -584,7 +584,6 @@ qx.Class.define("desk.THREE.Container",
 			const listener2Id = volumeSlice.addListener( 'changePosition', update, this );
 
 			function update () {
-
 				if ( this.isDisposed() ) return cleanup();
 				mesh.position.setComponent( zi, volumeSlice.getPosition() );
 				this.render();

@@ -65,7 +65,6 @@ qx.Class.define("desk.MPR.Container",
 		this.__maximizeButtons = [];
 		this.__createVolumesList();
 		this.__addViewers(options);
-
 		this.setDroppable(true);
 		this.addListener("drop", this.__onDrop);
 
@@ -77,17 +76,16 @@ qx.Class.define("desk.MPR.Container",
 
 	destruct : function() {
 		this.removeAllVolumes();
+
 		if (this.__orientationWindow) {
 			this.__orientationWindow.dispose();
 			qx.util.DisposeUtil.destroyContainer(this.__orientationContainer);
 		}
 
-		this.__viewers.forEach(function (viewer) {
-			viewer.dispose();
-		});
-
+		this.__viewers.forEach( viewer => viewer.dispose() );
 		this.__volumes.dispose();
 		this.__gridCoords = null;
+
 	},
 
 	events : {

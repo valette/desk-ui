@@ -1071,10 +1071,12 @@ qx.Class.define("desk.MPR.Slice",
 		 */
 		openXMLURL : function (url, callback, context) {
 			var req = new qx.io.request.Xhr(url + "?nocache=" + Math.random());
+			qx.util.DisposeUtil.disposeTriggeredBy(req, this);
 			req.set({async : true, parser : 'xml'});
 			this.__path = desk.FileSystem.getFileDirectory(url);
 
-			req.addListener("success", function(e) {
+			req.addListener("success", (e) => {
+				if ( this.isDisposed() ) return;
 				try {
 					this.__parseXMLresponse(e.getTarget().getResponse());
 					req.dispose();
@@ -1086,10 +1088,12 @@ qx.Class.define("desk.MPR.Slice",
 				if (typeof callback === 'function') {
 					callback.call(context);
 				}
-			}, this);
-			req.addListener("fail", function (e) {
+				req.dispose();
+			} );
+			req.addListener("fail", (e) => {
 				this.update(callback, context);
-			}, this);
+				req.dispose();
+			} );
 			req.send();
 		},
 

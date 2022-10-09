@@ -346,9 +346,9 @@ qx.Class.define("desk.MPR.SliceView",
 			this.removeListenerById( slice.getUserData( "__sliceViewListener" ) );
 			slice.dispose();
 			this.__slices.splice(index, 1);
-			this.fireDataEvent( "removeSlice", slice );
 			this.__initFromFirstSlice();
 			this.render();
+			this.fireDataEvent( "removeSlice", slice );
 
 		},
 
@@ -820,9 +820,13 @@ qx.Class.define("desk.MPR.SliceView",
 				return dim === 1 ? 0 : Math.round(dim / 2);
 			} )
 
-			this.setCrossPosition( arr );
-			this.__applyChangeCrossPosition( arr ); //to force cross position update
+			setImmediate( () => {
 
+				if ( slice != this.__firstSlice ) return;
+				this.setCrossPosition( arr );
+				this.__applyChangeCrossPosition( arr ); //to force cross position update
+
+			} );
 		},
 
 		/** adds a volume to the view
