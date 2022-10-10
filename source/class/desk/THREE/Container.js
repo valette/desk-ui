@@ -521,27 +521,26 @@ qx.Class.define("desk.THREE.Container",
 		 * @param volumeSlices {Array} Array of desk.MPR.Slice;
 		 * @return {Array} array of THREE.Mesh
 		 */
-		attachVolumeSlices : function (volumeSlices, opts = {} ) {
-			return volumeSlices.map(function (slice) {
-				return this.attachVolumeSlice(slice, opts);
-			}, this);
+		attachVolumeSlices : function (slices, opts = {} ) {
+			for ( let s of slices ) this.attachVolumeSlice(s, opts);
 		},
 
 		/**
 		 * Attaches a set of desk.MPR.Slice to the scene
-		 * @param volumeSlice {desk.MPR.Slice} volume slice to attach;
+		 * @param slice {desk.MPR.Slice} volume slice to attach;
 		 * @param opts {Object} options;
 		 * @return {THREE.Mesh} the created mesh;
 		 */
-		attachVolumeSlice : function ( volumeSlice, opts = {} ) {
+		attachVolumeSlice : async function ( slice, opts = {} ) {
 
+			await slice.ready();
 			const geometry = new THREE.PlaneGeometry( 1, 1 );
 			const vertices = geometry.attributes.position.array;
 			const indices = desk.MPR.Slice.indices;
-			const orientation = volumeSlice.getOrientation();
-			const origin = volumeSlice.getOrigin();
-			const extent = volumeSlice.getExtent();
-			const spacing = volumeSlice.getSpacing();
+			const orientation = slice.getOrientation();
+			const origin = slice.getOrigin();
+			const extent = slice.getExtent();
+			const spacing = slice.getSpacing();
 			const xi = indices.x[orientation];
 			const yi = indices.y[orientation];
 			const zi = indices.z[orientation];
@@ -559,7 +558,7 @@ qx.Class.define("desk.THREE.Container",
 
 			geometry.computeBoundingBox();
 			geometry.computeBoundingSphere();
-			const material = volumeSlice.getMaterial();
+			const material = slice.getMaterial();
 			const mesh = new THREE.Mesh(geometry,material);
 			let lineMaterial;
 
@@ -572,37 +571,36 @@ qx.Class.define("desk.THREE.Container",
 					polygonOffsetFactor: 1.0,
 					polygonOffsetUnits: 4.0	});
 
-				const line = new THREE.Mesh( geometry, lineMaterial );
-				mesh.add(line);
-				line.scale.setScalar(1.03);
-				geometry.boundingBox.getSize( line.position );
-				line.position.multiplyScalar ( -0.015 );
+				const line = new THREE.Mesh( geometry.clone(), lineMaterial );
+				mesh.add( line );
+				line.scale.setScalar( 1.03 );
+				line.geometry.boundingBox.getCenter( line.position );
+				line.geometry.center();
 
 			}
 
-			const listenerId = volumeSlice.addListener( 'changeImage', update, this );
-			const listener2Id = volumeSlice.addListener( 'changePosition', update, this );
-
-			function update () {
+			const update = () => {
 				if ( this.isDisposed() ) return cleanup();
-				mesh.position.setComponent( zi, volumeSlice.getPosition() );
+				mesh.position.setComponent( zi, slice.getPosition() );
 				this.render();
-			}
+			};
 
-			update.apply( this );
+			const listeners = [ 'changeImage', 'changePosition' ]
+				.map( e => slice.addListener( e, update ) );
 
-			this.addMesh(mesh, _.extend({label : 'View ' + (volumeSlice.getOrientation()+1),
-				volumeSlice : volumeSlice}, opts));
+			update();
+
+			this.addMesh(mesh, _.extend({label : 'View ' + (slice.getOrientation()+1),
+				volumeSlice : slice}, opts));
 
 			mesh.addEventListener("removed", cleanup );
 
 			function cleanup () {
 
-				if ( !volumeSlice.isDisposed() ) {
-					volumeSlice.removeListenerById(listenerId);
-					volumeSlice.removeListenerById(listener2Id);
-				}
 				if ( colorFrame ) lineMaterial.dispose();
+				if ( slice.isDisposed() ) return;
+				for ( let id of listeners ) slice.removeListenerById( id );
+
 			}
 
 			return mesh;
