@@ -81,11 +81,11 @@ qx.Class.define("desk.MPR.Slice",
 		if ( !opts.slicer)  {
 
 			var image = this.__image = new Image();
-			image.onload = function() {
+			image.onload = () => {
 				clearTimeout(this.__timeout);
-				this.__materials.forEach(function (material) {
+				for ( let material of this.__materials )
 					material.uniforms.imageType.value = this.__availableImageFormat;
-				}, this);
+
 				this.__texture.needsUpdate = true;
 
 				if (this.__numberOfScalarComponents === 1) {
@@ -93,7 +93,7 @@ qx.Class.define("desk.MPR.Slice",
 					this.__brightnessOffset = - this.__scalarMin * this.__contrastMultiplier;
 				}
 				this.setBrightnessAndContrast(this.__brightness, this.__contrast);
-			}.bind(this);
+			};
 			image.onerror = image.onabort = this.update.bind(this);
 			this.__texture = new THREE.Texture(image);
 
@@ -101,10 +101,12 @@ qx.Class.define("desk.MPR.Slice",
 			this.__texture = new THREE.DataTexture();
 
 		var filter = opts.linearFilter ? THREE.LinearFilter : THREE.NearestFilter;
-		this.__texture.onUpdate = function () {
-			this.__texture.lastVersion = this.__texture.version;
-		}.bind(this);
-		this.__texture.lastVersion = 0;
+		this.__texture.onUpdate = () => {
+			this.__texture.uploadedVersion = this.__texture.version;
+			this.__texture.source.uploadedVersion = this.__texture.source.version;
+		};
+		this.__texture.uploadedVersion = 0;
+		this.__texture.source.uploadedVersion = 0;
 
 		this.__lookupTable = new THREE.DataTexture(new Uint8Array(8), 2, 1, THREE.RGBAFormat);
 
@@ -129,7 +131,6 @@ qx.Class.define("desk.MPR.Slice",
 		}
 
 		this.addListener("changeImageFormat", this.update, this);
-		this.addListener("changeSlice", this.__updateImage, this);
 		this.addListener("changePosition", this.__onChangePosition, this);
 
 		if (opts.colors) {
@@ -143,7 +144,7 @@ qx.Class.define("desk.MPR.Slice",
 		/**
 		 * current slice index
 		 */
-		slice : { init : -1, check: "Number", event : "changeSlice"},
+		slice : { init : -1, check: "Number", event : "changeSlice", apply : "__updateImage"},
 
 		/**
 		 * current position in object coordinates
@@ -1191,8 +1192,8 @@ qx.Class.define("desk.MPR.Slice",
 			clearTimeout(this.__timeout);
 			if ( !this.__opts.slicer)
 				this.__timeout = setTimeout(this.__updateImage.bind(this), 10000);
-			this.__texture.needsUpdate = false;
-			this.__texture.version = this.__texture.lastVersion;
+			this.__texture.version = this.__texture.uploadedVersion;
+			this.__texture.source.version = this.__texture.source.uploadedVersion;
 
 			var slice = this.getSlice();
 
