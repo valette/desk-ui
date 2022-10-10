@@ -476,6 +476,16 @@ qx.Class.define("desk.MPR.Slice",
 		},
 
 		/**
+		 * returns only when the slice is ready
+		 */
+		ready : async function () {
+
+			if ( this.__ready ) return;
+			await new Promise( r => this.addListenerOnce( "changeImage", r ) );
+
+		},
+
+		/**
 		 * informs whether the slice is ready (i.e. loaded);
 		 * @return {Boolean} ready/not ready
 		 */
