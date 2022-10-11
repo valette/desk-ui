@@ -39,6 +39,17 @@ const files =  [
   //"../Papaya/src/js/surface/surface-vtk.js",
   __dirname + "/ext/workerSlicer.manager.js"];
 
-const output = files.map( f => fs.readFileSync( f ).toString() ).join( ';' );
-fs.writeFileSync( __dirname + "/ext/workerSlicer.worker.js",output, "utf8");
+function concat( files, outputFile ) {
+	const output = files.map( f => fs.readFileSync( f ).toString() ).join( ';' );
+	fs.writeFileSync( outputFile,output, "utf8");
+}
 
+concat( files, __dirname + "/ext/workerSlicer.worker.js" );
+
+const files2 = [
+"source/ext/lzma.js",
+"source/ext/ctm.js",
+"source/ext/CTMWorker.js"
+]
+
+concat( files2, __dirname + "/ext/CTMWorkerBundle.js" );

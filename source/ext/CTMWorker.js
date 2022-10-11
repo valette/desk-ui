@@ -1,7 +1,7 @@
-LZMA = require( './lzma.js' );
-CTM = require( './ctm.js' );
+//LZMA = require( './lzma.js' );
+//CTM = require( './ctm.js' );
 
-module.exports = function () {
+//module.exports = function () {
 
 	self.onmessage = function( event ) {
 
@@ -19,4 +19,4 @@ module.exports = function () {
 		postMessage ( files );
 
 	}
-}
+//}
