@@ -156,7 +156,7 @@ qx.Class.define("desk.THREE.Scene",
 		 */
 		 __setupFullscreen : function () {
 			var parent, width, height, color, alpha, props;
-			this.addListener('changeFullscreen', function (e) {
+			this.addListener('changeFullscreen', ( e ) => {
 				if (!e.getData()) {
 					this.set({height : height, width : width});
 					this.__renderer.setClearColor(color, alpha);
@@ -171,16 +171,16 @@ qx.Class.define("desk.THREE.Scene",
 							zIndex : 500000});
 					qx.core.Init.getApplication().getRoot().add(this);
 					alpha = this.__renderer.getClearAlpha();
-					color = this.__renderer.getClearColor();
+					color = this.__renderer.getClearColor( new THREE.Color() );
 					this.__renderer.setClearColor(color, 1);
 				}
-			}, this);
-			this.addListener('keydown', function (event) {
+			} );
+			this.addListener('keydown', (event) => {
 				if ((event.getTarget() == this.getCanvas()) &&
                     (event.getKeyIdentifier() === 'F')) {
 					this.toggleFullscreen();
 				}
-			}, this);
+			} );
 		},
 
 		/**
