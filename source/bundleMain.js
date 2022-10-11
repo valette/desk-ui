@@ -1,8 +1,4 @@
 
-require ('xterm/css/xterm.css');
-require ('billboard.js/dist/billboard.css');
-
-
 if ( !self.require ) {
 	console.warn( "adding 'require' global function" );
 	self.require = function (module) {
