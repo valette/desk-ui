@@ -29,6 +29,7 @@ qx.Class.define("desk.MPR.SliceView",
 		this.__zoomOnWheel = options.zoomOnWheel || false;
 		this.__createUI();
 		this.__initUndo();
+		this.setCursor( "crosshair" );
 		this.addListener("mousedown", this.__onMouseDown, this);
 		this.addListener("mouseout", this.__onMouseOut, this);
 		this.addListener("mousemove", this.__onMouseMove, this);
@@ -1258,7 +1259,7 @@ qx.Class.define("desk.MPR.SliceView",
 		 */
 		getPositionOnSlice : function (event) {
 			if (!this.__intersection) {return {};}
-			var origin = this.getContentLocation();
+			var origin = this.getContentLocation("padding");
 			var x = event.getDocumentLeft() - origin.left;
 			var y = event.getDocumentTop() - origin.top;
 
