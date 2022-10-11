@@ -1,7 +1,3 @@
-import chalk from 'chalk';
-
-self.chalk = chalk;
-
 
 //self.bluebird = self.Promise = require('bluebird');
 
