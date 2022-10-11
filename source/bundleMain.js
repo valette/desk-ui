@@ -1,11 +1,6 @@
-import work from 'webworkify-webpack'
 
 require ('xterm/css/xterm.css');
-
-self.bowser           = require( 'bowser' );
-
-require( __dirname + '/ext/workerSlicer.worker.js' );
-	require ('billboard.js/dist/billboard.css');
+require ('billboard.js/dist/billboard.css');
 
 
 if ( !self.require ) {

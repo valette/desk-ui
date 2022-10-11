@@ -19,6 +19,8 @@ qx.Class.define("desk.MPR.Slicer", {
 		this.opts = opts;
 		this.loaded = false;
 		this.callbacks = {};
+		window.bowser = require( 'bowser' );
+		require( "three/../../source/ext/workerSlicer.worker.js" );
 
 		if ( opts.worker ) {
 
