@@ -20,6 +20,7 @@
 /**
  * @ignore(require)
  * @ignore(ace.*)
+ * @asset(desk/workers/)
 */
 
 /**
@@ -36,7 +37,22 @@ qx.Class.define("desk.AceContainer", {
 		this.setLayout(new qx.ui.layout.VBox());
 		this.__editor = new qx.ui.core.Widget();
 		this.add(this.__editor, {flex : 1});
-        this.__editor.addListener('appear', this.__onAppear, this);
+		this.__editor.addListener('appear', this.__onAppear, this);
+		const manager = qx.util.ResourceManager.getInstance();
+
+		ace = require('ace-builds/src-noconflict/ace');
+		require('ace-builds/src-noconflict/mode-c_cpp');
+		require('ace-builds/src-noconflict/mode-html');
+		require('ace-builds/src-noconflict/mode-javascript');
+		require('ace-builds/src-noconflict/mode-json');
+		require('ace-builds/src-noconflict/mode-python');
+		require('ace-builds/src-noconflict/theme-eclipse');
+		require('ace-builds/src-noconflict/ext-searchbox');
+		require("ace-builds/src-noconflict/ext-language_tools");
+		ace.config.setModuleUrl( "ace/mode/javascript_worker", manager.toUri( "desk/workers/worker-javascript.js") );
+		ace.config.setModuleUrl( "ace/mode/json_worker", manager.toUri( "desk/workers/worker-json.js") );
+		ace.config.setModuleUrl( "ace/mode/html_worker", manager.toUri( "desk/workers/worker-html.js") );
+
 	},
 
 	members : {
