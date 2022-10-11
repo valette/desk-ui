@@ -270,7 +270,7 @@ qx.Class.define("desk.MPR.Volume",
 		 */
 		getBrightnessContrastButton : function () {
 			if ( this.__brightnessContrastButton ) return this.__brightnessContrastButton;
-			const button = this.__brightnessContrastButton = new desk.MPR.BrightnessContrastButton(null, "desk/contrast.png");
+			const button = this.__brightnessContrastButton = new qx.ui.form.Button(null, "desk/contrast.png");
 			
 			button.set({toolTipText : "Click and drag to change brightnes, right-click to reset brightness"});
 
