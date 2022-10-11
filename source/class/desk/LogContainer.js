@@ -15,7 +15,7 @@ qx.Class.define("desk.LogContainer", {
 		this.base(arguments);
 		this.__rand = Math.floor( 100000000 * Math.random());
 		this.setHtml( '<div id = "' + this.__rand + '"></div>' );
-		this.__terminal = new Terminal();
+		this.__terminal = new ( require( 'xterm' ).Terminal )();
 		this.addListenerOnce( 'appear', this.__onAppear, this );
 		this.__chalk = window.chalk;
 

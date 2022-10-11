@@ -2,7 +2,6 @@
  * Singleton class which adds promisified versions of different asynchronous desk functions, and adds back deprecated classes
  * @ignore (require)
  * @ignore (async.*)
- * @ignore (bluebird.promisify)
  */
 qx.Class.define( "desk.AddPromises", 
 {
@@ -16,7 +15,6 @@ qx.Class.define( "desk.AddPromises",
 	construct : function() {
 
 		this.base(arguments);
-		Promise.promisify = bluebird.promisify;
 
 		var toPromisify = [
 			"desk.Actions.execute",
@@ -48,7 +46,7 @@ qx.Class.define( "desk.AddPromises",
 		this.promisify( toPromisify );
 		this.promisify( membersToPromisify, { members : true } );
 
-		desk.THREE.Container.prototype.snapshotAsync = Promise.promisify ( function ( opts, callback ) {
+		desk.THREE.Container.prototype.snapshotAsync = require('util').promisify ( function ( opts, callback ) {
 			this.snapshot( Object.assign( {}, opts, { callback : callback } ) );
 		} );
 
@@ -173,7 +171,7 @@ qx.Class.define( "desk.AddPromises",
 					throw( 'bad function name : ' + func);
 				}
 
-				root[ name + "Async" ] = Promise.promisify( origin );
+				root[ name + "Async" ] = require('util').promisify( origin );
 			} );
 
 		}

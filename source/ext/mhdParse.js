@@ -28,7 +28,7 @@ var types = {
   MET_DOUBLE : 11
 };
 
-MHD = {
+const MHD = {
     parse : function (content) {
         function text(value) {return value;}
         
@@ -81,3 +81,5 @@ MHD = {
         return mhd;
     }
 };
+
+if ( module ) module.exports = MHD;
