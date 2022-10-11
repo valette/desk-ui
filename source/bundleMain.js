@@ -1,4 +1,3 @@
-
 import work from 'webworkify-webpack'
 
 import { FitAddon } from 'xterm-addon-fit';
@@ -29,13 +28,10 @@ self.c3 = self.bb = require ('billboard.js/dist/billboard.js').bb;
 	require ('billboard.js/dist/billboard.css');
 
 
-THREE.CTMLoader.prototype.createWorker = function () {
+self.createCTMWorker = function () {
 	return work(require.resolve(__dirname + '/ext/CTMWorker.js'), { all : true } );
 }
 
-THREE.VTKLoader.prototype.createWorker = function () {
-	return work(require.resolve(__dirname + '/ext/VTKWorker.js'), { all : true } );
-}
 
 if ( !self.require ) self.require = function (module) {
 	if (module === 'desk-client' ) return self.desk;

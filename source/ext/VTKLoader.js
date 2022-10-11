@@ -71,7 +71,9 @@ class VTKLoader extends THREE.Loader {
 
 	createWorker() {
 
-		return new Worker( "js/loaders/VTKWorker.js" )
+		const manager = qx.util.ResourceManager.getInstance();
+		const url = manager.toUri( "desk/workers/VTKWorker.js");
+		return new Worker( url );
 
 	}
 

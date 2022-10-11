@@ -1,7 +1,8 @@
 
 /**
  * Tool to crop volumes
- */
+ * @ignore(THREE.*)
+*/
 
 qx.Class.define("desk.MPR.CropTool", 
 {

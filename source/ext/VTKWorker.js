@@ -1,5 +1,5 @@
 
-module.exports = function () {
+//module.exports = function () {
 
 	self.onmessage = function( event ) {
 
@@ -87,4 +87,4 @@ module.exports = function () {
 		postMessage(payload);
 
 	}
-}
+//}

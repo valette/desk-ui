@@ -920,7 +920,7 @@ qx.Class.define("desk.THREE.Container",
 					var worker = this.__ctmWorkers[0];
 					this.__ctmWorkers.shift();
 				} else {
-					worker = this.__ctmLoader.createWorker();
+					worker = createCTMWorker();
 				}
 
 				this.__ctmLoader.load (opts.url + "?nocache=" + opts.timeStamp, function (geometry) {
