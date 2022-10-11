@@ -5,7 +5,6 @@
  * @asset(qx/icon/${qx.icontheme}/16/categories/system.png) 
  * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-close.png)
  * @ignore (require)
- * @ignore (io)
  * @ignore (_.*)
  * @ignore (async.*)
  * @ignore (confirm)
@@ -36,7 +35,7 @@ qx.Class.define("desk.Actions",
 		if ( typeof desk_startup_script !== "string" ) {
 			if ( qx.bom.Cookie.get("homeURL" ) ) {
 				// support for node.js
-				this.__socket = io({path : desk.FileSystem.getBaseURL() + 'socket.io'});
+				this.__socket = require('socket.io-client')({path : desk.FileSystem.getBaseURL() + 'socket.io'});
 				this.__engine = "node";
 				this.__socket.on("action started", function (POST) {
 					var actions = desk.Actions.getInstance();

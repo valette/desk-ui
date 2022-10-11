@@ -1,10 +1,6 @@
 import work from 'webworkify-webpack'
 
-import { FitAddon } from 'xterm-addon-fit';
-
 require( __dirname + '/ext/WebGL.js');
-self.Terminal = require( 'xterm' ).Terminal;
-self.TerminalFitAddon = FitAddon;
 require ('xterm/css/xterm.css');
 self.chroma = require( 'chroma-js' );
 self.bowser = require( 'bowser' );
@@ -21,7 +17,6 @@ operative.setBaseURL(self.location.protocol + '//'
 	+ (getCookie("homeURL") || self.location.pathname)
 	+ '/');
 
-self.io = require('socket.io-client');
 self.d3	= require ('d3');
 
 self.c3 = self.bb = require ('billboard.js/dist/billboard.js').bb;

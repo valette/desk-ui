@@ -1,4 +1,3 @@
-//import * as THREE from 'three';
 import chalk from 'chalk';
 
 self.chalk = chalk;

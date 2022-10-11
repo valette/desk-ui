@@ -1,7 +1,5 @@
 /**
  * A web terminal
- * @ignore (io)
- * @ignore (Terminal)
  */
 
 qx.Class.define("desk.Terminal", 
@@ -70,7 +68,7 @@ qx.Class.define("desk.Terminal",
 		__getSocket : function ( namespace ) {
 
 			const socket = desk.Actions.getInstance().getSocket().io.nsps[ namespace ];
-			return  socket ? socket : io( namespace, {path : desk.FileSystem.getBaseURL() + 'socket.io'} );
+			return  socket ? socket : require('socket.io-client')( namespace, {path : desk.FileSystem.getBaseURL() + 'socket.io'} );
 
 		},
 
@@ -89,11 +87,12 @@ qx.Class.define("desk.Terminal",
 
 			socket = this.__socket = this.__getSocket( '/xterm' + this.__rand );
 			const container = document.getElementById( '' + this.__rand );
-			const term = this.__term = new Terminal( { csursorBlink : true } );
+			const term = this.__term = new ( require( 'xterm' ).Terminal ) ( { csursorBlink : true } );
 			term._getMessage = term.write.bind( term );
 			socket.addEventListener( 'message', term._getMessage );
 			term.onData( socket.send.bind( socket ) );
-			const fitAddon = this.__fitAddon = new TerminalFitAddon();
+			const fit = require ( "xterm-addon-fit" ).FitAddon;
+			const fitAddon = this.__fitAddon = new fit();
 			term.loadAddon(fitAddon);
 			term.open( container );
 			fitAddon.fit();
