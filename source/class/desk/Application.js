@@ -26,13 +26,6 @@ qx.Class.define("desk.Application",
 
 	members :
 	{
-		/**************************************************************
-		 * hack to include qx.ui.list.List in the build
-		 **************************************************************/
-
-		hackToIncludeClasses : function () {
-			new qx.ui.list.List();
-		},
 
 		main : async function() {
 

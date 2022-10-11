@@ -22,17 +22,22 @@
       "class": "desk.Application",
       "theme": "desk.theme.Theme",
       "name": "desk-ui",
+      "type" :  "browser",
       "bootPath": "source/boot",
       "default": true,
       "environment": {
         "qx.icontheme": "Tango"
-      }
+      },
+      "include": [
+        "qx.ui.*"
+      ]
     },
     {
       "class": "qxl.apiviewer.Application",
       "theme": "qxl.apiviewer.Theme",
       "name": "apiviewer",
       "title": "Qooxdoo API Viewer",
+      "type" :  "browser",
       "environment": {
         "qx.icontheme": "Tango",
         "qxl.apiviewer.applicationName": "",
