@@ -34,7 +34,6 @@
  * animator.setPlay(true);
  * </pre>
  * 
- * @ignore (async.*)
  * @asset(qx/icon/${qx.icontheme}/16/actions/media-playback-start.png) 
  * @asset(qx/icon/${qx.icontheme}/16/actions/media-playback-stop.png) 
  * @asset(qx/icon/${qx.icontheme}/16/actions/media-seek-backward.png) 

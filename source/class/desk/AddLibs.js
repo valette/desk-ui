@@ -3,7 +3,7 @@
  * Singleton class which adds external libraries
  * @ignore (require)
  */
-qx.Class.define( "desk.AddLibs", 
+qx.Class.define( "desk.AddLibs",
 {
 	extend : qx.core.Object,
 
@@ -18,7 +18,6 @@ qx.Class.define( "desk.AddLibs",
 		const manager = qx.util.ResourceManager.getInstance();
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/xterm.css") );
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/billboard.css") );
-		window.async = require('async');
 		window.THREE = require( "three" );
 		require( "three/examples/js/loaders/STLLoader.js" );
 		require( "three/examples/js/controls/TransformControls.js" );
@@ -28,26 +27,72 @@ qx.Class.define( "desk.AddLibs",
 		require( "three/../../source/ext/TrackballControls2.js" );
 		require( "three/../../source/ext/mhdParse.js" );
 		require( "three/../../source/ext/WebGL.js" );
+		window._ = require ('lodash');
+		window.async = require( "async" );
 
-		require('operative');
-		operative.setBaseURL(self.location.protocol + '//' 
-			+ window.location.host 
-			//+ (getCookie("homeURL") || self.location.pathname)
-			+ '/');
+		const libs = [
 
-		window.async            = require('async');
-		window._ = self.lodash  = require('lodash');
-		window.EventEmitter     = require('events');
-		window.heap = self.Heap = require('heap');
-		window.jsSHA            = require("jssha");
-		window.kdTree           = require('kdt');
-		window.numeric          = require('numeric');
-		window.randomJS         = require('random-js');
-		window.jstat            = require('jstat');
-		window.chroma           = require( 'chroma-js' );
-		window.d3	            = require ('d3');
-		window.c3 = window.bb = require ('billboard.js/dist/billboard.js').bb;
-		window.chalk	        = require ('chalk');
+			"chalk", { events : "EventEmitter" },
+			"heap", { heap : "Heap" }, { jssha : "jsSHA" }, { kdt : "kdTree" },
+			"numeric", { "random-js" : "randomJS" }, "jstat", { "chroma-js" : "chroma" },
+			"d3", { "billboard.js" : "c3", subField : "bb" },
+			{ "billboard.js" : "bb", subField : "bb" }
 
+		];
+
+		libs.forEach( lib => {
+
+			let target = lib;
+			let subField;
+
+			if ( typeof lib !== 'string') {
+				const obj = lib;
+				for ( let field of Object.keys( lib ) )
+					if ( field != "subField" ) {
+						lib = field;
+						target = obj[ field ];
+					}
+
+				if ( obj.subField ) subField = obj.subField;
+
+			}
+
+			const subText = subField ? "." + subField : "";
+
+			Object.defineProperty( window, target, {
+
+				get() {
+					if ( subField ) return require( lib )[ subField ];
+					return require( lib );
+				},
+
+				set( value ) {
+					if ( qx.core.Environment.get("qx.debug") )
+						console.warn( "setting global value for lib "  + lib );
+				}
+
+			} );
+
+		} );
+
+	},
+
+	members : {
+		__requireAll : function () {
+
+			require( "operative" );
+			require( "chalk" );
+			require( "events" );
+			require( "heap" );
+			require( "jssha" );
+			require( "kdt" );
+			require( "numeric" );
+			require( "random-js" );
+			require( "jstat" );
+			require( "chroma-js" );
+			require( "d3" );
+			require( "billboard.js" )
+
+		}
 	}
 });

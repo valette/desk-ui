@@ -6,7 +6,6 @@
  * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-close.png)
  * @ignore (require)
  * @ignore (_.*)
- * @ignore (async.*)
  * @ignore (confirm)
  * @ignore (jsSHA)
  * @ignore (prettyData.json)
