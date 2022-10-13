@@ -47,9 +47,9 @@ function concat( files, outputFile ) {
 concat( files, __dirname + "/ext/workerSlicer.worker.js" );
 
 const files2 = [
-"source/ext/lzma.js",
-"source/ext/ctm.js",
-"source/ext/CTMWorker.js"
+__dirname + "/ext/lzma.js",
+__dirname +"/ext/ctm.js",
+__dirname + "/ext/CTMWorker.js"
 ]
 
 concat( files2, __dirname + "/ext/CTMWorkerBundle.js" );
