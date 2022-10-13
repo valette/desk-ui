@@ -22,6 +22,7 @@ qx.Class.define( "desk.AddLibs",
 		require( "three/examples/js/loaders/STLLoader.js" );
 		require( "three/examples/js/controls/TransformControls.js" );
 		require( "three/examples/js/controls/DragControls.js" );
+		require( "three/examples/js/utils/BufferGeometryUtils.js" );
 
 		if ( desk.Application ) {
 

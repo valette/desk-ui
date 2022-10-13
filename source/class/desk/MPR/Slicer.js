@@ -3,6 +3,7 @@
 * @ignore (Worker)
 * @ignore (PapayaSlicer)
 * @ignore (require)
+* @asset(desk/workers/SlicerWorker.js)
 */
 
 
@@ -15,133 +16,7 @@ qx.Class.define("desk.MPR.Slicer", {
      */
     construct: function( volume, opts ) {
 
-		this.__volume = volume;
-		this.opts = opts;
-		this.loaded = false;
-		this.callbacks = {};
-		window.bowser = require( 'bowser' );
-		require( "three/../../source/ext/workerSlicer.worker.js" );
-
-		if ( opts.worker ) {
-
-			// TODO!!!
-			const scriptFile = "desk-ui/workerSlicer.worker.js";
-			this.worker = new Worker(scriptFile);
-			var self = this;
-
-			this.worker.onmessage = function(e) {
-
-				var type = e.data.shift();
-				var data = e.data.shift();
-
-				if (type == "progress") {
-
-					if (typeof opts.onprogress === 'function')
-					opts.onprogress(data);
-
-				} else if (type == "slice") {
-					var uniqueId = data[0];
-					var imgData = data[1];
-
-					if (typeof self.callbacks[uniqueId] === 'function') {
-
-						self.callbacks[uniqueId](null, imgData);
-						self.callbacks[uniqueId] = undefined;
-
-					}
-
-				} else if (type == "imageLoaded") {
-
-					self.properties = data;
-					self.loaded = true;
-					if (typeof opts.onload === 'function')
-					opts.onload(self.properties);
-
-				}
-			}
-
-			if (opts.local)
-				this.worker.postMessage(["loadLocalImage", volume]);
-			else this.worker.postMessage(["loadImage", volume]);
-
-			return;
-
-		}
-
-		var root = qx.core.Init.getApplication().getRoot();
-		var win = new qx.ui.window.Window("Chargement de l'image");
-
-		win.set({
-			width : 300,
-			height : 100,
-			alwaysOnTop : true,
-			showMinimize : false,
-			showMaximize : false,
-			centerOnAppear : true,
-			modal : true,
-			movable : false,
-			allowMaximize : false,
-			allowMinimize : false,
-			resizable : false,
-			showClose : false,
-			layout : new qx.ui.layout.VBox( 10 )
-		});
-
-		var progressText = new qx.ui.basic.Label("Initialisation...");
-		win.add(progressText);
-
-		const progressBar = new qx.ui.indicator.ProgressBar();
-		win.add( progressBar );
-		root.add( win );
-		win.open();
-
-		var progressFunc = function (frac, text) {
-
-			if (text == "Unpacking") text = "Décompression";
-			var txt = text+" "+ Math.min( 100, (frac*100).toFixed(1) )+"%";
-			progressText.setValue(txt);
-			progressBar.setValue(frac*100);
-
-		};
-
-		this.slicer = new PapayaSlicer(progressFunc);
-
-		if ( opts.local ) {
-
-			if (typeof volume == "string") {
-
-				var str = 'fs';
-				var fs = require( str )
-				const buffer = fs.readFileSync( volume );
-				this.slicer.vol.fileName = require("path").basename(volume);
-				this.slicer.vol.rawData[0] = buffer;//fileBuffer.buffer;
-				//const b = Buffer.from(fileBuffer);
-				//var arrayBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
-				this.slicer.vol.decompress( this.slicer.vol);
-
-				this.slicer.vol.onFinishedRead = () => {
-
-					this.properties = this.slicer.initProperties();
-					this.loaded = true;
-					opts.onload(this.properties);
-					win.close();
-
-				}
-
-			} else {
-
-				this.slicer.vol.readFiles( [ volume ], () => {
-
-					this.properties = this.slicer.initProperties();
-					this.loaded = true;
-					opts.onload( this.properties );
-					win.close();
-
-				} );
-
-			}
-
-		}
+		this.__run( volume, opts );
 
     },
 
@@ -155,9 +30,9 @@ qx.Class.define("desk.MPR.Slicer", {
 
     },
 
-    properties: {
-
-    },
+	statics : {
+		__initialized : null
+	},
 
     members: {
 
@@ -197,6 +72,145 @@ qx.Class.define("desk.MPR.Slicer", {
 			cb("Error : out of image, slice "+number+" ask, dimension for orientation "+orientation+" is "+this.properties.dimensions[normales[orientation]]);
 		  }
 
+		},
+
+		__run : async function( volume, opts ) {
+
+			this.__volume = volume;
+			this.opts = opts;
+			this.loaded = false;
+			this.callbacks = {};
+			
+			if ( !desk.MPR.Slicer.__initialized ) {
+
+				window.bowser = require( "bowser" );
+				const manager = qx.util.ResourceManager.getInstance();
+				const url = manager.toUri( "desk/workers/SlicerWorker.js" );
+				await desk.FileSystem.includeScriptsAsync( [ url ] );
+				desk.MPR.Slicer.__initialized = true;
+
+			}
+
+			if ( opts.worker ) {
+
+				// TODO!!!
+				const scriptFile = "desk-ui/workerSlicer.worker.js";
+				this.worker = new Worker(scriptFile);
+				var self = this;
+
+				this.worker.onmessage = function(e) {
+
+					var type = e.data.shift();
+					var data = e.data.shift();
+
+					if (type == "progress") {
+
+						if (typeof opts.onprogress === 'function')
+						opts.onprogress(data);
+
+					} else if (type == "slice") {
+						var uniqueId = data[0];
+						var imgData = data[1];
+
+						if (typeof self.callbacks[uniqueId] === 'function') {
+
+							self.callbacks[uniqueId](null, imgData);
+							self.callbacks[uniqueId] = undefined;
+
+						}
+
+					} else if (type == "imageLoaded") {
+
+						self.properties = data;
+						self.loaded = true;
+						if (typeof opts.onload === 'function')
+						opts.onload(self.properties);
+
+					}
+				}
+
+				if (opts.local)
+					this.worker.postMessage(["loadLocalImage", volume]);
+				else this.worker.postMessage(["loadImage", volume]);
+
+				return;
+
+			}
+
+			var root = qx.core.Init.getApplication().getRoot();
+			var win = new qx.ui.window.Window("Chargement de l'image");
+
+			win.set({
+				width : 300,
+				height : 100,
+				alwaysOnTop : true,
+				showMinimize : false,
+				showMaximize : false,
+				centerOnAppear : true,
+				modal : true,
+				movable : false,
+				allowMaximize : false,
+				allowMinimize : false,
+				resizable : false,
+				showClose : false,
+				layout : new qx.ui.layout.VBox( 10 )
+			});
+
+			var progressText = new qx.ui.basic.Label("Initialisation...");
+			win.add(progressText);
+
+			const progressBar = new qx.ui.indicator.ProgressBar();
+			win.add( progressBar );
+			root.add( win );
+			win.open();
+
+			var progressFunc = function (frac, text) {
+
+				if (text == "Unpacking") text = "Décompression";
+				var txt = text+" "+ Math.min( 100, (frac*100).toFixed(1) )+"%";
+				progressText.setValue(txt);
+				progressBar.setValue(frac*100);
+
+			};
+
+			this.slicer = new PapayaSlicer(progressFunc);
+
+			if ( opts.local ) {
+
+				if (typeof volume == "string") {
+
+					var str = 'fs';
+					var fs = require( str )
+					const buffer = fs.readFileSync( volume );
+					this.slicer.vol.fileName = require("path").basename(volume);
+					this.slicer.vol.rawData[0] = buffer;//fileBuffer.buffer;
+					//const b = Buffer.from(fileBuffer);
+					//var arrayBuffer = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
+					this.slicer.vol.decompress( this.slicer.vol);
+
+					this.slicer.vol.onFinishedRead = () => {
+
+						this.properties = this.slicer.initProperties();
+						this.loaded = true;
+						opts.onload(this.properties);
+						win.close();
+
+					}
+
+				} else {
+
+					this.slicer.vol.readFiles( [ volume ], () => {
+
+						this.properties = this.slicer.initProperties();
+						this.loaded = true;
+						opts.onload( this.properties );
+						win.close();
+
+					} );
+
+				}
+
+			}
 		}
 
     }

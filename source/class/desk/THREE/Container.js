@@ -523,7 +523,7 @@ qx.Class.define("desk.THREE.Container",
 		 * @return {Array} array of THREE.Mesh
 		 */
 		attachVolumeSlices : function (slices, opts = {} ) {
-			for ( let s of slices ) this.attachVolumeSlice(s, opts);
+			return slices.map( s => this.attachVolumeSlice( s, opts ) );
 		},
 
 		/**
@@ -532,9 +532,8 @@ qx.Class.define("desk.THREE.Container",
 		 * @param opts {Object} options;
 		 * @return {THREE.Mesh} the created mesh;
 		 */
-		attachVolumeSlice : async function ( slice, opts = {} ) {
+		attachVolumeSlice : function ( slice, opts = {} ) {
 
-			await slice.ready();
 			const geometry = new THREE.PlaneGeometry( 1, 1 );
 			const vertices = geometry.attributes.position.array;
 			const indices = desk.MPR.Slice.indices;

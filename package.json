@@ -45,7 +45,7 @@
     "build": "npm run clean && npm run buildDirty",
     "buildDirty": "npm run bundle && npm run qooxdoo",
     "buildAddons": "node source/buildAddons.js",
-    "bundle": "node source/build-worker.js",
+    "bundle": "node source/buildWorkers.js",
     "clean": "rm -rf compiled",
     "compile": "qx compile --target source && qx compile --target build",
     "deploy": "qx deploy --source-maps --clean --out compiled/dist",

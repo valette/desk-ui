@@ -213,8 +213,8 @@ qx.Class.define("desk.MPR.Volume",
 		 * @return {Array} array of THREE.Mesh
 		 */
 		getMeshes : function () {
-			return this.__slices.entries().map( entry =>
-				entry[ 0 ].getMesh( entry[ 1 ] ) ).filter( m => m );
+			return Array.from ( this.__slices.entries().map( entry =>
+				entry[ 0 ].getMesh( entry[ 1 ] ) ).filter( m => m ) );
 		},
 
 		/**

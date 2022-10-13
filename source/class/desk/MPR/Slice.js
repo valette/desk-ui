@@ -848,6 +848,7 @@ qx.Class.define("desk.MPR.Slice",
 			});
 
 			material.fragmentShader += "\n" + material.baseShader.baseShaderEnd;
+			material.uniformsNeedUpdate = true;
 			material.needsUpdate = true;
 		},
 
