@@ -520,11 +520,11 @@ qx.Class.define("desk.MPR.Volume",
 							res( slicer );
 						},
 
-						local: fileObject.constructor == File || typeof fileObject == "string" ,
+						local: this.__fileObject.constructor == File || typeof this.__fileObject == "string" ,
 						worker : this.__options.worker
 					};
 
-					const slicer = new desk.MPR.Slicer( fileObject, slicerOpts );
+					const slicer = new desk.MPR.Slicer( this.__fileObject, slicerOpts );
 
 				} );
 

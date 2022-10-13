@@ -9,10 +9,11 @@
 * @ignore(prompt)
 * @ignore(Uint8Array)
 * @lint ignoreDeprecated(alert)
-* @ignore(desk.MeshTools)
 * @ignore (async.*)
 * @ignore (_.*)
 * @ignore (Float32Array)
+* @asset(desk/workers/CTMWorkerBundle.js)
+* @asset(desk/workers/VTKWorker.js)
 */
 
 qx.Class.define("desk.THREE.Container",

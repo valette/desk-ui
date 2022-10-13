@@ -91,7 +91,8 @@ qx.Class.define("desk.Actions",
 				if (typeof window.nw === 'undefined') {
 					this.__engine = "electron";
 					console.log("powered by electron.js");
-					var ipcRenderer = require('electron').ipcRenderer
+					const el = "electron";
+					var ipcRenderer = require(el).ipcRenderer
 					window.prompt = function(title, val) {
 						return ipcRenderer.sendSync('prompt', {title : title, val : val});
 					}

@@ -22,11 +22,26 @@ qx.Class.define( "desk.AddLibs",
 		require( "three/examples/js/loaders/STLLoader.js" );
 		require( "three/examples/js/controls/TransformControls.js" );
 		require( "three/examples/js/controls/DragControls.js" );
-		require( "three/../../source/ext/CTMLoader.js" );
-		require( "three/../../source/ext/VTKLoader.js" );
-		require( "three/../../source/ext/TrackballControls2.js" );
-		require( "three/../../source/ext/mhdParse.js" );
-		require( "three/../../source/ext/WebGL.js" );
+
+		if ( desk.Application ) {
+
+			require( "three/../../source/ext/CTMLoader.js" );
+			require( "three/../../source/ext/VTKLoader.js" );
+			require( "three/../../source/ext/TrackballControls2.js" );
+			require( "three/../../source/ext/mhdParse.js" );
+			require( "three/../../source/ext/WebGL.js" );
+
+
+		} else {
+
+			require( "desk-ui/source/ext/CTMLoader.js" );
+			require( "desk-ui/source/ext/VTKLoader.js" );
+			require( "desk-ui/source/ext/TrackballControls2.js" );
+			require( "desk-ui/source/ext/mhdParse.js" );
+			require( "desk-ui/source/ext/WebGL.js" );
+
+		}
+
 		window._ = require ('lodash');
 		window.async = require( "async" );
 
