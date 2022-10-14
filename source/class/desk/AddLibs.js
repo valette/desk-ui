@@ -24,7 +24,7 @@ qx.Class.define( "desk.AddLibs",
 		require( "three/examples/js/controls/DragControls.js" );
 		require( "three/examples/js/utils/BufferGeometryUtils.js" );
 
-		if ( desk.Application ) {
+		if ( qx.core.Environment.get( "qx.application") == "desk-ui" ) {
 
 			require( "three/../../source/ext/CTMLoader.js" );
 			require( "three/../../source/ext/VTKLoader.js" );
