@@ -156,6 +156,16 @@ qx.Class.define("desk.Actions",
 		},
 
 		/**
+		* Returns when the actions list is constructed
+		* @internal
+		*/
+		initAsync : async function() {
+
+			await new Promise( res => this.init( res ) );
+
+		},
+
+		/**
 		* executes an action
 		* @param params {Object} object containing action parameters
 		* @param options {Object} options for the action (force_update, logHandler)

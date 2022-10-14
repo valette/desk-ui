@@ -18,7 +18,6 @@ qx.Class.define( "desk.AddPromises",
 
 		var toPromisify = [
 			"desk.Actions.execute",
-			"desk.Actions.init",
 			"desk.Actions.killAction",
 			"desk.FileSystem.executeScript",
 			"desk.FileSystem.exists",
