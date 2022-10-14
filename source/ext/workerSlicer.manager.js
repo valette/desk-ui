@@ -186,8 +186,11 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
 	var voxelValue = vol.transform.voxelValue;
 
   var typedArray;
+  let pixelIncr = 1;
   if (this.properties.numberOfScalarComponents == 3) {
-    typedArray = new Uint8Array(xLim*yLim*this.properties.numberOfScalarComponents);
+	  pixelIncr = 4;
+    typedArray = new Uint8Array(xLim*yLim*pixelIncr);
+    typedArray.fill( 255 );
   }
   else {
     typedArray = new Float32Array(xLim*yLim);
@@ -195,10 +198,9 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
 
   var numVoxelsSeries = vol.header.imageDimensions.getNumVoxelsSeries();
 
-  var cLim = this.properties.numberOfScalarComponents*numVoxelsSeries;
 	for (var ctrY = 0; ctrY < yLim; ctrY += 1) {
 		for (var ctrX = 0; ctrX < xLim; ctrX += 1) {
-    	for (var channel = 0 ; channel < this.properties.numberOfScalarComponents ; channel++) {
+		for (var channel = 0 ; channel < pixelIncr ; channel++) {
 				  //var index3d;
 				  if (dir === DIRECTION_AXIAL) {
 						  //value = voxelValue.getVoxelAtIndex(ctrX, yDim-ctrY - 1,  zDim - slice - 1, timepoint, true);
@@ -221,7 +223,7 @@ PapayaSlicer.prototype.generateSlice = function(data, callback) {
 				  */
 
 			    var index = (ctrY * xLim) + ctrX;
-			    index = this.properties.numberOfScalarComponents*(index) + channel;
+			    index = pixelIncr*(index) + channel;
 			    typedArray[index] = value;
 
 

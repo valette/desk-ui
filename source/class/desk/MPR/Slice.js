@@ -1213,44 +1213,42 @@ qx.Class.define("desk.MPR.Slice",
 				this.setPosition( slice * this.__spacing[ zi ] + this.__origin[ zi ] );
 			}
 
-			var that = this;
-
 			if (this.__opts.slicer) {
 
 				if (!this.__waitingForSlicer) {
 
-					window.setTimeout(function() {
-						that.__slicer.getSlice(that.getOrientation(), that.getSlice(), function (err, imageData, imgFloatArray) {
+					window.setImmediate( () => {
+						this.__slicer.getSlice(this.getOrientation(), this.getSlice(), (err, imageData, imgFloatArray) => {
 							if (err) {
 							console.warn(err);
 							}
 
-							that.__waitingForSlicer = false;
+							this.__waitingForSlicer = false;
 							//that.__texture.image = imageData;
 							var tmp = { data: imgFloatArray, width: imageData.width, height: imageData.height };
-							if (typeof that.__opts.postProcessFunction === 'function') {
-								that.__opts.postProcessFunction(tmp, that.__slicer);
+							if (typeof this.__opts.postProcessFunction === 'function') {
+								this.__opts.postProcessFunction(tmp, this.__slicer);
 							}
 
-							that.__texture.image = tmp;
-							that.__texture.unpackAlignment = 1;
+							this.__texture.image = tmp;
+							this.__texture.unpackAlignment = 1;
 
-							that.__materials.forEach(function (material) {
-								material.uniforms.imageType.value = that.__availableImageFormat;
-							}, that);
-							that.__texture.needsUpdate = true;
-							if (that.__numberOfScalarComponents == 3) {
-								that.__texture.format = THREE.RGBFormat;
-								that.__texture.type = THREE.UnsignedByteType;
+							this.__materials.forEach( material => {
+								material.uniforms.imageType.value = this.__availableImageFormat;
+							} );
+							this.__texture.needsUpdate = true;
+							if (this.__numberOfScalarComponents == 3) {
+								this.__texture.format = THREE.RGBAFormat;
+								this.__texture.type = THREE.UnsignedByteType;
 							}
 
-							if (that.__numberOfScalarComponents === 1) {
-								that.__contrastMultiplier = 1 / Math.abs(that.__scalarMax - that.__scalarMin);
-								that.__brightnessOffset = - that.__scalarMin * that.__contrastMultiplier;
+							if (this.__numberOfScalarComponents === 1) {
+								this.__contrastMultiplier = 1 / Math.abs(this.__scalarMax - this.__scalarMin);
+								this.__brightnessOffset = - this.__scalarMin * this.__contrastMultiplier;
 							}
-							that.setBrightnessAndContrast(that.__brightness, that.__contrast);
-						});
-					}, 1);
+							this.setBrightnessAndContrast(this.__brightness, this.__contrast);
+						} );
+					} );
 				}
 
 				this.__waitingForSlicer = [ this.getOrientation(), this.getSlice() ];
