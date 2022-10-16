@@ -3,7 +3,7 @@
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
   "license": "CECILL-B",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/valette/desk-ui.git"
@@ -50,9 +50,9 @@
     "compile": "qx compile --target source && qx compile --target build",
     "deploy": "qx deploy --source-maps --clean --out compiled/dist",
     "dev": "qx compile --target source --watch",
-    "fixCss" : "npm run fixBillboard && npm run fixXterm",
-    "fixXterm" : "cp node_modules/xterm/css/xterm.css source/resource/desk/css/",
-    "fixBillboard" : "cp node_modules/billboard.js/dist/billboard.css source/resource/desk/css/",
+    "fixCss": "npm run fixBillboard && npm run fixXterm",
+    "fixXterm": "cp node_modules/xterm/css/xterm.css source/resource/desk/css/",
+    "fixBillboard": "cp node_modules/billboard.js/dist/billboard.css source/resource/desk/css/",
     "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }
