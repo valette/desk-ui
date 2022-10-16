@@ -43,13 +43,16 @@
   },
   "scripts": {
     "build": "npm run clean && npm run buildDirty",
-    "buildDirty": "npm run bundle && npm run qooxdoo",
+    "buildDirty": "npm run fixCss && npm run buildWorkers && npm run qooxdoo",
     "buildAddons": "node source/buildAddons.js",
-    "bundle": "node source/buildWorkers.js",
+    "buildWorkers": "node source/buildWorkers.js",
     "clean": "rm -rf compiled",
     "compile": "qx compile --target source && qx compile --target build",
     "deploy": "qx deploy --source-maps --clean --out compiled/dist",
     "dev": "qx compile --target source --watch",
+    "fixCss" : "npm run fixBillboard && npm run fixXterm",
+    "fixXterm" : "cp node_modules/xterm/css/xterm.css source/resource/desk/css/",
+    "fixBillboard" : "cp node_modules/billboard.js/dist/billboard.css source/resource/desk/css/",
     "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
   }

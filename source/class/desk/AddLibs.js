@@ -2,6 +2,8 @@
 /**
  * Singleton class which adds external libraries
  * @ignore (require)
+ * @asset(desk/css/xterm.css)
+ * @asset(desk/css/billboard.css)
  */
 qx.Class.define( "desk.AddLibs",
 {
