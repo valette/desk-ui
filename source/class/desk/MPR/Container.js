@@ -357,7 +357,7 @@ qx.Class.define("desk.MPR.Container",
 				this.maximizeViewer(button.getUserData("sliceView").getOrientation());
 			} else {
 				this.resetMaximize();
-			}			
+			}
 		},
 
 		/**

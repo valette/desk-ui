@@ -22,6 +22,7 @@ qx.Class.define("desk.MPR.Volume",
 		this.base(arguments);
 		this.__MPRContainer = viewer;
 		this.__file = file;
+		this.__fileName = file.name ? file.name : file;
 
 		if (typeof options === "function") {
 			callback = options;
@@ -37,7 +38,7 @@ qx.Class.define("desk.MPR.Volume",
 		if ( options.visible != null ) this.setVisible( options.visible );
 		this.setLayout( new qx.ui.layout.VBox() );
 		this.setDecorator("main");
-		this.set({toolTipText : file});
+		this.set( { toolTipText : this.__fileName } );
 
 		this.add( this.getLabelContainer() );
 		const cont = new qx.ui.container.Composite();
@@ -128,6 +129,7 @@ qx.Class.define("desk.MPR.Volume",
 
 	members : {
 		__file : null,
+		__fileName : null,
 		__fileObject : null,
 		__options : null,
 		__slices : null,
@@ -154,7 +156,7 @@ qx.Class.define("desk.MPR.Volume",
 		getLabelContainer : function() {
 
 			if ( this.__labelContainer ) return this.__labelContainer;
-			let baseName = desk.FileSystem.getFileName(this.__file);
+			let baseName = desk.FileSystem.getFileName(this.__fileName);
 			const baseLength = baseName.length;
 			if ( baseLength > 25 ) {
 				baseName = baseName.substring(0, 10) + '...' +
