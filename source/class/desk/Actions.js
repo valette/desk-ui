@@ -7,7 +7,6 @@
  * @ignore (require)
  * @ignore (_.*)
  * @ignore (confirm)
- * @ignore (jsSHA)
  * @ignore (prettyData.json)
  * @ignore (prompt)
  * @ignore (desk_startup_script)
@@ -196,7 +195,9 @@ qx.Class.define("desk.Actions",
 				params.stream = true;
 				parameters.listener = function (message) {
 					if (params.handle === message.handle) {
-						options.listener(message);
+						try {
+							options.listener(message);
+						} catch ( e ) { console.warn( e ) }
 					}
 				};
 				actions.__socket.on("actionEvent", parameters.listener);
@@ -439,13 +440,14 @@ qx.Class.define("desk.Actions",
 			actionsMenu.add(new qx.ui.menu.Button("Statifier", null, null, menu));
 			var recordedFiles
 			var oldGetFileURL;
+			const crypto = require( "crypto" );
 
 			var getFileURL = function (file) {
 				this.debug("read : " + file);
 				this.__firstReadFile = this.__firstReadFile || file;
-				var sha = new jsSHA("SHA-1", "TEXT");
+				var sha = crypto.createHash("SHA1");
 				sha.update(JSON.stringify(file));
-				recordedFiles[sha.getHash("HEX")] = file;
+				recordedFiles[sha.digest("hex")] = file;
 				return oldGetFileURL(file);
 			}.bind(this);
 
@@ -457,13 +459,12 @@ qx.Class.define("desk.Actions",
 				recordedFiles = {};
 				this.__firstReadFile = null;
 				oldGetFileURL = desk.FileSystem.getFileURL;
-
 				desk.FileSystem.getFileURL = getFileURL;
 				start.setVisibility("excluded");
 				stop.setVisibility("visible");
 
 				// hack to include init scripts
-				var initDir = 'code/init';
+				const initDir = 'code/init';
 				desk.FileSystem.exists(initDir, function ( err, exists ) {
 					if ( exists ) desk.FileSystem.readDir(initDir, function () {});
 				} );
@@ -658,10 +659,10 @@ qx.Class.define("desk.Actions",
 		* @return {String} the hash
 		*/
 		__getActionSHA : function (params) {
-			var parameters = _.omit(params, 'handle');
-			var sha = new jsSHA("SHA-1", "TEXT");
+			const parameters = _.omit(params, 'handle');
+			const sha = require( "crypto" ).createHash("SHA1");
 			sha.update(JSON.stringify(parameters));
-			return sha.getHash("HEX");
+			return sha.digest("hex");
 		},
 
 		/**
@@ -700,9 +701,12 @@ qx.Class.define("desk.Actions",
 
 			}
 
-			if (params.callback) {
-				params.callback.call(params.context, res.killed || res.error, res);
-			}
+			try {
+
+				if (params.callback) {
+					params.callback.call(params.context, res.killed || res.error, res);
+				}
+			} catch ( e ) { console.warn( e );}
 		},
 
 		__garbageContainer : null,
@@ -898,7 +902,7 @@ qx.Class.define("desk.Actions",
 			}
 
 			log.clear();
-			const res = await desk.FileSystem.readFileAsync( this.__savedActionFile )
+			const res = await desk.FileSystem.readFileAsync( this.__savedActionFile );
 			const content = JSON.parse( res ) ;
 //			if (err) content = {files : {} ,actions : {}};
 			var actions = content.actions;
@@ -940,10 +944,10 @@ qx.Class.define("desk.Actions",
 			}
 
 			if ( nUnused ) log.log( nUnused + ' actions were discarded as they were not used.\n' );
-			log.log("Actions to copy : ");
+			log.log("Actions to copy : \n");
 			for ( let action of Object.values( actions ) ) log.log( action.outputDirectory + '\n', "blue" );
 			if ( Object.keys( actions ).length === 0 ) log.log( "none\n" );
-			log.log( "Files to copy : " );
+			log.log( "Files to copy : \n" );
 			for ( let file of Object.values( files ) ) log.log( file + '\n' );
 			if ( Object.keys( files ).length === 0) log.log("none\n");
 

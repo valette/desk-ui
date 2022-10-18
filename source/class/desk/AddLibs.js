@@ -51,7 +51,7 @@ qx.Class.define( "desk.AddLibs",
 		const libs = [
 
 			"chalk", { events : "EventEmitter" },
-			"heap", { heap : "Heap" }, { jssha : "jsSHA" }, { kdt : "kdTree" },
+			"heap", { heap : "Heap" }, { kdt : "kdTree" },
 			"numeric", { "random-js" : "randomJS" }, "jstat", { "chroma-js" : "chroma" },
 			"d3", { "billboard.js" : "c3", subField : "bb" },
 			{ "billboard.js" : "bb", subField : "bb" }
@@ -102,7 +102,6 @@ qx.Class.define( "desk.AddLibs",
 			require( "chalk" );
 			require( "events" );
 			require( "heap" );
-			require( "jssha" );
 			require( "kdt" );
 			require( "numeric" );
 			require( "random-js" );
