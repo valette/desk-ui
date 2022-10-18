@@ -76,6 +76,9 @@ qx.Class.define("desk.MPR.Volume",
 			}
 		} );
 
+		this.__oldGetUserData = this.getUserData; // deprecate getUserData( "slices" )
+		this.getUserData = this.__newGetUserData; // deprecate getUserData( "slices" )
+
 		this.__addVolumeToViewers().then( () => callback.call( context, null, this ) )
 			.catch( e => callback.call( context, e, this ) ); 
 
@@ -139,6 +142,16 @@ qx.Class.define("desk.MPR.Volume",
 		__brightnessContrastButton : null,
 		__opacitySlider : null,
 		__optionsButton : null,
+
+		__oldGetUserData : null,
+
+		__newGetUserData : function ( key ) {
+			if ( key == "slices" ) {
+				console.warn( 'volume.getUserData( "slices" ) is deprecated. Use volume.getSlices() instead ' );
+				return this.getSlices();
+			}
+			return this.__oldGetUserData( key );
+		},
 
 		
 		/**

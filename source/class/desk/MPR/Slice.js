@@ -471,8 +471,8 @@ qx.Class.define("desk.MPR.Slice",
 
 		__newGetUserData : function ( key ) {
 			if ( key == "mesh" )
-				console.warn( 'slice->getUserData( "mesh" ) is deprecated. Use MPR.SliceView.getMesh( slice ) instead ' );
-				return this.__oldGetUserData( key );
+				console.warn( 'slice.getUserData( "mesh" ) is deprecated. Use MPR.SliceView.getMesh( slice ) instead ' );
+			return this.__oldGetUserData( key );
 		},
 
 		/**
