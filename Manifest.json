@@ -11,7 +11,7 @@
         "email": "sebastien.valette@creatis.insa-lyon.fr"
       }
     ],
-    "version": "3.0.2"
+    "version": "3.0.3"
   },
   "provides": {
     "namespace": "desk",
