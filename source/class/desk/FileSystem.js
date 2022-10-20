@@ -4,7 +4,6 @@
  * @ignore ( _.* )
  * @ignore ( async.* )
  * @ignore ( desk_startup_script )
- * @ignore ( jsSHA )
  * @ignore ( require )
  */
 qx.Class.define("desk.FileSystem", 
@@ -193,9 +192,9 @@ qx.Class.define("desk.FileSystem",
 		* </pre>
 		*/
 		writeCachedFile : function (name, content, callback, context) {
-			var sha = new jsSHA("SHA-1", "TEXT");
+			var sha = require( "crypto" ).createHash("SHA1");
 			sha.update(content);
-			var hash = sha.getHash("HEX");
+			var hash = sha.digest("hex");
 			var file = "cache/" + hash[0] + "/" + hash[1] + "/" + hash +
 				"/" + name;
 			async.waterfall([
