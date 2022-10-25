@@ -25,8 +25,8 @@ qx.Class.define("desk.Actions",
 	*/
 	construct : function() {
 		this.base(arguments);
-		desk.AddLibs.getInstance();
-		desk.AddPromises.getInstance();
+		desk.core.AddLibs.getInstance();
+		desk.core.AddPromises.getInstance();
 		desk.FileSystem.getInstance();
 		this.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 

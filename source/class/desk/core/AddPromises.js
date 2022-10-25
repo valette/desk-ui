@@ -3,7 +3,7 @@
  * @ignore (require)
  * @ignore (async.*)
  */
-qx.Class.define( "desk.AddPromises", 
+qx.Class.define( "desk.core.AddPromises", 
 {
 	extend : qx.core.Object,
 

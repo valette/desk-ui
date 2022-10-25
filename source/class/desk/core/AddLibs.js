@@ -5,7 +5,7 @@
  * @asset(desk/css/xterm.css)
  * @asset(desk/css/billboard.css)
  */
-qx.Class.define( "desk.AddLibs",
+qx.Class.define( "desk.core.AddLibs",
 {
 	extend : qx.core.Object,
 
