@@ -3,7 +3,7 @@
  * @lint ignoreDeprecated ( alert )
  * @ignore( localStorage.* )
  */
-qx.Class.define("desk.TextEditor", 
+qx.Class.define("desk.Ace.Editor", 
 {
   extend : qx.ui.container.Composite,
 

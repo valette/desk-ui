@@ -2,7 +2,7 @@
  * A web terminal
  */
 
-qx.Class.define("desk.Terminal", 
+qx.Class.define("desk.Xterm.Terminal", 
 {
 	extend : qx.ui.container.Composite,
 

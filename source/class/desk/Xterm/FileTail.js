@@ -1,9 +1,9 @@
 /**
  * A file tail display class
  */
-qx.Class.define("desk.FileTail", 
+qx.Class.define("desk.Xterm.FileTail", 
 {
-	extend : desk.LogContainer,
+	extend : desk.Xterm.Logger,
 
     /**
     * Constructor

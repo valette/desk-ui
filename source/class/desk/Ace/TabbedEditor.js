@@ -6,7 +6,7 @@
  * @lint ignoreDeprecated ( confirm )
  * @ignore( localStorage.* )
  */
-qx.Class.define("desk.TabTextEditor",
+qx.Class.define("desk.Ace.TabbedEditor",
 {
 	extend : qx.core.Object,
 	type : "singleton",

@@ -3,7 +3,7 @@
  * @ignore(Terminal)
  * @ignore(require)
  */
-qx.Class.define("desk.LogContainer", {
+qx.Class.define("desk.Xterm.Logger", {
 
 	extend : qx.ui.embed.Html,
 

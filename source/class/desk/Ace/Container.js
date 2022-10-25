@@ -10,7 +10,7 @@
 /**
  * Container for the ACE source code editor.
  */
-qx.Class.define("desk.AceContainer", {
+qx.Class.define("desk.Ace.Container", {
 	extend : qx.ui.container.Composite,
 
 	/**

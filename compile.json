@@ -40,6 +40,7 @@
       "type" :  "browser",
       "environment": {
         "qx.icontheme": "Tango",
+        "qxl.apiviewer.applications": [ "desk-ui"],
         "qxl.apiviewer.applicationName": "",
         "qxl.apiviewer.exclude": [
           "qxl.apiviewer.*"

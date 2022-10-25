@@ -80,26 +80,51 @@ qx.Class.define( "desk.AddPromises",
 		};
 
 		const classesToDeprecate = {
+
 			"desk.Slicer" : "desk.MPR.Slicer",
 			"desk.VolumeSlice" : "desk.MPR.Slice",
 			"desk.VolumeViewer" : "desk.MPR.Viewer",
 			"desk.MPRContainer" : "desk.MPR.Container",
 			"desk.ThreeContainer" : "desk.THREE.Scene",
 			"desk.SceneContainer" : "desk.THREE.Container",
-			"desk.MeshViewer" : "desk.THREE.Viewer"
+			"desk.MeshViewer" : "desk.THREE.Viewer",
+			"desk.AceContainer" : "desk.Ace.Container",
+			"desk.TextEditor" : "desk.Ace.Editor",
+			"desk.TabTextEditor" : "desk.Ace.TabbedEditor",
+			"desk.FileTail" : "desk.Xterm.FileTail",
+			"desk.LogContainer" : "desk.Xterm.Logger",
+			"desk.Terminal" : "desk.Xterm.Terminal",
+			"desk.FileTail" : "desk.Xterm.FileTail"
+
 		};
 
-		for ( let [ deprecated, replacement ] of Object.entries( classesToDeprecate ) ) {
-
-			eval( `qx.Class.define("${deprecated}", {
-				extend : ${replacement},
-				construct : function(...args) {
-					${replacement}.constructor.call(this, ...args);
-					console.warn( "${deprecated} is deprecated. Use ${replacement} instead.");
-				}
-			});`);
+		if ( window.testfff ) {
+			new desk.Ace.Container();
+			new desk.Ace.Editor();
+			new desk.Ace.TabbedEditor();
+			new desk.Xterm.Logger();
+			new desk.Xterm.Terminal();
+			new desk.Xterm.FileTail();
 
 		}
+
+		Object.entries( classesToDeprecate ).forEach( entry => {
+
+			const [ deprecated, replacement ] = entry;
+			source = deprecated.split( "." )[ 1 ];
+
+			Object.defineProperty( window.desk, source, { get() {
+
+				target = window;
+				for ( let field of replacement.split( "." ) )
+					target = target[ field ];
+
+				console.warn( deprecated + " is deprecated, use "
+					+  replacement + " instead" );
+				return target;
+			} } );
+
+		} );
 
 		const MPRmembersToDeprecate = {
 
