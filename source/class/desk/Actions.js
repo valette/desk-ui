@@ -44,24 +44,23 @@ qx.Class.define("desk.Actions",
 					}.bind( this ) , 2000 );
 				}, this );
 				this.__socket.on("action finished", this.__onActionEnd.bind(this));
-				this.__socket.on("disconnect", function () {
-					console.warn( 'disconnected from server' );
-					this.__socket.once( 'connect', function () {
-						console.warn( 'connected' );
-						desk.Actions.execute( { manage : 'list'}, function (err, res) {
-							var actions = res.ongoingActions
-							this.__ongoingActions.getChildren().slice().map( function ( item ) {
-								var params = item.getUserData( 'params' );
-								var action = actions[ params.POST.handle ];
-								if ( !action ) {
-									params.callback = function () {};
-									this.__onActionEnd( { handle : params.POST.handle } );
-								}
+				this.__socket.on("disconnect", async ()  => {
 
-							}.bind( this ) );
-						}.bind( this ) );
-					}.bind( this ) );
-				}.bind( this ) );
+					console.warn( 'disconnected from server' );
+					await new Promise( res => this.__socket.once( 'connect', res ) );
+					console.warn( 'connected' );
+					const res = await desk.Actions.executeAsync( { manage : 'list'} );
+					const actions = res.ongoingActions
+					for ( let item of this.__ongoingActions.getChildren().slice() ) {
+						const params = item.getUserData( 'params' );
+						const action = actions[ params.POST.handle ];
+						if ( !action ) {
+							params.callback = function () {};
+							this.__onActionEnd( { handle : params.POST.handle } );
+						}
+					}
+
+				} );
 				console.log("powered by node.js");
 				this.__socket.once( "connect", function () {
 					// add already running actions
