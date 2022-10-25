@@ -1,0 +1,5 @@
+node_modules/
+compiled/
+qx-lock.json
+qx_packages/
+
