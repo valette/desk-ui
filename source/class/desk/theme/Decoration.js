@@ -15,6 +15,25 @@ qx.Theme.define("desk.theme.Decoration",
 
   decorations :
   {
+		"window" :
+		{
+		  decorator : [
+			qx.ui.decoration.MSingleBorder,
+			qx.ui.decoration.MBorderRadius,
+			qx.ui.decoration.MBackgroundColor
+		  ],
+
+		  style :
+		  {
+			radius: 6,
+			width: 1,
+			color: "window-border",
+			shadowLength: 1,
+			shadowBlurRadius: 3,
+			shadowColor: "shadow",
+			backgroundColor: "background",
+		  }
+		},
 		"button-box" :
 		{
 		  decorator : [
