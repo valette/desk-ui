@@ -7,7 +7,6 @@
  * @ignore (require)
  * @ignore (_.*)
  * @ignore (confirm)
- * @ignore (prettyData.json)
  * @ignore (prompt)
  * @ignore (desk_startup_script)
  * @lint ignoreDeprecated (alert)
@@ -28,77 +27,14 @@ qx.Class.define("desk.Actions",
 		desk.core.AddLibs.getInstance();
 		desk.core.AddPromises.getInstance();
 		desk.FileSystem.getInstance();
-		this.__garbageContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox());
 
 		if ( typeof desk_startup_script !== "string" ) {
 			if ( qx.bom.Cookie.get("homeURL" ) ) {
 				// support for node.js
-				this.__socket = require('socket.io-client')({path : desk.FileSystem.getBaseURL() + 'socket.io'});
-				this.__engine = "node";
-				this.__socket.on("action started", function (POST) {
-					var actions = desk.Actions.getInstance();
-					var params = actions.__runingActions[POST.handle] =
-						actions.__runingActions[POST.handle] || { POST : POST };
-					setTimeout(function () {
-						actions.__addActionToList( actions.__runingActions[POST.handle] );
-					}.bind( this ) , 2000 );
-				}, this );
-				this.__socket.on("action finished", this.__onActionEnd.bind(this));
-				this.__socket.on("disconnect", async ()  => {
-
-					console.warn( 'disconnected from server' );
-					await new Promise( res => this.__socket.once( 'connect', res ) );
-					console.warn( 'connected' );
-					const res = await desk.Actions.executeAsync( { manage : 'list'} );
-					const actions = res.ongoingActions
-					for ( let item of this.__ongoingActions.getChildren().slice() ) {
-						const params = item.getUserData( 'params' );
-						const action = actions[ params.POST.handle ];
-						if ( !action ) {
-							params.callback = function () {};
-							this.__onActionEnd( { handle : params.POST.handle } );
-						}
-					}
-
-				} );
-				console.log("powered by node.js");
-				this.__socket.once( "connect", function () {
-					// add already running actions
-					desk.Actions.execute( { manage : 'list'}, function (err, res) {
-						var actions = res.ongoingActions
-						Object.keys(actions).forEach( function ( handle ) {
-							desk.Actions.getInstance().__addActionToList( actions[ handle ] );
-							desk.Actions.getInstance().__runingActions[ handle ] = actions[ handle ];
-						});
-					} );
-				} );
+				this.__initNode();
 			} else try {
 				// support for electron.js / nw.js
-				this.__socket = require('desk-base');
-				this.__setEmitLog = this.__socket.setEmitLog;
-				this.__socket.setLogToConsole(false);
-				this.__engine = "electron/nw";
-				this.__execute = function (params) {
-					this.__socket.execute(params, this.__onActionEnd.bind(this));
-				};
-				this.__loadSettings = function () {
-					setTimeout(function() {
-						this.__setSettings(this.__socket.getSettings());
-					}.bind(this), 10);
-				};
-				if (typeof window.nw === 'undefined') {
-					this.__engine = "electron";
-					console.log("powered by electron.js");
-					const el = "electron";
-					var ipcRenderer = require(el).ipcRenderer
-					window.prompt = function(title, val) {
-						return ipcRenderer.sendSync('prompt', {title : title, val : val});
-					}
-				} else {
-					console.log("powered by nw.js");
-					this.__engine = "nw";
-				}
-				this.__loadSettings();
+				this.__initElectronNW();
 			} catch (e) {
 				console.log(e);
 			}
@@ -124,15 +60,11 @@ qx.Class.define("desk.Actions",
 		}
 
 		this.__socket.on("actions updated", this.__setSettings.bind(this));
-		this.__ongoingActions = new qx.ui.container.Composite(new qx.ui.layout.VBox());
-		this.__clearErrorButton = new qx.ui.form.Button(null, "icon/16/actions/dialog-close.png");
-		this.__clearErrorButton.addListener( "click" , function () {
-			Object.entries( this.__runingActions ).forEach( function ( entry ) {
-				if ( entry[ 1 ].error ) this.killAction( entry[ 0 ] );
-			}, this );
-			this.__clearErrorButton.setVisibility( "excluded" );
-		}, this );
-		this.__clearErrorButton.setToolTipText("Clear errors");
+
+		this.__createOngoingActionsWindow();
+		this.__createHistoryWindow();
+		this.__createErrorContainer();
+
 	},
 
 	statics : {
@@ -145,7 +77,7 @@ qx.Class.define("desk.Actions",
 		* @param context {Object} : optional context for the callback
 		*/
 		init : function (callback, context) {
-			var actions = desk.Actions.getInstance();
+			const actions = desk.Actions.getInstance();
 			if (actions.__settings && !actions.__settings.not_initialised ) {
 				callback.apply(context);
 			} else {
@@ -283,7 +215,11 @@ qx.Class.define("desk.Actions",
 		__runingActions : {},
 		__settings : { not_initialised : true, actions : [] },
 		__ongoingActions : null,
-		__clearErrorButton : null,
+		__ongoingActionsWindow : null,
+		__history : null,
+		__historyWindow : null,
+		__errorContainer : null,
+		__disconnectContainer : null,
 		__recordedActions : null,
 		__savedActionFile : 'cache/responses.json',
 		__firstReadFile : null,
@@ -316,11 +252,247 @@ qx.Class.define("desk.Actions",
 			return this.__socket;
 		},
 
+		__createOngoingActionsWindow : function () {
+
+			const win = this.__ongoingActionsWindow = new qx.ui.window.Window();
+
+			win.set( {
+				layout :  new qx.ui.layout.VBox(),
+				showMinimize : false,
+				alwaysOnTop : true,
+				caption : "Running actions",
+				width : 500,
+				height : 500
+			} );
+
+			this.__ongoingActions = new qx.ui.form.List();
+
+			const getAction = () => {
+
+				const selection = this.__ongoingActions.getSelection();
+				if ( !selection || !selection.length ) {
+					window.alert( "No action was selected. Please select one" );
+					return;
+				}
+
+				return selection[ 0 ];
+
+			}
+
+			const kill = new qx.ui.menu.Button('Kill/remove');
+			kill.addListener('execute', () => {
+				const item = getAction();
+				if  (!item ) return;
+				this.killAction(item.getUserData("params").POST.handle );
+			} );
+
+			const killAll = new qx.ui.menu.Button('Kill/remove all').set({
+				blockToolTip : false, toolTipText : "To kill all runing actions on server"});
+
+			killAll.addListener( 'execute', () => {
+
+				if (!confirm('Do you want to kill all actions?')) {
+					return;
+				}
+
+				for ( let handle of Object.keys(this.__runingActions) ) {
+					this.killAction( handle );
+					const children = this.__ongoingActions.getChildren();
+				}
+
+			} );
+
+			const properties = new qx.ui.menu.Button('Properties');
+			properties.addListener('execute', () => {
+				const item = getAction();
+				if  (!item ) return;
+				console.log( item.getUserData("params") );
+			} );
+
+			const tail = new qx.ui.menu.Button('Console output');
+			tail.addListener('execute', async () => {
+
+				const item = getAction();
+				if  (!item ) return;
+				const handle = item.getUserData("params").POST.handle;
+				const res = await desk.Actions.executeAsync( { manage : 'list'} );
+
+				for ( let handle2 of Object.keys( res.ongoingActions ) ) {
+					if ( handle !== handle2 ) continue;
+					new desk.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
+				}
+
+			} );
+
+			const menu = new qx.ui.menu.Menu();
+			menu.add(kill);
+			menu.add(killAll);
+			menu.add(properties);
+			menu.add(tail);
+			this.__ongoingActions.setContextMenu(menu);
+
+			const label = new qx.ui.basic.Label( "" );
+			label.set( { rich : true, selectable : true } );
+			const scroll = new qx.ui.container.Scroll( label );
+			scroll.setDecorator( "main" );
+			const pane = new qx.ui.splitpane.Pane( "vertical" )
+			pane.add( this.__ongoingActions, 2 );
+			pane.add( scroll, 1 );
+			win.add( pane, { flex : 1 } );
+
+			this.__ongoingActions.addListener( "changeSelection", ( e ) => {
+
+				if ( !e.getData().length ) {
+					label.setValue( "" );
+					return;
+				}
+				const params = e.getData()[ 0 ].getUserData("params");
+				console.log( params );
+				const params2 = { ...params };
+				delete params2[ "item" ];
+				label.setValue( JSON.stringify( params2, null, 2 )
+					.split( "\n" ).join( '<br>' ) );
+
+
+			} );
+		},
+
+		__createHistoryWindow : function () {
+
+			this.__history = new qx.ui.form.List();
+			const win = this.__historyWindow = new qx.ui.window.Window();
+
+			win.set( {
+				layout :  new qx.ui.layout.VBox(),
+				alwaysOnTop : true,
+				showMinimize : false,
+				caption : "Actions history",
+				width : 500,
+				height : 500
+			} );
+
+			const label = new qx.ui.basic.Label( "" );
+			label.set( { rich : true, selectable : true } );
+			const scroll = new qx.ui.container.Scroll( label );
+			scroll.setDecorator( "main" );
+			const pane = new qx.ui.splitpane.Pane( "vertical" )
+			pane.add( this.__history, 2 );
+			pane.add( scroll, 1 );
+			win.add( pane, { flex : 1 } );
+
+			this.__history.addListener( "changeSelection", ( e ) => {
+
+				if ( !e.getData().length ) {
+					label.setValue( "" );
+					return;
+				}
+				const params = e.getData()[ 0 ].getUserData("params");
+				console.log( params );
+				label.setValue( JSON.stringify( params, null, 2 )
+					.split( "\n" ).join( '<br>' ) );
+
+
+			} );
+
+			win.addListener( "appear", () => {
+				const history = this.__history.getChildren();
+				if ( !history.length ) return;
+				this.__history.setSelection( [ history[ history.length - 1 ] ] );
+			} );
+
+		},
+
+		__initNode : function () {
+
+			this.__createDisconnectContainer();
+			this.__socket = require('socket.io-client')({path : desk.FileSystem.getBaseURL() + 'socket.io'});
+			this.__engine = "node";
+			this.__socket.on("action started", POST => {
+
+				const params = this.__runingActions[POST.handle] =
+					this.__runingActions[POST.handle] || { POST : POST };
+				this.__addActionToList( params );
+
+			} );
+
+			this.__socket.on("action finished", this.__onActionEnd.bind(this));
+			this.__socket.on("disconnect", this.__onDisconnect.bind( this ) );
+			console.log("powered by node.js");
+			this.__socket.once( "connect", async () => {
+
+				// add already running actions
+				const res = await desk.Actions.executeAsync( { manage : 'list'} );
+				const actions = res.ongoingActions;
+				for ( let handle of Object.keys(actions) ) {
+					this.__addActionToList( actions[ handle ] );
+					this.__runingActions[ handle ] = actions[ handle ];
+				}
+
+			} );
+
+		},
+
+		__initElectronNW : function () {
+
+			this.__socket = require('desk-base');
+			this.__setEmitLog = this.__socket.setEmitLog;
+			this.__socket.setLogToConsole(false);
+			this.__engine = "electron/nw";
+			this.__execute = function (params) {
+				this.__socket.execute(params, this.__onActionEnd.bind(this));
+			};
+			this.__loadSettings = function () {
+				setTimeout(function() {
+					this.__setSettings(this.__socket.getSettings());
+				}.bind(this), 10);
+			};
+			if (typeof window.nw === 'undefined') {
+				this.__engine = "electron";
+				console.log("powered by electron.js");
+				const el = "electron";
+				var ipcRenderer = require(el).ipcRenderer
+				window.prompt = function(title, val) {
+					return ipcRenderer.sendSync('prompt', {title : title, val : val});
+				}
+			} else {
+				console.log("powered by nw.js");
+				this.__engine = "nw";
+			}
+			this.__loadSettings();
+		},
+
+		__onDisconnect : async function() {
+
+			this.__disconnectContainer.setVisibility( "visible" );
+			console.warn( 'disconnected from server' );
+			await new Promise( res => this.__socket.once( 'connect', res ) );
+			console.warn( 'connected' );
+			this.__disconnectContainer.setVisibility( "excluded" );
+			const res = await desk.Actions.executeAsync( { manage : 'list'} );
+			const actions = res.ongoingActions;
+
+			for ( let item of this.__ongoingActions.getChildren().slice() ) {
+
+				const params = item.getUserData( 'params' );
+				const action = actions[ params.POST.handle ];
+
+				if ( !action ) {
+
+					params.callback = function () {};
+					this.__onActionEnd( { handle : params.POST.handle } );
+
+				}
+
+			}
+
+		},
+
 		/**
 		* Creates the action menu
 		*/
 		__createActionsMenu : function () {
-			var menu = new qx.ui.menu.Menu();
+
+			const menu = new qx.ui.menu.Menu();
 
 			// add server load item
 			var loadWidget = new qx.ui.menu.Button("CPU Load");
@@ -358,12 +530,35 @@ qx.Class.define("desk.Actions",
 			});
 			menu.add(terminalButton);
 
+			var actionsMenu = new qx.ui.menu.Menu();
+			menu.add(new qx.ui.menu.Button("Actions", null, null, actionsMenu));
+
+			var showActionsButton = new qx.ui.menu.Button("Show running actions");
+			showActionsButton.addListener( "execute", ( e ) => {
+
+				this.__ongoingActionsWindow.open();
+				this.__ongoingActionsWindow.center();
+
+			} );
+
+			actionsMenu.add(showActionsButton);
+
+			var showHistoryButton = new qx.ui.menu.Button("Show actions history");
+			showHistoryButton.addListener( "execute", () => {
+
+				this.__historyWindow.open();
+				this.__historyWindow.center();
+
+			} );
+			actionsMenu.add(showHistoryButton);
+
+
 			var forceButton = new qx.ui.menu.CheckBox("Disable cache");
 			forceButton.setBlockToolTip(false);
 			forceButton.setToolTipText("When active, this options disables actions caching");
 			forceButton.bind('value', this, 'forceUpdate');
 			this.bind('forceUpdate', forceButton, 'value');
-			menu.add(forceButton);
+			actionsMenu.add(forceButton);
 
 			menu.add(this.__getPasswordButton());
 			var logMenu = new qx.ui.menu.Menu();
@@ -407,25 +602,23 @@ qx.Class.define("desk.Actions",
 
 			if ( !this.__engine ) return;
 
-			setInterval( function( ){
+			setInterval( async ( ) => {
 
-				desk.Actions.execute({
+				const res = await desk.Actions.executeAsync( {
 
 					action : 'cpuLoad',
 					stdout  : true,
 					silent : true
 
-				}, function ( err, res ) {
-
-					var loadavg = JSON.parse( res.stdout )[ 0 ];
-					var load = Math.max( 0, Math.min( 100, Math.round( 100 * loadavg ) ) );
-					var color = Math.floor( 2.55 * ( 100 - load ));
-					loadWidget.setBackgroundColor( 'rgb(255,'  + color + ', ' + color + ')');
-					loadWidget.setLabel( "CPU Load  : " + load + "%" );
-
 				} );
 
-			}, 5000);
+				const loadavg = JSON.parse( res.stdout )[ 0 ];
+				const load = Math.max( 0, Math.min( 100, Math.round( 100 * loadavg ) ) );
+				const color = Math.floor( 2.55 * ( 100 - load ));
+				loadWidget.setBackgroundColor( 'rgb(255,'  + color + ', ' + color + ')');
+				loadWidget.setLabel( "CPU Load  : " + load + "%" );
+
+			}, 60000);
 
 			qx.core.Init.getApplication().getRoot().add(button, {top : 0, right : 0});
 		},
@@ -596,6 +789,67 @@ qx.Class.define("desk.Actions",
 			return button;
 		},
 
+		__createErrorContainer : function () {
+
+			const cont = this.__errorContainer = new qx.ui.container.Composite();
+			cont.set( {
+				layout : new qx.ui.layout.VBox(),
+				width : 350,
+				height : 80,
+				zIndex : 1000000,
+				decorator : "border-invalid",
+				backgroundColor : "white"
+			} );
+
+			qx.core.Init.getApplication().getRoot().add(
+				cont, { right : 100, top : 0 } );
+
+			const label = new qx.ui.basic.Label( "<strong>An action error has occured. Please check history</strong>" );
+			label.set( { rich : true } );
+			cont.add( label, { flex : 1 } );
+
+			const cont2 = new qx.ui.container.Composite( new qx.ui.layout.HBox() );
+
+			const button = new qx.ui.form.Button( "Check history" );
+			button.addListener( "execute", () => {
+				this.__historyWindow.open();
+				this.__historyWindow.center();
+				cont.setVisibility( "excluded" );
+			} );
+			cont2.add( button, { flex : 1 } );
+
+			const clearButton = new qx.ui.form.Button( "Clear" );
+			clearButton.addListener( "execute", () => {
+				cont.setVisibility( "excluded" );
+			} );
+			cont2.add( clearButton, { flex : 1 } );
+			cont.add( cont2, { flex : 1 } );
+			cont.setVisibility( "excluded" );
+
+		},
+
+		__createDisconnectContainer : function () {
+
+			const cont = this.__disconnectContainer = new qx.ui.container.Composite();
+			cont.set( {
+				layout : new qx.ui.layout.VBox(),
+				width : 350,
+				height : 50,
+				zIndex : 1000000,
+				decorator : "border-invalid",
+				backgroundColor : "white"
+			} );
+
+			qx.core.Init.getApplication().getRoot().add(
+				cont, { left : 100, top : 0 } );
+
+			const label = new qx.ui.basic.Label( "<strong>Disconnected from server. Please wait</strong>" );
+			label.set( { rich : true } );
+			cont.add( label, { flex : 1 } );
+			cont.setVisibility( "excluded" );
+
+		},
+
 		/**
 		* Returns the complete settings object
 		* @return {Object} settings
@@ -624,14 +878,10 @@ qx.Class.define("desk.Actions",
 		},
 
 		/**
-		* builds the actions UI
+		* builds the actions UI. Does nothing now
 		*/
 		buildUI : function () {
-			this.__ongoingActions.set ({width : 200, zIndex : 1000000,
-				decorator : "statusbar", backgroundColor : "transparent"});
-			qx.core.Init.getApplication().getRoot().add(this.__ongoingActions, {top : 0, right : 100});
-			qx.core.Init.getApplication().getRoot().add(this.__clearErrorButton, {top : 0, right : 300});
-			this.__clearErrorButton.set ({visibility : "excluded", zIndex : 1000000 });
+			console.warn( "desk.Actions.buildUI() is now useless. Do not call it." )
 
 		},
 
@@ -642,13 +892,7 @@ qx.Class.define("desk.Actions",
 		* @param context {Object} optional context for the callback
 		*/
 		killAction : function (handle, callback, context) {
-			var params = this.__runingActions[handle];
-			if (params && params.item && (params.item.getDecorator() === "tooltip-error")) {
-				this.__garbageContainer.add(params.item);
-				params.item.resetDecorator();
-				delete this.__runingActions[handle];
-				return;
-			}
+			const params = this.__runingActions[handle];
 			desk.Actions.execute({manage : 'kill', actionHandle : handle}, callback, context);
 		},
 
@@ -672,33 +916,32 @@ qx.Class.define("desk.Actions",
 			var params = this.__runingActions[res.handle];
 			if (!params) return;
 
-			if (params.listener) {
+			if (params.listener)
 				this.__socket.removeListener("actionEvent", params.listener);
-			}
 
 			if (this.__recordedActions && this.__engine) {
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 			}
 
-			if ( params.POST.manage ) {
+			delete this.__runingActions[ res.handle ];
 
-				delete this.__runingActions[ res.handle ];
-
-			} else if ( res.error  ) {
+			if ( res.error  ) {
 
 				console.log( "Error : ", res );
 				if ( res.error.message ) console.log( res.error.message );
 				params.error = res.error;
-				var item = params.item;
+				const item = params.item;
 				if ( item ) item.setDecorator("tooltip-error");
-				this.__clearErrorButton.setVisibility( "visible" );
-
-			} else {
-
-				delete this.__runingActions[res.handle];
-				if (params.item) this.__garbageContainer.add(params.item);
+				this.__errorContainer.setVisibility( "visible" );
 
 			}
+
+			const item = params.item || this.__addActionToList( params );
+			if ( item ) this.__history.add( params.item );
+			params.response = res;
+			if ( !this.__ongoingActions.getChildren().length )
+				this.__settingsButton.setBackgroundColor( "transparent" );
+
 
 			try {
 
@@ -706,9 +949,11 @@ qx.Class.define("desk.Actions",
 					params.callback.call(params.context, res.killed || res.error, res);
 				}
 			} catch ( e ) { console.warn( e );}
-		},
 
-		__garbageContainer : null,
+			for ( let field of [ "callback", "item", "context", "listener" ] )
+				delete params[ field ];
+
+		},
 
 		/**
 		* launches an action
@@ -733,73 +978,19 @@ qx.Class.define("desk.Actions",
 		* @param params {Object} action parameters
 		*/
 		__addActionToList : function(params) {
+
 			if ( !params || params.POST.silent || params.POST.manage ) {
 				return;
 			}
-			if (this.__ongoingActions.getChildren().length > 20) {
-				setTimeout(function () {
-					this.__addActionToList(params);
-				}.bind(this), 2000 * Math.random());
-				return;
-			}
-			var item = this.__garbageContainer.getChildren()[0];
-			if (!item) {
-				item = new qx.ui.form.ListItem("dummy");
 
-				var kill = new qx.ui.menu.Button('Kill/remove');
-				kill.addListener('execute', function () {
-					this.killAction(item.getUserData("params").POST.handle);
-				}, this);
-
-				var killAll = new qx.ui.menu.Button('Kill/remove all').set({
-					blockToolTip : false, toolTipText : "To kill all runing actions on server"});
-				killAll.addListener('execute', function () {
-					if (!confirm('Do you want to kill all actions?')) {
-						return;
-					}
-					Object.keys(this.__runingActions).forEach(_.ary(this.killAction, 1), this);
-				}, this);
-				
-				var properties = new qx.ui.menu.Button('Properties');
-				properties.addListener('execute', function () {
-					console.log(item.getUserData("params"));
-				}, this);
-				
-				var tail = new qx.ui.menu.Button('Console output');
-				tail.addListener('execute', function () {
-					var handle = item.getUserData("params").POST.handle;
-					desk.Actions.execute( { manage : 'list'}, function (err, res) {
-						Object.keys(res.ongoingActions).forEach( function ( handle2 ) {
-							if ( handle !== handle2 ) return;
-							new desk.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
-						});
-					} );
-				} );
-
-				var menu = new qx.ui.menu.Menu();
-				menu.add(kill);
-				menu.add(killAll);
-				menu.add(properties);
-				menu.add(tail);
-				item.setContextMenu(menu);
-			}
+			const item = new qx.ui.form.ListItem("dummy");
 			item.setLabel(params.POST.action || params.POST.manage || "");
-			if ( params.POST.action && ( params.POST.action === "cpuLoad" ) ) {
-				item.setLabel( "Reconnecting to server ..." );
-				this.__socket.connect();
-			}
-
-			item.setOpacity( 0.7 );
-			if ( params.error ) {
-				this.__clearErrorButton.setVisibility( 'visible' );
-				item.setDecorator( "tooltip-error" );
-			} else {
-				item.setDecorator( "button-hover" );
-			}
 			params.item = item;
-			item.setUserData("params", params);
-			this.__ongoingActions.add(item);
+			item.setUserData( "params" , params );
+			this.__ongoingActions.add( item );
+			this.__settingsButton.setBackgroundColor( "green" );
 			return item;
+
 		},
 
 		/**

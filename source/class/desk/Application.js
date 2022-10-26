@@ -10,12 +10,8 @@
 
 /**
  * @asset(desk/*)
- * @asset(webpack-bundle/bundle.js)
  * @ignore (desk_startup_script)
  * @ignore (desk.auto)
- * @ignore (Promise)
- * @ignore (require)
- * @ignore (Promise.*)
  */
 
 qx.Class.define("desk.Application",
@@ -77,7 +73,6 @@ qx.Class.define("desk.Application",
 
 			}
 
-			actions.buildUI();
 			new desk.FileBrowser( desk.URLParameters.getParameter( "rootDir" ), { standalone : true } );
 
 		}
