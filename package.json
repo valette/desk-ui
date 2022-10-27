@@ -14,10 +14,10 @@
     "shelljs": "0.8.5"
   },
   "devDependencies": {
-    "@qooxdoo/framework": "7.2.1",
-    "ace-builds": "1.11.2",
+    "@qooxdoo/framework": "7.3.0",
+    "ace-builds": "1.12.3",
     "async": "3.2.4",
-    "billboard.js": "3.6.0",
+    "billboard.js": "3.6.2",
     "bowser": "2.11.0",
     "chalk": "4.1.2",
     "chroma-js": "2.4.2",
@@ -30,7 +30,7 @@
     "operative": "0.4.6",
     "papaya-viewer": "1.0.1449",
     "random-js": "2.1.0",
-    "socket.io-client": "4.5.2",
+    "socket.io-client": "4.5.3",
     "three": "0.145",
     "xterm": "5.0.0",
     "xterm-addon-fit": "^0.6.0"
