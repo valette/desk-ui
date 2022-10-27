@@ -1,7 +1,6 @@
 
 /**
  * Singleton class which adds external libraries
- * @ignore (require)
  * @asset(desk/css/xterm.css)
  * @asset(desk/css/billboard.css)
  */
@@ -48,43 +47,67 @@ qx.Class.define( "desk.core.AddLibs",
 		window._ = require ('lodash');
 		window.async = require( "async" );
 
+		function operativeShim( operative ) {
+
+			operative.setBaseURL(self.location.protocol + '//'
+				+ self.location.host
+				+ ( desk.FileSystem.getBaseURL() || self.location.pathname )
+				+ '/');
+
+		}
+
 		const libs = [
 
 			"chalk", { events : "EventEmitter" },
 			"heap", { heap : "Heap" }, { kdt : "kdTree" },
 			"numeric", { "random-js" : "randomJS" }, "jstat", { "chroma-js" : "chroma" },
 			"d3", { "billboard.js" : "c3", subField : "bb" },
-			{ "billboard.js" : "bb", subField : "bb" }
+			{ "billboard.js" : "bb", subField : "bb" },
+			{ "operative" : "operative", shim : operativeShim, noAssign : true }
 
 		];
 
+		const fieldsToIgnore = [ "subField", "shim", "noAssign" ];
+
 		libs.forEach( lib => {
 
-			let target = lib;
-			let subField;
+			let target;
 
-			if ( typeof lib !== 'string') {
-				const obj = lib;
-				for ( let field of Object.keys( lib ) )
-					if ( field != "subField" ) {
-						lib = field;
-						target = obj[ field ];
-					}
+			if ( typeof lib == 'string') {
+				const temp = lib;
+				lib = {};
+				lib[ temp ] = temp;
+			}
 
-				if ( obj.subField ) subField = obj.subField;
+			const obj = lib;
+			for ( let field of Object.keys( lib ) ) {
+
+				if ( !fieldsToIgnore.includes( field ) ) {
+					lib = field;
+					target = obj[ field ];
+				}
+
+				if ( obj.shim ) shim = obj.shim;
+				if ( obj.subField ) shim = obj.subField;
 
 			}
 
-			const subText = subField ? "." + subField : "";
+			let library;
 
 			Object.defineProperty( window, target, {
 
 				get() {
-					if ( subField ) return require( lib )[ subField ];
-					return require( lib );
+					if ( library ) return library;
+					if ( obj.noAssign )	require( lib );
+					else library = require( lib );
+					if ( obj.subField ) library =  library[ obj.subField ];
+					if ( obj.shim ) shim( library );
+					return library;
+
 				},
 
 				set( value ) {
+					library = value;
 					if ( qx.core.Environment.get("qx.debug") )
 						console.warn( "setting global value for lib "  + lib );
 				}
