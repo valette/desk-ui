@@ -262,7 +262,8 @@ qx.Class.define("desk.Actions",
 				alwaysOnTop : true,
 				caption : "Running actions",
 				width : 500,
-				height : 500
+				height : 500,
+				zIndex : 1000000
 			} );
 
 			this.__ongoingActions = new qx.ui.form.List();
@@ -368,7 +369,8 @@ qx.Class.define("desk.Actions",
 				showMinimize : false,
 				caption : "Actions history",
 				width : 500,
-				height : 500
+				height : 500,
+				zIndex : 1000000
 			} );
 
 			const label = new qx.ui.basic.Label( "" );

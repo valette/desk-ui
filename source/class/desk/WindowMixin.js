@@ -46,7 +46,7 @@ qx.Mixin.define("desk.WindowMixin",
 			var container = this.__window.getChildrenContainer();
 			container.set ( {
 				backgroundColor : "white",
-				zIndex : 500000
+				zIndex : 100000
 			} );
 			qx.core.Init.getApplication().getRoot().add( container,
 				{ width : '100%', height : '100%' } );
