@@ -101,7 +101,7 @@ qx.Class.define( "desk.core.AddLibs",
 					if ( obj.noAssign )	require( lib );
 					else library = require( lib );
 					if ( obj.subField ) library =  library[ obj.subField ];
-					if ( obj.shim ) shim( library );
+					if ( obj.shim ) obj.shim( library );
 					return library;
 
 				},
