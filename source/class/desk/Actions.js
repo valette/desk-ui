@@ -418,7 +418,8 @@ qx.Class.define("desk.Actions",
 					return;
 				}
 
-				new desk.FileBrowser( dir, { standalone : true } );
+				const browser = new desk.FileBrowser( dir, { standalone : true } );
+				browser.getWindow().center();
 
 			} );
 
