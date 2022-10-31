@@ -402,6 +402,30 @@ qx.Class.define("desk.Actions",
 				this.__history.setSelection( [ history[ history.length - 1 ] ] );
 			} );
 
+			const open = new qx.ui.menu.Button('Browse output directory');
+			open.addListener('execute', async () => {
+
+				const selection = this.__history.getSelection();
+				if ( !selection || !selection.length ) {
+					window.alert( "No action was selected. Please select one" );
+					return;
+				}
+
+				const item = selection[ 0 ];
+				const dir = item.getUserData("params").response.outputDirectory;
+				if ( !dir ) {
+					window.alert( "there is no output directory for this action" );
+					return;
+				}
+
+				new desk.FileBrowser( dir, { standalone : true } );
+
+			} );
+
+			const menu = new qx.ui.menu.Menu();
+			menu.add(open);
+			this.__history.setContextMenu(menu);
+
 		},
 
 		__initNode : function () {
