@@ -430,7 +430,7 @@ qx.Class.define("desk.Action",
 
 			// update parent Actions
 			this.__update.setEnabled( false );
-			this.__update.setLabel( "Updating Parents..." );
+			this.__update.setLabel( "Parents..." );
 			this.__status.setValue( "Processing..." );
 
 			await Promise.all(
@@ -698,6 +698,7 @@ qx.Class.define("desk.Action",
 			this.add(this.__controls);
 
 			this.__update = new qx.ui.form.Button("Process");
+			this.__update.setWidth( 100 );
 			this.__update.addListener("execute", this.__manager.validate, this.__manager);
 			this.__controls.add(this.__update, {flex : 1});
 
