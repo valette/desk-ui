@@ -328,16 +328,21 @@ qx.Class.define("desk.FileBrowser",
 		* @return {qx.ui.container.Composite}
 		*/
 		__getShortcutsContainer : function() {
-			var container = new qx.ui.container.Composite();
-			container.setLayout(new qx.ui.layout.HBox(5));
+			var container = new qx.ui.container.SlideBar( "horizontal" );
+
+			container.addListener( "mousewheel", e => {
+				container.scrollBy( e.getWheelDelta() * 10 );
+			} );
+
+			container.setScrollStep( 50 );
 			var settings = desk.Actions.getInstance().getSettings();
 			var dataDirs = settings.dataDirs;
 			var permissions = settings.permissions;
 			var dirs = Object.keys(dataDirs);
 			dirs.sort(this.__caseInsensitiveSort);
 			var hiddenDirs = [];
-			dirs.forEach(function (dir) {
-
+			dirs.entries().forEach( entry => {
+				const [ index, dir ] = entry;
 				const settings = dataDirs[ dir ];
 				if ( ( settings.listed != undefined ) && !settings.listed )
 					return;
@@ -358,7 +363,9 @@ qx.Class.define("desk.FileBrowser",
 						this.updateRoot(dir);
 					}
 				}, this);
-				container.add(button, {flex : 1});
+				button.setAllowShrinkX( false );
+				container.add(button, { flex : 1 });
+				if ( index < dirs.length - 1 ) container.add( new qx.ui.core.Spacer( 5 ) );
 				var menu = new qx.ui.menu.Menu();
 				var openButton = new qx.ui.menu.Button('open in new window');
 				openButton.addListener('execute', function () {
@@ -367,7 +374,7 @@ qx.Class.define("desk.FileBrowser",
 				});
 				menu.add(openButton);
 				button.setContextMenu(menu);
-			}, this);
+			} );
 
 
 			var menu = new qx.ui.menu.Menu();
