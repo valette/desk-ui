@@ -341,8 +341,10 @@ qx.Class.define("desk.FileBrowser",
 			var dirs = Object.keys(dataDirs);
 			dirs.sort(this.__caseInsensitiveSort);
 			var hiddenDirs = [];
-			dirs.entries().forEach( entry => {
-				const [ index, dir ] = entry;
+			container.add( new qx.ui.core.Spacer( 5 ) );
+
+			dirs.forEach( dir => {
+
 				const settings = dataDirs[ dir ];
 				if ( ( settings.listed != undefined ) && !settings.listed )
 					return;
@@ -365,7 +367,7 @@ qx.Class.define("desk.FileBrowser",
 				}, this);
 				button.setAllowShrinkX( false );
 				container.add(button, { flex : 1 });
-				if ( index < dirs.length - 1 ) container.add( new qx.ui.core.Spacer( 5 ) );
+				container.add( new qx.ui.core.Spacer( 5 ) );
 				var menu = new qx.ui.menu.Menu();
 				var openButton = new qx.ui.menu.Button('open in new window');
 				openButton.addListener('execute', function () {
@@ -376,10 +378,10 @@ qx.Class.define("desk.FileBrowser",
 				button.setContextMenu(menu);
 			} );
 
-
 			var menu = new qx.ui.menu.Menu();
 			var button = new qx.ui.form.MenuButton( '...', null, menu);
 			container.add(button);
+			container.add( new qx.ui.core.Spacer( 5 ) );
 			hiddenDirs.forEach(function (dir) {
 				var button = new qx.ui.menu.Button(dir);
 				button.addListener("click", function ( e ) {
