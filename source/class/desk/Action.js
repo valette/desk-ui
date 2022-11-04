@@ -718,6 +718,7 @@ qx.Class.define("desk.Action",
 				this.__window = new qx.ui.window.Window();
 				this.__window.set({ layout : new qx.ui.layout.HBox(),
 					width : 300,
+					height : 500,
 					showClose :true,
 					showMinimize : false,
 					useMoveFrame : true,
