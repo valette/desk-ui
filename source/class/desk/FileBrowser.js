@@ -328,7 +328,9 @@ qx.Class.define("desk.FileBrowser",
 		* @return {qx.ui.container.Composite}
 		*/
 		__getShortcutsContainer : function() {
-			var container = new qx.ui.container.SlideBar( "horizontal" );
+			const all = new qx.ui.container.Composite();
+			all.setLayout( new qx.ui.layout.HBox( 5 ) );
+			const container = new qx.ui.container.SlideBar( "horizontal" );
 
 			container.addListener( "mousewheel", e => {
 				container.scrollBy( e.getWheelDelta() * 10 );
@@ -380,8 +382,9 @@ qx.Class.define("desk.FileBrowser",
 
 			var menu = new qx.ui.menu.Menu();
 			var button = new qx.ui.form.MenuButton( '...', null, menu);
-			container.add(button);
-			container.add( new qx.ui.core.Spacer( 5 ) );
+			all.add( container, { flex : 1 } );
+			all.add(button);
+
 			hiddenDirs.forEach(function (dir) {
 				var button = new qx.ui.menu.Button(dir);
 				button.addListener("click", function ( e ) {
@@ -403,7 +406,7 @@ qx.Class.define("desk.FileBrowser",
 				button.setContextMenu(menu2);
 			}, this);
 
-			return container;
+			return all;
 		},
 
 		/** Returns the window containing the container in standalone mode
