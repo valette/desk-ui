@@ -27,7 +27,7 @@ qx.Class.define("desk.Ace.TabbedEditor",
 		*/
 		open : function( file, options ) {
 		    options = options || {};
-		    var self = desk.TabTextEditor.getInstance();
+		    var self = desk.Ace.TabbedEditor.getInstance();
 			var win = self.__window;
 			if (!win) {
 
@@ -37,7 +37,7 @@ qx.Class.define("desk.Ace.TabbedEditor",
 					height : 700, width : 700, showMinimize : false } );
 
 				win.addListener( 'close', function () {
-					var instance = desk.TabTextEditor.getInstance();
+					var instance = desk.Ace.TabbedEditor.getInstance();
 					instance.__tabView.getChildren().forEach( function (e) {
 						e.destroy();
 					});
@@ -69,7 +69,7 @@ qx.Class.define("desk.Ace.TabbedEditor",
 			win.getLayoutParent().getWindowManager().bringToFront(win); 
 			if (found) return;
 
-			var editor = new desk.TextEditor( file, Object.assign( {
+			var editor = new desk.Ace.Editor( file, Object.assign( {
                 }, options, { standalone : false } ) );
 
 			var element = self.__tabView.addElement( file, editor );
@@ -162,7 +162,7 @@ qx.Class.define("desk.Ace.TabbedEditor",
 
             list.addListener( 'dblclick', function () {
 
-                desk.TabTextEditor.open( list.getSelection()[ 0 ].getLabel(),
+                desk.Ace.TabbedEditor.open( list.getSelection()[ 0 ].getLabel(),
                     { localStorage : true } );
 
             } );

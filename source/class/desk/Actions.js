@@ -553,7 +553,7 @@ qx.Class.define("desk.Actions",
 			terminalButton.setBlockToolTip(false);
 			terminalButton.setToolTipText("Open a new terminal window");
 			terminalButton.addListener( 'execute', function () {
-				new desk.Terminal( {standalone : true} );
+				new desk.Xterm.Terminal( {standalone : true} );
 			});
 			menu.add(terminalButton);
 

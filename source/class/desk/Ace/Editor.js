@@ -79,7 +79,7 @@ qx.Class.define("desk.Ace.Editor",
         container.add(spinner);
 		this.add(container);
 
-		this.__text = new desk.AceContainer();
+		this.__text = new desk.Ace.Container();
 		if (file) {
 			this.openFile(file);
 		}

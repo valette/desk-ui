@@ -468,7 +468,7 @@ qx.Class.define("desk.FileBrowser",
 				if (desk.Actions.getInstance().getSettings().permissions) {
 					desk.FileSystem.executeScript(file);
 				} else {
-					desk.TabTextEditor.open(file);
+					desk.Ace.TabbedEditor.open(file);
 				}
 				break;
 			case 'log':
@@ -477,7 +477,7 @@ qx.Class.define("desk.FileBrowser",
 			case 'cxx':
 			case 'h':
 			case 'py':
-				desk.TabTextEditor.open(file);
+				desk.Ace.TabbedEditor.open(file);
 				break;
 			case "vtk":
 			case "ply":
@@ -661,7 +661,7 @@ qx.Class.define("desk.FileBrowser",
 		*/
 		__viewEditAction : function (node) {
 			if (!node.getChildren) {
-				desk.TabTextEditor.open(node.getFullName());;
+				desk.Ace.TabbedEditor.open(node.getFullName());;
 			}
 		},
 
