@@ -1,9 +1,9 @@
-
 /**
  * Singleton class which adds external libraries
  * @asset(desk/css/xterm.css)
  * @asset(desk/css/billboard.css)
  */
+
 qx.Class.define( "desk.core.AddLibs",
 {
 	extend : qx.core.Object,
@@ -63,11 +63,11 @@ qx.Class.define( "desk.core.AddLibs",
 			"numeric", { "random-js" : "randomJS" }, "jstat", { "chroma-js" : "chroma" },
 			"d3", { "billboard.js" : "c3", subField : "bb" },
 			{ "billboard.js" : "bb", subField : "bb" },
-			{ "operative" : "operative", shim : operativeShim, noAssign : true }
+			{ "operative" : "operative", shim : operativeShim }
 
 		];
 
-		const fieldsToIgnore = [ "subField", "shim", "noAssign" ];
+		const fieldsToIgnore = [ "subField", "shim" ];
 
 		libs.forEach( lib => {
 
@@ -80,15 +80,13 @@ qx.Class.define( "desk.core.AddLibs",
 			}
 
 			const obj = lib;
+
 			for ( let field of Object.keys( lib ) ) {
 
 				if ( !fieldsToIgnore.includes( field ) ) {
 					lib = field;
 					target = obj[ field ];
 				}
-
-				if ( obj.shim ) shim = obj.shim;
-				if ( obj.subField ) shim = obj.subField;
 
 			}
 
@@ -98,8 +96,8 @@ qx.Class.define( "desk.core.AddLibs",
 
 				get() {
 					if ( library ) return library;
-					if ( obj.noAssign )	require( lib );
-					else library = require( lib );
+					const required = require( lib );
+					if ( !library ) library = required;
 					if ( obj.subField ) library =  library[ obj.subField ];
 					if ( obj.shim ) obj.shim( library );
 					return library;
