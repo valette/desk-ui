@@ -11,20 +11,19 @@
  * Container for the ACE source code editor.
  */
 qx.Class.define("desk.Ace.Container", {
-	extend : qx.ui.container.Composite,
+
+	extend : qx.ui.core.Widget,
 
 	/**
 	* Constructor.
 	*/
 	construct : function() {
-		this.base(arguments);
-		this.setLayout(new qx.ui.layout.VBox());
-		this.__editor = new qx.ui.core.Widget();
-		this.add(this.__editor, {flex : 1});
-		this.__editor.addListener('appear', this.__onAppear, this);
-		const manager = qx.util.ResourceManager.getInstance();
 
-		ace = require('ace-builds/src-noconflict/ace');
+		this.base(arguments);
+		this.addListener('appear', this.__onAppear, this);
+		if ( window.ace ) return;
+		const manager = qx.util.ResourceManager.getInstance();
+		window.ace = require('ace-builds/src-noconflict/ace');
 		require('ace-builds/src-noconflict/mode-c_cpp');
 		require('ace-builds/src-noconflict/mode-html');
 		require('ace-builds/src-noconflict/mode-javascript');
@@ -52,7 +51,7 @@ qx.Class.define("desk.Ace.Container", {
 		 * callback launched when the container appears on screen
 		 */
 		__onAppear : function() {
-			var editor = this.__ace = ace.edit(this.__editor.getContentElement().getDomElement());
+			var editor = this.__ace = ace.edit(this.getContentElement().getDomElement());
 			editor.$blockScrolling = Infinity;
 			editor.session.on('changeMode', function(e, session){
 				if ("ace/mode/javascript" === session.getMode().$id) {
@@ -69,7 +68,7 @@ qx.Class.define("desk.Ace.Container", {
 					}
 				}
 			});
-			this.__editor.addListener("resize", this.__onResize, this);
+			this.addListener("resize", this.__onResize, this);
 
 			if (this.__mode) {
 				this.__ace.getSession().setMode('ace/mode/' + this.__mode);
@@ -79,7 +78,6 @@ qx.Class.define("desk.Ace.Container", {
 			editor.resize();
 		},
 
-		__editor : null,
 		__mode : null,
 		__ace : null,
 		__fontSize : 15,
@@ -138,7 +136,7 @@ qx.Class.define("desk.Ace.Container", {
 	},
 
 	destruct : function() {
-		this.__editor.dispose();
+		this.__ace.destroy();
 		this.__ace = null;
 	}
 });
