@@ -1,8 +1,7 @@
 /**
  * A log container
- * @ignore(Terminal)
- * @ignore(require)
  */
+
 qx.Class.define("desk.Xterm.Logger", {
 
 	extend : qx.ui.embed.Html,
@@ -13,9 +12,11 @@ qx.Class.define("desk.Xterm.Logger", {
 	construct : function () {
 
 		this.base(arguments);
-		this.__rand = Math.floor( 100000000 * Math.random());
-		this.setHtml( '<div id = "' + this.__rand + '"></div>' );
-		this.__terminal = new ( require( 'xterm' ).Terminal )();
+		this._rand = Math.floor( 100000000 * Math.random());
+		this.setBackgroundColor( "black" );
+		this.setHtml( '<div style="width: 100%; height: 100%" id = "' + this._rand + '"></div>' );
+		const term = require( 'xterm' ).Terminal;
+		this._terminal = new term( { scrollback : 100000 } );
 		this.addListenerOnce( 'appear', this.__onAppear, this );
 		this.__chalk = new ( require( 'chalk' ).Instance )( { level: 3 } );
 
@@ -23,65 +24,77 @@ qx.Class.define("desk.Xterm.Logger", {
 
 	destruct : function () {
 
-		this.__terminal.destroy();
+		this._terminal.dispose();
 
 	},
 
-members : {
-
-	__rand : null, // random number
-	__terminal : null,
-	__chalk : null,
-	__colors : {},
-
-	__onAppear : function () {
-
-		var container = document.getElementById( '' + this.__rand );
-		this.__terminal.open( container, { focus : true } );
-		this.addListener( 'resize', this.__onResize, this );
-		this.__onResize();
-
+	events : {
+		/**
+		* Fired whenever the number of rows or columns changes
+		*/
+		"resizeTerminal" : "qx.event.type.Data"
 	},
 
-	__onResize : function () {
+	members : {
 
-		var size = this.getInnerSize();
-		var nCols = Math.floor( ( size.width - 15 ) / 9 );
-		var nRows = Math.floor( size.height / 17 );
-		this.debug('resize : ', nCols, nRows);
-		this.__terminal.resize( nCols, nRows );
+		_rand : null, // random number
+		_terminal : null,
+		__chalk : null,
 
-	},
+		__onAppear : function () {
 
-    /**
-    * Clears the log contents
-    */
-    clear : function () {
+			const container = document.getElementById( '' + this._rand );
+			this.addListener( 'resize', this.__onResize, this );
+			this.__onResize();
+			const fit = require ( "xterm-addon-fit" ).FitAddon;
+			const fitAddon = this.__fitAddon = new fit();
+			this._terminal.loadAddon(fitAddon);
+			this._terminal.open( container, { focus : true } );
 
-		this.__terminal.clear();
+		},
 
-	},
+		__onResize : async function () {
 
-    /**
-    * Add log message
-    * @param message {String} message to display
-    * @param color {String} optional message color
-    */
-    log : function ( message, color ) {
+			if ( !this.isVisible() ) return;
+			await new Promise ( res => setTimeout( res, 2 ) );
+			this.__fitAddon.fit();
+			const nCols = this._terminal.cols;
+			const nRows = this._terminal.rows;
 
-		if ( color ) message = this.__chalk[color]( message );
-		var lines = message.split( '\n' );
-		var lastLine = lines.pop();
+			if ( ( this.__nCols == nCols ) && ( this.__nRows === nRows) )
+				return;
 
-		lines.forEach( function (line ) {
+			this.__nCols = nCols;
+			this.__nRows = nRows;
+			this.debug('resize : ', nCols, nRows);
+			this._terminal.focus();
+			this.fireDataEvent( 'resizeTerminal', { nCols, nRows } );
+		},
 
-			this.__terminal.writeln( line );
+		/**
+		* Clears the log contents
+		*/
+		clear : function () {
 
-		}, this );
+			this._terminal.clear();
 
-		this.__terminal.write( lastLine );
-		this.__terminal.scrollToBottom();
+		},
+
+		/**
+		* Add log message
+		* @param message {String} message to display
+		* @param color {String} optional message color
+		*/
+		log : function ( message, color ) {
+
+			if ( color ) message = this.__chalk[color]( message );
+			const lines = message.split( '\n' );
+			const lastLine = lines.pop();
+			for ( let line of lines ) this._terminal.writeln( line );
+			this._terminal.write( lastLine );
+			this._terminal.scrollToBottom();
+
+		}
 
 	}
-}
 });
