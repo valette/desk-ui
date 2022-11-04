@@ -1,7 +1,5 @@
 
 /**
- * @ignore(require)
- * @ignore(ace.*)
  * @asset(desk/workers/worker-javascript.js)
  * @asset(desk/workers/worker-html.js)
  * @asset(desk/workers/worker-json.js)
@@ -10,6 +8,7 @@
 /**
  * Container for the ACE source code editor.
  */
+
 qx.Class.define("desk.Ace.Container", {
 
 	extend : qx.ui.core.Widget,
@@ -51,7 +50,9 @@ qx.Class.define("desk.Ace.Container", {
 		 * callback launched when the container appears on screen
 		 */
 		__onAppear : function() {
-			var editor = this.__ace = ace.edit(this.getContentElement().getDomElement());
+
+			const element = this.getContentElement().getDomElement();
+			var editor = this.__ace = window.ace.edit( element );
 			editor.$blockScrolling = Infinity;
 			editor.session.on('changeMode', function(e, session){
 				if ("ace/mode/javascript" === session.getMode().$id) {
@@ -68,19 +69,19 @@ qx.Class.define("desk.Ace.Container", {
 					}
 				}
 			});
-			this.addListener("resize", this.__onResize, this);
 
-			if (this.__mode) {
+			this.addListener( "resize", this.__onResize, this );
+
+			if (this.__mode)
 				this.__ace.getSession().setMode('ace/mode/' + this.__mode);
-			}
 
-			this.setFontSize(this.__fontSize);
+			this.setFontSize( 15 );
 			editor.resize();
+
 		},
 
 		__mode : null,
 		__ace : null,
-		__fontSize : 15,
 
 		/**
 		* Returns the underlying ACE object
@@ -130,7 +131,6 @@ qx.Class.define("desk.Ace.Container", {
 		* @param size {Number} new font size
 		*/
 		setFontSize : function (size) {
-			this.__fontSize = size;
 			this.__ace.setFontSize(size);
 		}
 	},
