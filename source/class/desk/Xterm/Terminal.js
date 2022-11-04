@@ -4,7 +4,7 @@
 
 qx.Class.define("desk.Xterm.Terminal", 
 {
-	extend : desk.Xterm.Logger,
+	extend : desk.Xterm.Container,
 
 	/**
 	* Constructor
@@ -15,7 +15,6 @@ qx.Class.define("desk.Xterm.Terminal",
 		this.base( arguments );
 		options = options || {};
 		this.addListenerOnce( 'appear', this.__onAppear, this );
-		this.addListener( "resizeTerminal", this.__resize, this );
 
 		if ( options.standalone ) {
 
@@ -61,15 +60,17 @@ qx.Class.define("desk.Xterm.Terminal",
 
 			const term = this._terminal;
 			let socket = this.__getSocket( '/xterm' );
+			const rand = Math.floor( 100000000 * Math.random());
 
 			if ( !socket.connected )
 				await new Promise( res => socket.once( 'connect', res ) );
 
-			this.__getSocket( '/xterm' ).emit( 'newTerminal', { name : '' + this._rand } );
-			socket = this.__socket = this.__getSocket( '/xterm' + this._rand );
+			this.__getSocket( '/xterm' ).emit( 'newTerminal', { name : '' + rand } );
+			socket = this.__socket = this.__getSocket( '/xterm' + rand );
 			this.__getMessage = term.write.bind( term );
 			socket.addEventListener( 'message', this.__getMessage );
 			term.onData( socket.send.bind( socket ) );
+			this.addListener( "resizeTerminal", this.__resize, this );
 
 		},
 
