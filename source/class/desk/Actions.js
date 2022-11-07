@@ -23,6 +23,7 @@ qx.Class.define("desk.Actions",
 	* Constructor, never to be used. Use desk.Actions.getInstance() instead
 	*/
 	construct : function() {
+
 		this.base(arguments);
 		desk.core.AddLibs.getInstance();
 		desk.core.AddPromises.getInstance();
@@ -41,25 +42,38 @@ qx.Class.define("desk.Actions",
 		}
 
 		if (!this.__engine) {
-			desk.FileSystem.readFile(this.__savedActionFile,
-				function (err, result) {
-					console.log(err);
+
+			desk.FileSystem.readFile( this.__savedActionFile,
+
+				( err, result ) => {
+
 					if (err) {
-						console.log("Error while reading actions cache");
+
+						console.warn("Error while reading actions cache");
+						console.warn( err );
+
 					}
+
 					try {
+
 						result = JSON.parse(result);
 						this.__recordedActions = result.actions;
 						this.__loadSettings();
+
 					} catch ( e ) {
+
 						console.log("Error while reading actions cache");
 						this.fireEvent('changeReady');
-					}
-			}, this);
-			return;
-		}
 
-		this.__socket.on("actions updated", this.__setSettings.bind(this));
+					}
+
+			} );
+
+		} else {
+
+			this.__socket.on("actions updated", this.__setSettings.bind(this));
+
+		}
 
 		this.__createOngoingActionsWindow();
 		this.__createHistoryWindow();
@@ -226,7 +240,7 @@ qx.Class.define("desk.Actions",
 		__settingsButton : null,
 		__engine : false,
 
-		statifyCode : "ui/compiled/build",
+		statifyCode : "ui/compiled/dist",
 
 		/**
 		* sets emit log on/off
@@ -320,7 +334,7 @@ qx.Class.define("desk.Actions",
 
 				for ( let handle2 of Object.keys( res.ongoingActions ) ) {
 					if ( handle !== handle2 ) continue;
-					new desk.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
+					new desk.Xterm.FileTail( res.ongoingActions[handle].outputDirectory + "action.log" );
 				}
 
 			} );
@@ -775,7 +789,7 @@ qx.Class.define("desk.Actions",
 				}
 				var win = new qx.ui.window.Window('Server log').set(
 					{width : 600, height : 500, layout : new qx.ui.layout.HBox()});
-				var log = new desk.LogContainer().set({backgroundColor : 'black'});
+				var log = new desk.Xterm.Logger().set({backgroundColor : 'black'});
 				win.add(log, {flex : 1});
 				this.__setEmitLog(true);
 				this.__socket.on("log", displayLog);
@@ -805,7 +819,7 @@ qx.Class.define("desk.Actions",
 				};
 				var win = new qx.ui.window.Window('Console log').set(
 					{width : 600, height : 300, layout : new qx.ui.layout.HBox()});
-				var log = new desk.LogContainer();
+				var log = new desk.Xterm.Logger();
 				win.add(log, {flex : 1});
 				win.addListener('close', function () {
 					console.log = oldConsoleLog;
@@ -1014,7 +1028,7 @@ qx.Class.define("desk.Actions",
 			item.setLabel(params.POST.action || params.POST.manage || "");
 			params.item = item;
 			item.setUserData( "params" , params );
-			this.__ongoingActions.add( item );
+			if ( this.__ongoingActions ) this.__ongoingActions.add( item );
 			this.__settingsButton.setBackgroundColor( "green" );
 			return item;
 
@@ -1103,7 +1117,7 @@ qx.Class.define("desk.Actions",
 				win = this.__statifyWindow = new qx.ui.window.Window( "Statify" );
 				win.set({layout : new qx.ui.layout.VBox(), 
 					height :400, width : 500, showClose : false});
-				this.__statifyLog = new desk.LogContainer();
+				this.__statifyLog = new desk.Xterm.Logger();
 				win.add( this.__statifyLog, { flex :1 } );
 				var button = new qx.ui.form.Button( "Statify" );
 				button.addListener( "execute", () => this.__statify2( content ) );
