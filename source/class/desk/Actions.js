@@ -142,7 +142,7 @@ qx.Class.define("desk.Actions",
 					if (params.handle === message.handle) {
 						try {
 							options.listener(message);
-						} catch ( e ) { console.warn( e ) }
+						} catch ( e ) { console.warn( e ); }
 					}
 				};
 				actions.__socket.on("actionEvent", parameters.listener);
@@ -229,9 +229,11 @@ qx.Class.define("desk.Actions",
 		__runingActions : {},
 		__settings : { not_initialised : true, actions : [] },
 		__ongoingActions : null,
+		__actionsGarbageContainer : null,
 		__ongoingActionsWindow : null,
 		__history : null,
 		__historyWindow : null,
+		__finishedActions : [],
 		__errorContainer : null,
 		__disconnectContainer : null,
 		__recordedActions : null,
@@ -281,6 +283,7 @@ qx.Class.define("desk.Actions",
 			} );
 
 			this.__ongoingActions = new qx.ui.form.List();
+			this.__actionsGarbageContainer = new qx.ui.form.List();
 
 			const getAction = () => {
 
@@ -292,7 +295,7 @@ qx.Class.define("desk.Actions",
 
 				return selection[ 0 ];
 
-			}
+			};
 
 			const kill = new qx.ui.menu.Button('Kill/remove');
 			kill.addListener('execute', () => {
@@ -313,6 +316,9 @@ qx.Class.define("desk.Actions",
 				for ( let handle of Object.keys(this.__runingActions) ) {
 					this.killAction( handle );
 					const children = this.__ongoingActions.getChildren();
+					for ( let item of children )
+						this.killAction( item.getUserData("params").POST.handle );
+
 				}
 
 			} );
@@ -350,7 +356,7 @@ qx.Class.define("desk.Actions",
 			label.set( { rich : true, selectable : true } );
 			const scroll = new qx.ui.container.Scroll( label );
 			scroll.setDecorator( "main" );
-			const pane = new qx.ui.splitpane.Pane( "vertical" )
+			const pane = new qx.ui.splitpane.Pane( "vertical" );
 			pane.add( this.__ongoingActions, 2 );
 			pane.add( scroll, 1 );
 			win.add( pane, { flex : 1 } );
@@ -372,12 +378,64 @@ qx.Class.define("desk.Actions",
 			} );
 		},
 
+		__addFinishedAction : function( params ) {
+
+			this.__finishedActions.push( params );
+
+			this.__historyItems.push( { name : params.POST.action,
+
+				id : this.__historyItems.length,
+				color : params.error? "red" : "black"
+
+			} );
+
+			this.__updateFinishedActions();
+
+		},
+
+		__historyItems : [],
+		__updateFinishedActions : null,
+
 		__createHistoryWindow : function () {
 
-			this.__history = new qx.ui.form.List();
 			const win = this.__historyWindow = new qx.ui.window.Window();
+			const model = qx.data.marshal.Json.createModel( [] );
+			const list = this.__history = new qx.ui.list.List( model );
+			list.setLabelPath( "name");
+			let throttle = 1000;
+
+			let update = () => {
+
+				const start = performance.now();
+				const model = qx.data.marshal.Json.createModel( this.__historyItems );
+				list.setModel( model );
+				const duration = performance.now() - start;
+				console.log( duration );
+				if ( ( duration * 10 ) > throttle ) {
+
+					throttle *= 2;
+					console.warn( "Throttling history update to " + throttle + "ms." );
+					this.__updateFinishedActions = _.throttle( update, throttle );
+
+				}
+
+			};
+
+			this.__updateFinishedActions = _.throttle( update, throttle );
+
+			list.setDelegate( {
+
+				bindItem( controller, item, id ) {
+
+					controller.bindDefaultProperties(item, id);
+					controller.bindProperty( "color", "textColor", {}, item, id );
+
+				}
+
+			} );
 
 			win.set( {
+
 				layout :  new qx.ui.layout.VBox(),
 				alwaysOnTop : true,
 				showMinimize : false,
@@ -385,24 +443,27 @@ qx.Class.define("desk.Actions",
 				width : 500,
 				height : 500,
 				zIndex : 1000000
+
 			} );
 
 			const label = new qx.ui.basic.Label( "" );
 			label.set( { rich : true, selectable : true } );
 			const scroll = new qx.ui.container.Scroll( label );
 			scroll.setDecorator( "main" );
-			const pane = new qx.ui.splitpane.Pane( "vertical" )
+			const pane = new qx.ui.splitpane.Pane( "vertical" );
 			pane.add( this.__history, 2 );
 			pane.add( scroll, 1 );
 			win.add( pane, { flex : 1 } );
 
-			this.__history.addListener( "changeSelection", ( e ) => {
+			list.getSelection().addListener( "change", () => {
 
-				if ( !e.getData().length ) {
+				if ( !list.getSelection().getLength() ) {
 					label.setValue( "" );
 					return;
 				}
-				const params = e.getData()[ 0 ].getUserData("params");
+
+				const item = list.getSelection().getItem(0);
+				const params = this.__finishedActions[ item.getId() ];
 				console.log( params );
 				label.setValue( JSON.stringify( params, null, 2 )
 					.split( "\n" ).join( '<br>' ) );
@@ -410,26 +471,23 @@ qx.Class.define("desk.Actions",
 
 			} );
 
-			win.addListener( "appear", () => {
-				const history = this.__history.getChildren();
-				if ( !history.length ) return;
-				this.__history.setSelection( [ history[ history.length - 1 ] ] );
-			} );
-
 			const open = new qx.ui.menu.Button('Browse output directory');
 			open.addListener('execute', async () => {
 
-				const selection = this.__history.getSelection();
-				if ( !selection || !selection.length ) {
+				if ( !list.getSelection().getLength() ) {
 					window.alert( "No action was selected. Please select one" );
 					return;
 				}
 
-				const item = selection[ 0 ];
-				const dir = item.getUserData("params").response.outputDirectory;
+				const item = list.getSelection().getItem(0);
+				const params = this.__finishedActions[ item.getId() ];
+				const dir = params.response.outputDirectory;
+
 				if ( !dir ) {
+
 					window.alert( "there is no output directory for this action" );
 					return;
+
 				}
 
 				const browser = new desk.FileBrowser( dir, { standalone : true } );
@@ -491,10 +549,10 @@ qx.Class.define("desk.Actions",
 				this.__engine = "electron";
 				console.log("powered by electron.js");
 				const el = "electron";
-				var ipcRenderer = require(el).ipcRenderer
+				var ipcRenderer = require(el).ipcRenderer;
 				window.prompt = function(title, val) {
 					return ipcRenderer.sendSync('prompt', {title : title, val : val});
-				}
+				};
 			} else {
 				console.log("powered by nw.js");
 				this.__engine = "nw";
@@ -557,7 +615,7 @@ qx.Class.define("desk.Actions",
 					continue;
 
 				const button = new qx.ui.menu.Button(dir);
-				button.addListener("execute", function (e) {
+				button.addListener("execute", function () {
 					new desk.FileBrowser(dir, {standalone : true});
 				});
 				filesMenu.add(button);
@@ -575,7 +633,7 @@ qx.Class.define("desk.Actions",
 			menu.add(new qx.ui.menu.Button("Actions", null, null, actionsMenu));
 
 			var showActionsButton = new qx.ui.menu.Button("Show running actions");
-			showActionsButton.addListener( "execute", ( e ) => {
+			showActionsButton.addListener( "execute", () => {
 
 				this.__ongoingActionsWindow.open();
 				this.__ongoingActionsWindow.center();
@@ -671,7 +729,7 @@ qx.Class.define("desk.Actions",
 		__addSaveActionButtons : function (actionsMenu) {
 			var menu = new qx.ui.menu.Menu();
 			actionsMenu.add(new qx.ui.menu.Button("Statifier", null, null, menu));
-			var recordedFiles
+			var recordedFiles;
 			var oldGetFileURL;
 			const crypto = require( "crypto" );
 
@@ -922,7 +980,7 @@ qx.Class.define("desk.Actions",
 		* builds the actions UI. Does nothing now
 		*/
 		buildUI : function () {
-			console.warn( "desk.Actions.buildUI() is now useless. Do not call it." )
+			console.warn( "desk.Actions.buildUI() is now useless. Do not call it." );
 
 		},
 
@@ -933,8 +991,9 @@ qx.Class.define("desk.Actions",
 		* @param context {Object} optional context for the callback
 		*/
 		killAction : function (handle, callback, context) {
-			const params = this.__runingActions[handle];
+
 			desk.Actions.execute({manage : 'kill', actionHandle : handle}, callback, context);
+
 		},
 
 		/**
@@ -954,6 +1013,7 @@ qx.Class.define("desk.Actions",
 		* @param res {Object} the server response
 		*/
 		__onActionEnd : function (res) {
+
 			var params = this.__runingActions[res.handle];
 			if (!params) return;
 
@@ -978,8 +1038,14 @@ qx.Class.define("desk.Actions",
 			}
 
 			const item = params.item || this.__addActionToList( params );
-			if ( item ) this.__history.add( params.item );
-			params.response = res;
+			if ( item ) {
+
+				params.response = res;
+				this.__actionsGarbageContainer.add( item );
+				this.__addFinishedAction( params );
+
+			}
+
 			if ( !this.__ongoingActions.getChildren().length )
 				this.__settingsButton.setBackgroundColor( "transparent" );
 
@@ -1024,7 +1090,8 @@ qx.Class.define("desk.Actions",
 				return;
 			}
 
-			const item = new qx.ui.form.ListItem("dummy");
+			let item = this.__actionsGarbageContainer.getChildren()[ 0 ];
+			if ( !item ) item = new qx.ui.form.ListItem("dummy");
 			item.setLabel(params.POST.action || params.POST.manage || "");
 			params.item = item;
 			item.setUserData( "params" , params );
@@ -1284,4 +1351,5 @@ qx.Class.define("desk.Actions",
 			alert("done");
 		}
 	}
-});
+}
+);
