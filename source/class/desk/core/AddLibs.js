@@ -32,6 +32,7 @@ qx.Class.define( "desk.core.AddLibs",
 			require( "three/../../source/ext/TrackballControls2.js" );
 			require( "three/../../source/ext/mhdParse.js" );
 			require( "three/../../source/ext/WebGL.js" );
+			window.MHD = require( "three/../../source/ext/mhdParse.js" );
 
 
 		} else {
@@ -41,6 +42,7 @@ qx.Class.define( "desk.core.AddLibs",
 			require( "desk-ui/source/ext/TrackballControls2.js" );
 			require( "desk-ui/source/ext/mhdParse.js" );
 			require( "desk-ui/source/ext/WebGL.js" );
+			window.MHD = require( "desk-ui/source/ext/mhdParse.js" );
 
 		}
 
