@@ -10,7 +10,6 @@
  * @ignore (prompt)
  * @ignore (desk_startup_script)
  * @lint ignoreDeprecated (alert)
- * @require(desk.LogContainer)
  * @require(desk.Random)
  */
 qx.Class.define("desk.Actions", 
@@ -352,35 +351,31 @@ qx.Class.define("desk.Actions",
 			menu.add(tail);
 			this.__ongoingActions.setContextMenu(menu);
 
-			const label = new qx.ui.basic.Label( "" );
-			label.set( { rich : true, selectable : true } );
-			const scroll = new qx.ui.container.Scroll( label );
-			scroll.setDecorator( "main" );
+			const action = new qx.ui.form.TextArea( "" );
 			const pane = new qx.ui.splitpane.Pane( "vertical" );
 			pane.add( this.__ongoingActions, 2 );
-			pane.add( scroll, 1 );
+			pane.add( action, 1 );
 			win.add( pane, { flex : 1 } );
 
 			this.__ongoingActions.addListener( "changeSelection", ( e ) => {
 
 				if ( !e.getData().length ) {
-					label.setValue( "" );
+
+					action.setValue( "" );
 					return;
+
 				}
+
 				const params = e.getData()[ 0 ].getUserData("params");
 				console.log( params );
 				const params2 = { ...params };
 				delete params2[ "item" ];
-				label.setValue( JSON.stringify( params2, null, 2 )
-					.split( "\n" ).join( '<br>' ) );
-
+				action.setValue( JSON.stringify( params2, null, 2 ) );
 
 			} );
 		},
 
 		__addFinishedAction : function( params ) {
-
-			this.__finishedActions.push( params );
 
 			this.__historyItems.push( { name : params.POST.action,
 
@@ -389,12 +384,14 @@ qx.Class.define("desk.Actions",
 
 			} );
 
-			this.__updateFinishedActions();
+			this.__finishedActions.push( params );
+			if ( this.__historyWindowIsOpen ) this.__updateFinishedActions();
 
 		},
 
 		__historyItems : [],
 		__updateFinishedActions : null,
+		__historyWindowIsOpen : false,
 
 		__createHistoryWindow : function () {
 
@@ -410,7 +407,6 @@ qx.Class.define("desk.Actions",
 				const model = qx.data.marshal.Json.createModel( this.__historyItems );
 				list.setModel( model );
 				const duration = performance.now() - start;
-				console.log( duration );
 				if ( ( duration * 10 ) > throttle ) {
 
 					throttle *= 2;
@@ -423,6 +419,13 @@ qx.Class.define("desk.Actions",
 
 			this.__updateFinishedActions = _.throttle( update, throttle );
 
+			list.addListener( "appear", () => {
+
+				this.__updateFinishedActions()
+				this.__historyWindowIsOpen = true;
+
+			} );
+
 			list.setDelegate( {
 
 				bindItem( controller, item, id ) {
@@ -431,6 +434,12 @@ qx.Class.define("desk.Actions",
 					controller.bindProperty( "color", "textColor", {}, item, id );
 
 				}
+
+			} );
+
+			win.addListener( "close", () => {
+
+				this.__historyWindowIsOpen = false
 
 			} );
 
@@ -446,28 +455,24 @@ qx.Class.define("desk.Actions",
 
 			} );
 
-			const label = new qx.ui.basic.Label( "" );
-			label.set( { rich : true, selectable : true } );
-			const scroll = new qx.ui.container.Scroll( label );
-			scroll.setDecorator( "main" );
+			const action = new qx.ui.form.TextArea( "" );
+			action.set( { readOnly : true } );
 			const pane = new qx.ui.splitpane.Pane( "vertical" );
 			pane.add( this.__history, 2 );
-			pane.add( scroll, 1 );
+			pane.add( action, 1 );
 			win.add( pane, { flex : 1 } );
 
 			list.getSelection().addListener( "change", () => {
 
 				if ( !list.getSelection().getLength() ) {
-					label.setValue( "" );
+					action.setValue( "" );
 					return;
 				}
 
-				const item = list.getSelection().getItem(0);
+				const item = list.getSelection().getItem( 0 );
 				const params = this.__finishedActions[ item.getId() ];
 				console.log( params );
-				label.setValue( JSON.stringify( params, null, 2 )
-					.split( "\n" ).join( '<br>' ) );
-
+				action.setValue( JSON.stringify( params, null, 2 ) );
 
 			} );
 
@@ -602,7 +607,6 @@ qx.Class.define("desk.Actions",
 			});
 
 			menu.addSeparator();
-
 			var filesMenu = new qx.ui.menu.Menu();
 			var filesButton = new qx.ui.menu.Button("Files", null, null, filesMenu);
 			menu.add(filesButton);
@@ -649,8 +653,8 @@ qx.Class.define("desk.Actions",
 				this.__historyWindow.center();
 
 			} );
-			actionsMenu.add(showHistoryButton);
 
+			actionsMenu.add(showHistoryButton);
 
 			var forceButton = new qx.ui.menu.CheckBox("Disable cache");
 			forceButton.setBlockToolTip(false);
@@ -866,26 +870,40 @@ qx.Class.define("desk.Actions",
 		* @return {qx.ui.menu.Button} the button
 		*/
 		__getConsoleLogButton : function () {
-			var button = new qx.ui.menu.Button('Console log');
+
+			const button = new qx.ui.menu.Button('Console log');
 			button.setBlockToolTip(false);
 			button.setToolTipText("To display console logs");
-			button.addListener('execute', function () {
-				var oldConsoleLog = console.log;
+			button.addListener('execute', () => {
+
+				const oldConsoleLog = console.log;
+
 				console.log = function (message) {
-					oldConsoleLog.apply(console, arguments);
-					log.log(message.toString() + '\n' );
+
+					oldConsoleLog.apply( console, arguments );
+					log.log( message.toString() + '\n' );
+
 				};
-				var win = new qx.ui.window.Window('Console log').set(
+
+				const win = new qx.ui.window.Window( 'Console log' ).set(
 					{width : 600, height : 300, layout : new qx.ui.layout.HBox()});
-				var log = new desk.Xterm.Logger();
-				win.add(log, {flex : 1});
-				win.addListener('close', function () {
+
+				const log = new desk.Xterm.Logger();
+				win.add(log, { flex : 1 } );
+
+				win.addListener( 'close', function () {
+
 					console.log = oldConsoleLog;
-				});
+
+				} );
+
 				win.open();
 				win.center();
-			}, this);
+
+			} );
+
 			return button;
+
 		},
 
 		__createErrorContainer : function () {
@@ -1002,27 +1020,28 @@ qx.Class.define("desk.Actions",
 		* @return {String} the hash
 		*/
 		__getActionSHA : function (params) {
+
 			const parameters = _.omit(params, 'handle');
 			const sha = require( "crypto" ).createHash("SHA1");
 			sha.update(JSON.stringify(parameters));
 			return sha.digest("hex");
+
 		},
 
 		/**
 		* Fired whenever an action is finished
 		* @param res {Object} the server response
 		*/
-		__onActionEnd : function (res) {
+		__onActionEnd : function ( res ) {
 
-			var params = this.__runingActions[res.handle];
-			if (!params) return;
+			const params = this.__runingActions[res.handle];
+			if ( !params ) return;
 
-			if (params.listener)
-				this.__socket.removeListener("actionEvent", params.listener);
+			if ( params.listener )
+				this.__socket.removeListener( "actionEvent", params.listener );
 
-			if (this.__recordedActions && this.__engine) {
+			if (this.__recordedActions && this.__engine)
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
-			}
 
 			delete this.__runingActions[ res.handle ];
 
@@ -1031,13 +1050,12 @@ qx.Class.define("desk.Actions",
 				console.log( "Error : ", res );
 				if ( res.error.message ) console.log( res.error.message );
 				params.error = res.error;
-				const item = params.item;
-				if ( item ) item.setDecorator("tooltip-error");
 				this.__errorContainer.setVisibility( "visible" );
 
 			}
 
 			const item = params.item || this.__addActionToList( params );
+
 			if ( item ) {
 
 				params.response = res;
@@ -1046,16 +1064,15 @@ qx.Class.define("desk.Actions",
 
 			}
 
-			if ( !this.__ongoingActions.getChildren().length )
+			if ( this.__ongoingActions.getChildren().length == 0 )
 				this.__settingsButton.setBackgroundColor( "transparent" );
-
 
 			try {
 
-				if (params.callback) {
+				if ( params.callback );
 					params.callback.call(params.context, res.killed || res.error, res);
-				}
-			} catch ( e ) { console.warn( e );}
+
+			} catch ( e ) { console.warn( e ); }
 
 			for ( let field of [ "callback", "item", "context", "listener" ] )
 				delete params[ field ];
