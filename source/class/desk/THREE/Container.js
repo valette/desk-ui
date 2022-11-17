@@ -267,6 +267,11 @@ qx.Class.define("desk.THREE.Container",
 			(opt.parent || this.getScene()).add(mesh);
 			var leaf = opt.leaf = opt.leaf || this.__addLeaf(opt);
 			opt.mesh = mesh;
+			if ( opt.position ) {
+				if ( Array.isArray( opt.position ) )
+					mesh.position.fromArray( opt.position );
+				else mesh.position.copy( opt.position );
+			}
 			this.__meshes.nodeGet(leaf).viewerProperties = mesh.userData.viewerProperties = opt;
 			if (opt.updateCamera !== false) {
 				this.viewAll();
@@ -573,9 +578,11 @@ qx.Class.define("desk.THREE.Container",
 
 				const line = new THREE.Mesh( geometry.clone(), lineMaterial );
 				mesh.add( line );
-				line.scale.setScalar( 1.03 );
-				line.geometry.boundingBox.getCenter( line.position );
+				const center = new THREE.Vector3();
+				line.geometry.boundingBox.getCenter( center );
+				line.geometry.scale( 1.03, 1.03, 1.03 );
 				line.geometry.center();
+				line.geometry.translate( ...center.toArray() );
 
 			}
 
@@ -590,8 +597,8 @@ qx.Class.define("desk.THREE.Container",
 
 			update();
 
-			this.addMesh(mesh, _.extend({label : 'View ' + (slice.getOrientation()+1),
-				volumeSlice : slice}, opts));
+			this.addMesh(mesh, { label : 'View ' + ( slice.getOrientation() + 1 ),
+				...opts, volumeSlice : slice } );
 
 			mesh.addEventListener("removed", cleanup );
 
@@ -625,7 +632,7 @@ qx.Class.define("desk.THREE.Container",
 			opts = opts || {};
 
 			var group = new THREE.Group();
-			this.addMesh(group, _.extend({branch : true, label : file}, opts));
+			this.addMesh(group, { label : file, ...opts, branch : true } );
 			async.eachSeries(opts.orientations || [0, 1, 2], function (orientation, callback) {
 				var slice = new desk.MPR.Slice(file, orientation, opts,
 					function (err) {
@@ -634,7 +641,8 @@ qx.Class.define("desk.THREE.Container",
 						return;
 					}
 					slice.setSlice(Math.floor(slice.getNumberOfSlices() / 2));
-					this.attachVolumeSlice(slice, _.extend({parent : group}, opts));
+					this.attachVolumeSlice(slice, { ...opts, parent : group,
+						position : [ 0, 0, 0 ] } );
 					callback();
 				}.bind(this));
 			}.bind(this), function () {
