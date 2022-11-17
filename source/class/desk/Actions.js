@@ -1069,7 +1069,7 @@ qx.Class.define("desk.Actions",
 
 			try {
 
-				if ( params.callback );
+				if ( params.callback )
 					params.callback.call(params.context, res.killed || res.error, res);
 
 			} catch ( e ) { console.warn( e ); }
