@@ -5,7 +5,7 @@ qx.Mixin.define("desk.WindowMixin",
 {
 	construct : function () {
 
-		var win = new qx.ui.window.Window();
+		const win = new qx.ui.window.Window();
 		win.set( { layout : new qx.ui.layout.HBox(), showMinimize : false } );
 
 		if ( !this.getHeight() || !this.getWidth() ) {
@@ -25,6 +25,30 @@ qx.Mixin.define("desk.WindowMixin",
 			this.dispose();
 			win.destroy();
 		}, this);
+
+		const container = new qx.ui.container.Composite( new qx.ui.layout.HBox() );
+		win.getChildControl( "captionbar" ).add( container, { row: 0, column : 2 } );
+		const halfFills = {	left: [ 0, 0 ],	right: [ 1, 0 ]	};
+
+		Object.entries( halfFills ).forEach( entry => {
+
+			const [ name, position ] = entry;
+			const button = new qx.ui.form.Button( name[ 0 ].toUpperCase() );
+			button.setFocusable(false);
+			button.setDecorator( "window-caption" );
+			button.setToolTipText( "fill " + name + " part of screen");
+			container.add( button );
+
+			button.addListener("execute", () => {
+
+				const height = window.innerHeight;
+				const halfWidth = Math.round( 0.5 * window.innerWidth );
+				win.set( {width : halfWidth, height });
+				win.moveTo( ...position.map( p => p * halfWidth ) );
+
+			} );
+
+		} );
 
 	},
 
