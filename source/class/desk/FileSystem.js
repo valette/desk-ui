@@ -68,7 +68,7 @@ qx.Class.define("desk.FileSystem",
 		* @param options {Object} options which can be : 
 		* <pre class='javascript'>
 		* { <br>
-		*   cache : true/false // enable/disable cache (false by default) <br>
+		*   cache : true/false or action result// enable/disable cache (false by default) <br>
 		* }
 		* </pre>
 		* @param callback {Function} success callback, with request as first parameter
@@ -87,17 +87,17 @@ qx.Class.define("desk.FileSystem",
 		*/
 		readURL : function (url, options, callback, context) {
 			if (typeof options === "function") {
-				var temp = callback;
+				context = callback;
 				callback = options;
-				options = context;
-				context = temp;
+				options = {};
 			}
 
 			options = options || {};
-			if (options.cache !== false) {
-				url += "?nocache=" + Math.random();
-			}
-			var req = new qx.io.request.Xhr(url);
+			const cache = options.cache;
+			if ( cache == false ) url += "?nocache=" + Math.random();
+			else if ( cache && cache.timeStamp ) url += "?nocache=" + cache.timeStamp;
+
+			const req = new qx.io.request.Xhr(url);
 			req.addListener('load', function () {
 				if (typeof callback === "function") callback.call(context, null, req.getResponseText());
 				req.dispose();
