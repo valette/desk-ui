@@ -62,7 +62,7 @@ qx.Class.define("desk.MPR.Volume",
 			const type = e.getCurrentType();
 			switch (type) {
 				case "volumeSlices":
-					e.addData(type, this.__slices);
+					e.addData(type, this.getSlices() );
 					break;
 				case "VolumeViewer":
 					e.addData(type, viewer);
