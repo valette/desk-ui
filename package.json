@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@qooxdoo/framework": "7.3.3",
-    "ace-builds": "1.12.5",
+    "ace-builds": "1.13.1",
     "async": "3.2.4",
     "billboard.js": "3.6.3",
     "bowser": "2.11.0",
@@ -23,7 +23,7 @@
     "chroma-js": "2.4.2",
     "d3": "7.6",
     "heap": "0.2.7",
-    "jstat": "1.9.5",
+    "jstat": "1.9.6",
     "kdt": "0.1.0",
     "lodash": "4.17.21",
     "numeric": "1.2.6",

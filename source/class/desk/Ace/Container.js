@@ -58,7 +58,7 @@ qx.Class.define("desk.Ace.Container", {
 				if ("ace/mode/javascript" === session.getMode().$id) {
 					if (!!session.$worker) {
 						session.$worker.send("setOptions", [{
-							esversion: 9,
+							esversion: 11,
 							esnext: false,
 							globalstrict: true,
 							browser: true,
