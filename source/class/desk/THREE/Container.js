@@ -841,28 +841,34 @@ qx.Class.define("desk.THREE.Container",
 		 * @param event {qx.event.type.MouseWheel} the event
 		 */
 		__onMouseWheel : function (event) {
+
+			if ( this.getControls()._state >= 0 ) return;
 			if (event.getTarget() != this.getCanvas()) return;
-			var slices = [];
-			this.getScene().traverseVisible(function (mesh) {
-				if (mesh.userData && mesh.userData.viewerProperties
-					&& mesh.userData.viewerProperties.volumeSlice) {
+			const slices = [];
+
+			this.getScene().traverseVisible( mesh => {
+				if ( mesh?.userData?.viewerProperties?.volumeSlice )
 					slices.push(mesh);
-				}
 			});
-			var intersects = this.getIntersections(slices)[0];
-			var delta = event.getWheelDelta() > 0 ? 1 : -1;
-			if (intersects && ( this.options.sliceOnWheel != false )) {
-				var slice = intersects?.object?.userData?.viewerProperties?.volumeSlice || intersects?.object?.parent?.userData?.viewerProperties?.volumeSlice;
-				var maximum = slice.getNumberOfSlices() - 1;
-				var newValue = slice.getSlice() + delta;
-				slice.setSlice(Math.max(Math.min(newValue, maximum), 0));
+
+			const intersects = this.getIntersections(slices)[0];
+			const delta = event.getWheelDelta() > 0 ? 1 : -1;
+
+			if ( intersects && ( this.options.sliceOnWheel != false ) ) {
+
+				const slice = intersects?.object?.userData?.viewerProperties?.volumeSlice || intersects?.object?.parent?.userData?.viewerProperties?.volumeSlice;
+				const maximum = slice.getNumberOfSlices() - 1;
+				const newValue = slice.getSlice() + delta;
+				slice.setSlice( Math.max( Math.min( newValue, maximum ), 0 ) );
+
 			} else {
-				var controls = this.getControls();
-				controls.mouseDown(1, 0, 0);
-				controls.mouseMove(0, 0.05 * delta * this.getInnerSize().height);
-				controls.mouseUp();
+
+				this.getControls().mouseDown(1, 0, 0);
+				this.getControls().mouseMove(0, 0.05 * delta * this.getInnerSize().height);
+				this.getControls().mouseUp();
 				this.render();
 				this._propagateLinks();
+
 			}
 		},
 
