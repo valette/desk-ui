@@ -27,6 +27,7 @@ qx.Class.define("desk.Actions",
 		desk.core.AddLibs.getInstance();
 		desk.core.AddPromises.getInstance();
 		desk.FileSystem.getInstance();
+		desk.URLParameters.getInstance();
 
 		if ( typeof desk_startup_script !== "string" ) {
 			if ( qx.bom.Cookie.get("homeURL" ) ) {

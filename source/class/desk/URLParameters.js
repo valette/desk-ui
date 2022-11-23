@@ -8,46 +8,74 @@ qx.Class.define("desk.URLParameters",
 
 	type : "singleton",
 
-	construct : function() {},
+	construct : function() {
+
+		const href = window.location.href;
+		const split = href.split( "?" );
+		if ( split.length < 2 ) return;
+		const line = split.pop();
+
+		for ( let param of line.split( "&" ) ) {
+
+			let [ name, value ] = param.split( "=" );
+			try { value = JSON.parse( value ); } catch( e ) {}
+			desk.URLParameters.parameters[ name ] = value;
+
+		}
+
+	},
 
 	statics : {
+
+		parameters : {},
 
         /**
 		* returns the URL provided parameter if it exists
 		* e.g. : www.myadress.com/desk/?myParam=hello
-		* @param parameterName {String} parameter name
+		* @param bame {String} parameter name
 		* @return {String} file extension
 		*/
-		getParameter : function ( parameterName ) {
+		getParameter : function ( name ) {
 
-			parameterName = parameterName.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-			const regex = new RegExp( "[\\?&]" + parameterName + "=([^&#]*)" );
-			const results = regex.exec( window.location.href );
-			if (results != null) return results[ 1 ];
+			return desk.URLParameters.parameters[ name ];
 
 		},
 
         /**
 		* modify the parameters object with URL parameters when provided.
-		* Can parse strings, floats and arrays.
+		* Can parse strings, booleans, floats and arrays.
 		* @param params {Object} parameters
 		*/
 		parseParameters : function ( params ) {
 
-			for ( let [ key, value ] of Object.entries( params ) ) {
+			function parse( value ) {
 
-				let newValue = desk.URLParameters.getParameter( key );
-				if ( newValue === undefined ) continue;
-
-				if ( !isNaN( value ) )
-					newValue = parseFloat( newValue );
-				else if ( Array.isArray( value ) )
-					newValue = newValue.split( "," ).map( v =>
-						isNaN( v ) ? v : parseFloat( v ) );
-
-				params[ key ] = newValue;
+				let parsed = value;
+				try { parsed = JSON.parse( value ); } catch( e ) {}
+				return parsed;
 
 			}
+
+			const names = Object.keys( params );
+
+			for ( let [ key, value ] of Object.entries( desk.URLParameters.parameters ) ) {
+
+				if ( !names.includes( key ) ) {
+					console.warn( "Parameter " + key + " is not a proposed parameter" );
+					continue;
+				}
+
+				let oldValue = params[ key ];
+
+				if ( Array.isArray( oldValue ) && !Array.isArray( value ) )
+					value = value.split( "," ).map( parse );
+
+				params[ key ] = value;
+
+			}
+
+			console.log( "URL parameters : " );
+			console.log( params );
 
 			if ( desk.URLParameters.getParameter( "help" ) == true )
 				alert( "Current parameters: \n"
