@@ -158,22 +158,22 @@ qx.Class.define("desk.Ace.Editor",
 		* Callback launched each time the execute button is pressed
 		*/
 		__onExecute : function() {
-			desk.TextEditor.codeInTextEditor = null;
+			desk.Ace.Editor.codeInTextEditor = null;
 			this.__removeScript();
 			var body = document.getElementsByTagName('body')[0];
 			this.__script = document.createElement('script');
 			this.__script.setAttribute('type','text/javascript');
-			this.__script.text = 'desk.TextEditor.codeInTextEditor = function(__dirname){'
+			this.__script.text = 'desk.Ace.Editor.codeInTextEditor = function(){'
 				+ this.__text.getCode()
 				+ '\n};' + '\n//# sourceURL='
 				+ desk.FileSystem.getFileName(this.__file);
 			body.appendChild(this.__script);
 
-			if (desk.TextEditor.codeInTextEditor) {
+			if ( desk.Ace.Editor.codeInTextEditor ) {
 
 				try {
 
-				desk.TextEditor.codeInTextEditor(desk.FileSystem.getFileDirectory(this.__file));
+				desk.Ace.Editor.codeInTextEditor();
 
 				} catch ( e ) { console.warn( e ) }
 			} else {
