@@ -230,21 +230,21 @@ qx.Class.define("desk.THREE.Container",
 		},
 
 		/**
-		 * Creates a leaf in the tree
-		 * @param opt {Object} possible options : parent, branch (true/false)
-		 *  label
-		 * @return {Integer} leaf id
+		 * Creates a branch in the tree
+		 * @param opt {Object} possible options : parent, label
+		 * @return {Integer} branch id
 		 */
-        __addLeaf : function (opt) {
+        __addBranch : function (opt) {
 			opt = opt || {};
 			opt.label = opt.label || "mesh";
-			if (opt.parent) {
-				var parent = opt.parent.userData.viewerProperties.leaf;
-			}
-			var func = opt.branch ? "addBranch" : "addLeaf";
-			var leaf = this.__meshes.getDataModel()[func](parent, opt.label, null);
+			const parent = opt?.parent?.userData?.viewerProperties?.branch;
+			const model = this.__meshes.getDataModel();
+			const branch = model.addBranch(parent, opt.label, null );
+			const icon = opt.icon || "desk/tris.png";
+			this.__meshes.nodeSetIcon( branch, icon );
+			this.__meshes.nodeSetSelectedIcon( branch, icon );
 			this.__setData();
-			return leaf;
+			return branch;
 		},
 
 		/**
@@ -253,8 +253,8 @@ qx.Class.define("desk.THREE.Container",
 		 * @return {THREE.Object3D} object
 		 */
 		__getMeshFromNode : function (node) {
-			var leaf = this.__meshes.nodeGet(node);
-			return leaf && leaf.viewerProperties && leaf.viewerProperties.mesh;
+			const branch = this.__meshes.nodeGet(node);
+			return branch?.viewerProperties?.mesh;
 		},
 
 		/**
@@ -265,14 +265,18 @@ qx.Class.define("desk.THREE.Container",
 		addMesh : function (mesh, opt) {
 			opt = opt || {};
 			(opt.parent || this.getScene()).add(mesh);
-			var leaf = opt.leaf = opt.leaf || this.__addLeaf(opt);
+			if ( !opt.icon && mesh.isGroup )
+				opt.icon = "icon/22/places/folder.png";
+
+			const branch = opt.branch = opt.branch || this.__addBranch( opt );
 			opt.mesh = mesh;
+
 			if ( opt.position ) {
 				if ( Array.isArray( opt.position ) )
 					mesh.position.fromArray( opt.position );
 				else mesh.position.copy( opt.position );
 			}
-			this.__meshes.nodeGet(leaf).viewerProperties = mesh.userData.viewerProperties = opt;
+			this.__meshes.nodeGet(branch).viewerProperties = mesh.userData.viewerProperties = opt;
 			if (opt.updateCamera !== false) {
 				this.viewAll();
 			} else this.render();
@@ -305,19 +309,16 @@ qx.Class.define("desk.THREE.Container",
 
 			container.add(resetButton);
 			dataModel.setFilter(function(node) {
-				if (node.type == qx.ui.treevirtual.MTreePrimitive.Type.LEAF) {
-					var label = node.label;
-					var mesh = this.__getMeshFromNode(node);
-					var visibility = false;
-					if (label.toLowerCase().indexOf(filterField.getValue().toLowerCase()) != -1) {
-						visibility = true;
-					}
-					if (mesh) {
-						mesh.visible = visibility;
-					}
-					return visibility;
+				var label = node.label;
+				var mesh = this.__getMeshFromNode(node);
+				var visibility = false;
+				if (label.toLowerCase().indexOf(filterField.getValue().toLowerCase()) != -1) {
+					visibility = true;
 				}
-				return true;
+				if (mesh) {
+					mesh.visible = visibility;
+				}
+				return visibility;
 			}.bind(this));
 			return container;
 		},
@@ -330,7 +331,7 @@ qx.Class.define("desk.THREE.Container",
 		 */
 		__readFile : function (file, opt, callback) {
             opt = opt || {};
-            opt.leaf = this.__addLeaf({parent : opt.parent,
+            opt.branch = this.__addBranch( {parent : opt.parent,
 				label : opt.label || desk.FileSystem.getFileName(file)});
 
 			switch (desk.FileSystem.getFileExtension(file)) {
@@ -415,10 +416,10 @@ qx.Class.define("desk.THREE.Container",
 				parseFloat(root.getAttribute("timestamp")) : Math.random();
 
 			var dataModel = this.__meshes.getDataModel();
-			var leaf = dataModel.addBranch(null, desk.FileSystem.getFileName(file), null);
+			var branch = dataModel.addBranch(null, desk.FileSystem.getFileName(file), null);
 			this.__setData();
-			var object = new THREE.Object3D();
-			opts.leaf = leaf;
+			const object = new THREE.Group();
+			opts.branch = branch;
 			opts.file = file;
 			this.addMesh(object, opts);
 
@@ -597,7 +598,8 @@ qx.Class.define("desk.THREE.Container",
 
 			update();
 
-			this.addMesh(mesh, { label : 'View ' + ( slice.getOrientation() + 1 ),
+			this.addMesh( mesh, { icon : "desk/img.png",
+				label : 'View ' + ( slice.getOrientation() + 1 ),
 				...opts, volumeSlice : slice } );
 
 			mesh.addEventListener("removed", cleanup );
@@ -632,7 +634,7 @@ qx.Class.define("desk.THREE.Container",
 			opts = opts || {};
 
 			var group = new THREE.Group();
-			this.addMesh(group, { label : file, ...opts, branch : true } );
+			this.addMesh(group, { label : file, ...opts } );
 			async.eachSeries(opts.orientations || [0, 1, 2], function (orientation, callback) {
 				var slice = new desk.MPR.Slice(file, orientation, opts,
 					function (err) {
@@ -1144,21 +1146,19 @@ qx.Class.define("desk.THREE.Container",
 			var updateWidgets = function (event) {
 				enableUpdate = false;
 				var selectedNode = this.__meshes.getSelectedNodes()[0];
-				if (selectedNode.type === qx.ui.treevirtual.MTreePrimitive.Type.LEAF) {
-					var firstSelectedMesh = this.__getMeshFromNode(selectedNode);
-					var color=firstSelectedMesh.material.color;
-					if (!color) return;
-					colorSelector.setRed(Math.round(ratio*color.r));
-					colorSelector.setGreen(Math.round(ratio*color.g));
-					colorSelector.setBlue(Math.round(ratio*color.b));
-					colorSelector.setPreviousColor(Math.round(ratio*color.r),
-							Math.round(ratio*color.g),Math.round(ratio*color.b));
-					opacitySlider.setValue(Math.round(firstSelectedMesh.material.opacity*ratio));
-                    if (firstSelectedMesh.renderOrder) {
-                        renderOrderSpinner.setValue(firstSelectedMesh.renderOrder);
-                    }
-					enableUpdate=true;
+				var firstSelectedMesh = this.__getMeshFromNode(selectedNode);
+				var color=firstSelectedMesh.material.color;
+				if (!color) return;
+				colorSelector.setRed(Math.round(ratio*color.r));
+				colorSelector.setGreen(Math.round(ratio*color.g));
+				colorSelector.setBlue(Math.round(ratio*color.b));
+				colorSelector.setPreviousColor(Math.round(ratio*color.r),
+						Math.round(ratio*color.g),Math.round(ratio*color.b));
+				opacitySlider.setValue(Math.round(firstSelectedMesh.material.opacity*ratio));
+				if (firstSelectedMesh.renderOrder) {
+					renderOrderSpinner.setValue(firstSelectedMesh.renderOrder);
 				}
+				enableUpdate=true;
 			};
 
 			updateWidgets.apply(this);
@@ -1236,12 +1236,12 @@ qx.Class.define("desk.THREE.Container",
 			var params = mesh && mesh.userData && mesh.userData.viewerProperties;
 
 			if ( params ) {
-				var leaf = this.__meshes.nodeGet( params.leaf );
+				var branch = this.__meshes.nodeGet( params.branch );
 
-				if (leaf) {
+				if (branch) {
 
-					delete leaf.viewerProperties;
-					this.__meshes.getDataModel().prune(leaf.nodeId, true);
+					delete branch.viewerProperties;
+					this.__meshes.getDataModel().prune(branch.nodeId, true);
 
 				}
 
@@ -1277,57 +1277,6 @@ qx.Class.define("desk.THREE.Container",
 			for ( let object of objects ) this.__removeReal( object );
 			this.render();
 
-        },
-
-		removeMeshOLD : function (mesh) {
-			mesh.children.forEach(this.removeMesh, this);
-
-			if (mesh.parent) {
-				mesh.parent.remove(mesh);
-			}
-
-			var params = mesh && mesh.userData && mesh.userData.viewerProperties;
-			if (params) {
-				var leaf = this.__meshes.nodeGet(params.leaf);
-				if (leaf) {
-					delete leaf.viewerProperties;
-					this.__meshes.getDataModel().prune(leaf.nodeId, true);
-				}
-				this._deleteMembers(params);
-			}
-
-			this.__setData();
-
-			if (mesh.geometry) {
-				mesh.geometry.dispose();
-				var attributes = mesh.geometry.attributes;
-				if (attributes) {
-					Object.keys(attributes).forEach(function (key) {
-						delete attributes[key].array;
-					});
-				}
-				if (mesh.geometry.index) {
-					delete mesh.geometry.index.array;
-				}
-			}
-
-			if (mesh.material) {
-				if (mesh.material.map) {
-					mesh.material.map.dispose();
-				}
-				mesh.material.dispose();
-				Object.keys(mesh.material.uniforms || {}).forEach(function (key) {
-					var uniform = mesh.material.uniforms[key].value;
-					var disposeFunction = uniform && uniform.dispose;
-					if (typeof  disposeFunction === "function") {
-						uniform.dispose();
-					}
-				});
-			}
-
-			mesh.geometry = mesh.material  = undefined;
-			this._deleteMembers(mesh.userData);
-			this.render();
         },
 
 		__animator : null,
@@ -1456,8 +1405,8 @@ qx.Class.define("desk.THREE.Container",
 				}
 
 				var visibility = "visible"
-				var leaf = this.__meshes.nodeGet(selNode);
-				if(leaf && leaf.viewerProperties && leaf.viewerProperties.volumeSlice) {
+				var branch = this.__meshes.nodeGet(selNode);
+				if( branch && branch?.viewerProperties?.volumeSlice) {
 					visibility = "excluded";
 				}
 
