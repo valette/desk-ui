@@ -492,23 +492,6 @@ qx.Class.define("desk.Action",
 
 				log.log( "Finished\n", "yellow" );
 
-			} else if ( log && ( response.status === 'CACHED' ) ) {
-
-				log.log( "Replaying cached output :\n", "green" );
-				const stdout = await desk.FileSystem.readFileAsync(
-					response.outputDirectory + "/action.log" );
-
-				for( let line of stdout.split( '/n' ) )
-					log.log(line, 'white' );
-
-				const stderr= await desk.FileSystem.readFileAsync(
-					response.outputDirectory + "/action.err" );
-
-				for( let line of stderr.split( '/n' ) )
-					log.log(line, 'red' );
-
-				log.log( "Cache replay ended\n", "green" );
-
 			}
 
 			if ( !this.__action.voidAction  &&  ( ( this.__outputDir === null ) ||
