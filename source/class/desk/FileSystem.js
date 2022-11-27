@@ -170,7 +170,7 @@ qx.Class.define("desk.FileSystem",
 			desk.Actions.execute({
 				action : "write_string",
 				file_name : desk.FileSystem.getFileName(file),
-				data : JSON.stringify(content, true),
+				data : JSON.stringify(content),
 				output_directory : desk.FileSystem.getFileDirectory(file)
 			}, callback, context);
 		},

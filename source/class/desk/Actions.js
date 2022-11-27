@@ -145,7 +145,8 @@ qx.Class.define("desk.Actions",
 						} catch ( e ) { console.warn( e ); }
 					}
 				};
-				actions.__socket.on("actionEvent", parameters.listener);
+				if ( actions.__socket )
+					actions.__socket.on("actionEvent", parameters.listener);
 			}
 
 			if (actions.__recordedActions && !actions.__engine) {
@@ -1033,13 +1034,60 @@ qx.Class.define("desk.Actions",
 		* Fired whenever an action is finished
 		* @param res {Object} the server response
 		*/
-		__onActionEnd : function ( res ) {
+		__onActionEnd : async function ( res ) {
 
-			const params = this.__runingActions[res.handle];
+			const params = this.__runingActions[ res.handle ];
 			if ( !params ) return;
 
-			if ( params.listener )
-				this.__socket.removeListener( "actionEvent", params.listener );
+			if ( params.listener ) {
+
+				if ( this.__socket )
+					this.__socket.removeListener( "actionEvent", params.listener );
+
+				if ( ( res?.status != 'CACHED' ) && this.__recordedActions ) {
+
+					for ( let type of [ "log", "err" ] )
+						desk.FileSystem.getFileURL(
+							res.outputDirectory + "action." + type );
+
+				}
+
+				if ( ( res?.status === 'CACHED' ) || !this.__socket ) {
+
+					params.listener( {
+
+						handle : res.handle,
+						type : "outputDirectory",
+						data : res.outputDirectory
+
+					} );
+
+					await new Promise( res => setImmediate( res ) );
+
+					for ( let [ type, stream ] of [ [ "log", "stdout" ], [ "err", "stderr" ] ] ) {
+
+						const log = await desk.FileSystem.readFileAsync(
+							res.outputDirectory + "action." + type );
+
+						for ( let line of log.split( '\n' ) ) {
+
+							params.listener( {
+
+								handle : res.handle,
+								type : stream,
+								data : line + "\n"
+
+							} );
+
+							await new Promise( res => setImmediate( res ) );
+
+						}
+
+					}
+
+				}
+
+			}
 
 			if (this.__recordedActions && this.__engine)
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
