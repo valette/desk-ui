@@ -157,7 +157,7 @@ qx.Class.define("desk.Actions",
 						actions.__onActionEnd(response);
 					}, 1);
 				} else {
-					console.log("Error : action not found");
+					console.warn("Error : action not found");
 					console.log(params);
 				}
 			} else {
@@ -1038,6 +1038,7 @@ qx.Class.define("desk.Actions",
 
 			const params = this.__runingActions[ res.handle ];
 			if ( !params ) return;
+			res.action = params.POST.action;
 
 			if ( params.listener ) {
 
@@ -1062,8 +1063,6 @@ qx.Class.define("desk.Actions",
 
 					} );
 
-					await new Promise( res => setImmediate( res ) );
-
 					for ( let [ type, stream ] of [ [ "log", "stdout" ], [ "err", "stderr" ] ] ) {
 
 						const log = await desk.FileSystem.readFileAsync(
@@ -1078,8 +1077,6 @@ qx.Class.define("desk.Actions",
 								data : line + "\n"
 
 							} );
-
-							await new Promise( res => setImmediate( res ) );
 
 						}
 
@@ -1237,6 +1234,7 @@ qx.Class.define("desk.Actions",
 
 		__statifyWindow : null,
 		__statifyLog : null,
+		__slimStatification : null,
 
 		/**
 		* Executes statification
@@ -1250,6 +1248,9 @@ qx.Class.define("desk.Actions",
 				win = this.__statifyWindow = new qx.ui.window.Window( "Statify" );
 				win.set({layout : new qx.ui.layout.VBox(), 
 					height :400, width : 500, showClose : false});
+				this.__slimStatification = new qx.ui.form.CheckBox( "Slim statification" );
+				this.__slimStatification.setValue( true );
+				win.add( this.__slimStatification );
 				this.__statifyLog = new desk.Xterm.Logger();
 				win.add( this.__statifyLog, { flex :1 } );
 				var button = new qx.ui.form.Button( "Statify" );
@@ -1351,8 +1352,22 @@ qx.Class.define("desk.Actions",
 				var des2 = source.split('/');
 				des2.pop();
 				des2.pop();
+
+				if ( this.__slimStatification.getValue() ) {
+
+					const action = this.__settings.actions[ res.action ];
+
+					if ( !action.statify ) {
+
+						this.__statifyLog.log( "Avoid " + res.action + " " + source + "\n", "red" );
+						continue;
+
+					}
+
+				}
+
 				var dest = installDir + '/' + des2.join("/");
-				await desk.FileSystem.mkdirpAsync( dest )
+				await desk.FileSystem.mkdirpAsync( dest );
 				this.__statifyLog.log( "copying " + source + " to " + dest + "\n" );
 				await desk.Actions.executeAsync( {
 					action : "copy",
