@@ -94,8 +94,8 @@ qx.Class.define("desk.FileSystem",
 
 			options = options || {};
 			const cache = options.cache;
-			if ( cache == false ) url += "?nocache=" + Math.random();
-			else if ( cache && cache.timeStamp ) url += "?nocache=" + cache.timeStamp;
+			if ( !cache ) url += "?nocache=" + Math.random();
+			else if ( cache?.timeStamp ) url += "?nocache=" + cache.timeStamp;
 
 			const req = new qx.io.request.Xhr(url);
 			req.addListener('load', function () {
@@ -410,21 +410,29 @@ qx.Class.define("desk.FileSystem",
 		* @param callback {Function} callback when done
 		* @param context {Object} optional context for the callback
 		*/
-		includeScripts : function (scripts, callback, context) {
-			var fs = desk.FileSystem.getInstance();
-			var req = new qx.bom.request.Script();
+		includeScripts : function( scripts, callback, context ) {
 
-			async.eachSeries(scripts, function (url, callback) {
+			async.each(scripts, function (url, callback) {
+
+				const req = new qx.bom.request.Script();
+				if ( !url.includes( "?" ) ) url += "?cache=" + Math.random();
 				req.open("GET", url);
-				req.onload = callback;
+				req.onload = () => {
+					req.dispose();
+					callback();
+				};
+
 				req.onerror = function () {
+					req.dispose();
 					callback("Could not load " + url);
 				};
 				req.send();
+
 			}, function (err) {
-				req.dispose();
+
 				if (typeof callback === 'function') callback.call(context, err);
-			});
+
+			} );
 		},
 
 		/**
