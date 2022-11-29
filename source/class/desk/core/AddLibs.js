@@ -34,7 +34,6 @@ qx.Class.define( "desk.core.AddLibs",
 			require( "three/../../source/ext/WebGL.js" );
 			window.MHD = require( "three/../../source/ext/mhdParse.js" );
 
-
 		} else {
 
 			require( "desk-ui/source/ext/CTMLoader.js" );
@@ -43,7 +42,6 @@ qx.Class.define( "desk.core.AddLibs",
 			require( "desk-ui/source/ext/mhdParse.js" );
 			require( "desk-ui/source/ext/WebGL.js" );
 			window.MHD = require( "desk-ui/source/ext/mhdParse.js" );
-
 		}
 
 		window._ = require ('lodash');
@@ -51,9 +49,11 @@ qx.Class.define( "desk.core.AddLibs",
 
 		function operativeShim( operative ) {
 
-			operative.setBaseURL(self.location.protocol + '//'
+			const URL = desk.FileSystem.getBaseURL();
+			if ( URL?.startsWith( "http" ) ) operative.setBaseURL( URL );
+			else operative.setBaseURL(self.location.protocol + '//'
 				+ self.location.host
-				+ ( desk.FileSystem.getBaseURL() || self.location.pathname )
+				+ ( URL || self.location.pathname )
 				+ '/');
 
 		}
