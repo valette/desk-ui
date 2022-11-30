@@ -149,12 +149,14 @@ qx.Class.define("desk.Actions",
 					actions.__socket.on("actionEvent", parameters.listener);
 			}
 
+			actions.__runingActions[params.handle] = parameters;
+
 			if (actions.__recordedActions && !actions.__engine) {
 				var response = actions.__recordedActions[actions.__getActionSHA(params)];
 				if (response) {
-					response.handle = params.handle;
+					const res = { ...response, handle : params.handle };
 					setTimeout(function () {
-						actions.__onActionEnd(response);
+						actions.__onActionEnd(res);
 					}, 1);
 				} else {
 					console.warn("Error : action not found");
@@ -164,7 +166,6 @@ qx.Class.define("desk.Actions",
 				actions.__execute(params);
 			}
 
-			actions.__runingActions[params.handle] = parameters;
 			return params.handle;
 		},
 
@@ -202,7 +203,9 @@ qx.Class.define("desk.Actions",
 		*/
 		getEngine : function () {
 			return desk.Actions.getInstance().__engine;
-		}
+		},
+
+		statifyCode : "ui/compiled/dist"
 
 	},
 
@@ -238,12 +241,11 @@ qx.Class.define("desk.Actions",
 		__errorContainer : null,
 		__disconnectContainer : null,
 		__recordedActions : null,
+		__toStatify : null,
 		__savedActionFile : 'cache/responses.json',
 		__firstReadFile : null,
 		__settingsButton : null,
 		__engine : false,
-
-		statifyCode : "ui/compiled/dist",
 
 		/**
 		* sets emit log on/off
@@ -733,27 +735,30 @@ qx.Class.define("desk.Actions",
 		* @param actionsMenu {qx.ui.menu.Menu} input menu
 		*/
 		__addSaveActionButtons : function (actionsMenu) {
-			var menu = new qx.ui.menu.Menu();
+
+			const menu = new qx.ui.menu.Menu();
 			actionsMenu.add(new qx.ui.menu.Button("Statifier", null, null, menu));
-			var recordedFiles;
-			var oldGetFileURL;
+			let recordedFiles;
+			let oldGetFileURL;
 			const crypto = require( "crypto" );
 
-			var getFileURL = function (file) {
+			const getFileURL = file => {
+
 				this.debug("read : " + file);
 				this.__firstReadFile = this.__firstReadFile || file;
-				var sha = crypto.createHash("SHA1");
-				sha.update(JSON.stringify(file));
-				recordedFiles[sha.digest("hex")] = file;
-				return oldGetFileURL(file);
-			}.bind(this);
+				recordedFiles.add( file );
+				return oldGetFileURL( file );
 
-			var start = new qx.ui.menu.Button('Start recording');
+			};
+
+			const start = new qx.ui.menu.Button('Start recording');
 			start.setBlockToolTip(false);
 			start.setToolTipText("To save recorded actions");
-			start.addListener('execute', function () {
+
+			start.addListener('execute', async () => {
+
 				this.__recordedActions = {};
-				recordedFiles = {};
+				recordedFiles = new Set();
 				this.__firstReadFile = null;
 				oldGetFileURL = desk.FileSystem.getFileURL;
 				desk.FileSystem.getFileURL = getFileURL;
@@ -762,40 +767,45 @@ qx.Class.define("desk.Actions",
 
 				// hack to include init scripts
 				const initDir = 'code/init';
-				desk.FileSystem.exists(initDir, function ( err, exists ) {
-					if ( exists ) desk.FileSystem.readDir(initDir, function () {});
-				} );
-			}, this);
+				const exists = await desk.FileSystem.existsAsync( initDir );
+				if ( exists ) desk.FileSystem.readDir(initDir, function () {});
+
+			} );
+
 			menu.add(start);
 
-			var stop = new qx.ui.menu.Button('Stop recording').set({
+			const stop = new qx.ui.menu.Button('Stop recording').set({
+
 				blockToolTip : false, toolTipText : "To stop recording and save actions",
 				visibility : "excluded"
+
 			});
 
-			stop.addListener('execute', function () {
-				this.__settings.init.forEach(desk.FileSystem.getFileURL);
+			stop.addListener('execute', async () => {
 
+				this.__settings.init.forEach( desk.FileSystem.getFileURL );
 				desk.FileSystem.getFileURL = oldGetFileURL;
 
-				var records = {actions : this.__recordedActions,
-					files : recordedFiles
+				const records = this.__toStatify = {
+					actions : this.__recordedActions,
+					files : Array.from( recordedFiles )
 				};
+
 				this.__recordedActions = null;
-				this.debug( 'saving action list to ' + this.__savedActionFile );
-				desk.FileSystem.writeFile(this.__savedActionFile,
-					JSON.stringify(records), function () {
-						alert(Object.keys(records.actions).length + " actions recorded\n"
-							+ Object.keys(records.files).length + " files recorded");
-						start.setVisibility("visible");
-						stop.setVisibility("excluded");
-				}, this);
-			}, this);
+
+				alert(Object.keys(records.actions).length + " actions recorded\n"
+					+ records.files.length + " files recorded");
+				start.setVisibility("visible");
+				stop.setVisibility("excluded");
+
+			} );
+
 			menu.add(stop);
 
-			var statify = new qx.ui.menu.Button('Statify');
+			const statify = new qx.ui.menu.Button('Statify');
 			statify.addListener('execute', this.__statify, this);
-			menu.add(statify);
+			menu.add( statify );
+
 		},
 
 		/**
@@ -1023,10 +1033,16 @@ qx.Class.define("desk.Actions",
 		*/
 		__getActionSHA : function (params) {
 
+			const log = desk.Actions.logSHA;
 			const parameters = _.omit(params, 'handle');
+			if ( log ) console.log( "SHA:" );
+			if ( log ) console.log( parameters.action );
+			if ( log ) console.log( parameters );
 			const sha = require( "crypto" ).createHash("SHA1");
 			sha.update(JSON.stringify(parameters));
-			return sha.digest("hex");
+			const res = sha.digest("hex")
+			if ( log ) console.log( res );
+			return res;
 
 		},
 
@@ -1243,6 +1259,7 @@ qx.Class.define("desk.Actions",
 		__statify : async function (show) {
 
 			let win = this.__statifyWindow;
+
 			if (!win) {
 
 				win = this.__statifyWindow = new qx.ui.window.Window( "Statify" );
@@ -1254,7 +1271,7 @@ qx.Class.define("desk.Actions",
 				this.__statifyLog = new desk.Xterm.Logger();
 				win.add( this.__statifyLog, { flex :1 } );
 				var button = new qx.ui.form.Button( "Statify" );
-				button.addListener( "execute", () => this.__statify2( content ) );
+				button.addListener( "execute", () => this.__statify2() );
 				win.add(button);
 
 			}
@@ -1262,19 +1279,20 @@ qx.Class.define("desk.Actions",
 			const log = this.__statifyLog;
 
 			if ( show ) {
+
 				win.open();
 				win.center();
+
 			}
 
 			log.clear();
-			const res = await desk.FileSystem.readFileAsync( this.__savedActionFile );
-			const content = JSON.parse( res ) ;
-//			if (err) content = {files : {} ,actions : {}};
-			var actions = content.actions;
-			var files = content.files;
-			var usedCachedDirs = {};
 
-			for ( let file of Object.values( files ) ) {
+			const content = this.__toStatify;
+			const actions = content.actions;
+			const files = content.files;
+			const usedCachedDirs = {};
+
+			for ( let file of files ) {
 
 				if ( file.slice( 0, 6 ) === 'cache/' ) {
 					const dir = desk.FileSystem.getFileDirectory( file )
@@ -1287,7 +1305,7 @@ qx.Class.define("desk.Actions",
 				}
 			}
 
-			var nUnused = 0;
+			let nUnused = 0;
 
 			for ( let hash of Object.keys( actions ) ) {
 
@@ -1301,8 +1319,7 @@ qx.Class.define("desk.Actions",
 
 				if ( !usedCachedDirs[ dir ] ) {
 
-					delete actions[ hash ];
-					nUnused++;
+					actions[ hash ].unused = true;
 
 				}
 
@@ -1313,8 +1330,8 @@ qx.Class.define("desk.Actions",
 			for ( let action of Object.values( actions ) ) log.log( action.outputDirectory + '\n', "blue" );
 			if ( Object.keys( actions ).length === 0 ) log.log( "none\n" );
 			log.log( "Files to copy : \n" );
-			for ( let file of Object.values( files ) ) log.log( file + '\n' );
-			if ( Object.keys( files ).length === 0) log.log("none\n");
+			for ( let file of files ) log.log( file + '\n' );
+			if ( files.length === 0) log.log("none\n");
 
 		},
 
@@ -1322,7 +1339,9 @@ qx.Class.define("desk.Actions",
 		* Executes statification (for real...)
 		* @param content {Object} content to statify
 		*/
-		__statify2 : async function(content) {
+		__statify2 : async function() {
+
+			const content = this.__toStatify;
 			var installDir = prompt('output directory?' , "code/static");
 			var boot = prompt('what is the startup file?', this.__firstReadFile );
 			var startupFile;
@@ -1336,7 +1355,7 @@ qx.Class.define("desk.Actions",
 
 			await desk.Actions.executeAsync( {
 				   action : "copy",
-				   source : this.statifyCode,
+				   source : desk.Actions.statifyCode,
 				   destination : installDir,
 				   recursive : true
 			} );
@@ -1352,6 +1371,10 @@ qx.Class.define("desk.Actions",
 				var des2 = source.split('/');
 				des2.pop();
 				des2.pop();
+				if ( res.unused ) {
+					delete res.unused;
+					continue;
+				}
 
 				if ( this.__slimStatification.getValue() ) {
 
@@ -1379,9 +1402,9 @@ qx.Class.define("desk.Actions",
 
 			this.debug("copying files...");
 			files = content.files;
-			files.boot = startupFile;
+			files.push( startupFile );
 
-			for ( let file of Object.values(files) )  {
+			for ( let file of files )  {
 
 				this.debug( "file : ", file );
 				if ( !file ) continue;
@@ -1417,19 +1440,16 @@ qx.Class.define("desk.Actions",
 				}
 			});
 			await desk.FileSystem.writeFileAsync(file, lines.join('\n') );
-			this.debug("copying recorded actions");
+			this.debug("Writing recorded actions");
 
-			await desk.Actions.executeAsync( {
-				action : "copy",
-				source : this.__savedActionFile,
-				destination : installDir + "/cache"
-			} );
+			await desk.FileSystem.writeFileAsync( installDir + "/" + this.__savedActionFile,
+				JSON.stringify( content ) );
 
 			this.debug("copying actions list");
 			desk.FileSystem.writeJSONAsync( installDir + "/actions.json", this.__settings );
 			this.__statifyLog.log( "Done\n" );
 			this.debug( "Records statified!" );
-			alert("done");
+			alert( "done" );
 		}
 	}
 }
