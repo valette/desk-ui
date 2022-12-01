@@ -21,6 +21,7 @@ qx.Class.define("desk.THREE.Scene",
 		if (typeof opts === "function") opts = {};
 		opts = opts || {};
 		this.base(arguments);
+		desk.THREE.Scene.instances.push( this );
 		this.setLayout(new qx.ui.layout.Canvas());
 		this.__initialCameraFront = new THREE.Vector3().set( 0, 0, -1 );
 		this.__initialCameraUp =  new THREE.Vector3().set( 0, 1, 0 );
@@ -81,6 +82,7 @@ qx.Class.define("desk.THREE.Scene",
 		this.viewAll = _.debounce( this.viewAll, 20, { leading : true } );
 
 		this.tempVector3 = new THREE.Vector3();
+
 	},
 
 	destruct : function(){
@@ -95,6 +97,8 @@ qx.Class.define("desk.THREE.Scene",
 		this.__camera = null;
 		this._deleteMembers(this.__controls);
 		this.__controls = null;
+		const index = desk.THREE.Scene.instances.indexOf( this );
+		if ( index >= 0 ) desk.THREE.Scene.instances.splice( index, 1 );
 	},
 
 	properties : {
@@ -118,7 +122,9 @@ qx.Class.define("desk.THREE.Scene",
 
 	statics : {
 
-		__garbageContainer : null
+		__garbageContainer : null,
+
+		instances : []
 
 	},
 

@@ -26,6 +26,7 @@ qx.Class.define("desk.MPR.Container",
 	construct : function(file, options, callback, context) {
         this.base(arguments);
         this.setLayout(new qx.ui.layout.VBox());
+		desk.MPR.Container.instances.push( this );
 
 		options = options || {};
 		this.__gridCoords = options.inGridCoord || {
@@ -75,6 +76,8 @@ qx.Class.define("desk.MPR.Container",
 	},
 
 	destruct : function() {
+		const index = desk.MPR.Container.instances.indexOf( this );
+		if ( index >= 0 ) desk.MPR.Container.instances.splice( index, 1 );
 		this.removeAllVolumes();
 
 		if (this.__orientationWindow) {
@@ -112,8 +115,14 @@ qx.Class.define("desk.MPR.Container",
 		customContainer : { init : null, event : "customContainer", apply : "__applyViewsLayout"}
 	},
 
-	members :
-	{
+	statics : {
+
+		instances : []
+
+	},
+
+	members : {
+
 		__standalone : true,
 		__fullscreenContainer : null,
 		__gridContainer : null,
