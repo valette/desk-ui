@@ -98,6 +98,7 @@ qx.Class.define("desk.FileSystem",
 			else if ( cache?.timeStamp ) url += "?nocache=" + cache.timeStamp;
 
 			const req = new qx.io.request.Xhr(url);
+			req.setParser( res => res );
 			req.addListener('load', function () {
 				if (typeof callback === "function") callback.call(context, null, req.getResponseText());
 				req.dispose();
