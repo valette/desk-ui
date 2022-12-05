@@ -49,24 +49,28 @@ qx.Class.define("desk.Xterm.Terminal",
 		__socket : null,
 		__getMessage : null,
 
-		__getSocket : function ( namespace ) {
+		__getSocket : async function ( namespace ) {
 
-			const socket = desk.Actions.getInstance().getSocket().io.nsps[ namespace ];
-			return  socket ? socket : require('socket.io-client')( namespace, {path : desk.FileSystem.getBaseURL() + 'socket.io'} );
+			let socket = desk.Actions.getInstance().getSocket().io.nsps[ namespace ];
+
+			if ( !socket )
+				socket = require('socket.io-client')( namespace, {
+					path : desk.FileSystem.getBaseURL() + 'socket.io'} );
+
+			if ( !socket.connected )
+				await new Promise( res => socket.once( 'connect', res ) );
+
+			return socket;
 
 		},
 
 		__onAppear : async function () {
 
 			const term = this._terminal;
-			let socket = this.__getSocket( '/xterm' );
+			const mainSocket = await this.__getSocket( '/xterm' );
 			const rand = Math.floor( 100000000 * Math.random());
-
-			if ( !socket.connected )
-				await new Promise( res => socket.once( 'connect', res ) );
-
-			this.__getSocket( '/xterm' ).emit( 'newTerminal', { name : '' + rand } );
-			socket = this.__socket = this.__getSocket( '/xterm' + rand );
+			await new Promise( res => mainSocket.emit( 'newTerminal',	{ name : '' + rand }, res ) );
+			const socket = this.__socket = await this.__getSocket( '/xterm' + rand );
 			this.__getMessage = term.write.bind( term );
 			socket.addEventListener( 'message', this.__getMessage );
 			term.onData( socket.send.bind( socket ) );
