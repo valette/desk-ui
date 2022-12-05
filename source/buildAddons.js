@@ -61,7 +61,7 @@ console.log(addonsDir);
 
 var actions = {
 	"include" : [
-		"ACVD/bin/ACVD.json",
+		"ACVD/ACVD.json",
 		"OpenCTM/OpenCTM.json"
     ]
 }
