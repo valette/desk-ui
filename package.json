@@ -3,7 +3,7 @@
   "description": "HTML front-end for visualization (3D objects and medical images)",
   "author": "Sebastien Valette <sebastien.valette@creatis.insa-lyon.fr> (http://www.creatis.insa-lyon.fr/~valette)",
   "license": "CECILL-B",
-  "version": "3.2",
+  "version": "3.0.5",
   "repository": {
     "type": "git",
     "url": "git://github.com/valette/desk-ui.git"
