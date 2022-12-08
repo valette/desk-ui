@@ -324,7 +324,10 @@ qx.Class.define("desk.FileSystem",
 				asynchronous = false;
 			}
 
-			var crawler = async.queue( function ( directory, callback ) {
+			const join = require( "path" ).join;
+
+			const crawler = async.queue( function ( directory, callback ) {
+
 				desk.FileSystem.readDir(directory, function ( err, files ) {
 					if ( err ) {
 						console.warn( "error while traversing directory " + directory );
@@ -333,7 +336,7 @@ qx.Class.define("desk.FileSystem",
 						return;
 					}
 					async.each( files, function ( file, cb ) {
-						var fullFile = directory + "/" + file.name;
+						var fullFile = join( directory, file.name );
 						if ( file.isDirectory ) {
 							crawler.push( fullFile );
 							cb();
@@ -347,6 +350,7 @@ qx.Class.define("desk.FileSystem",
 						}
 					}, callback );
 				} );
+
 			}, 4);
 
 			crawler.push(directory);
