@@ -11,7 +11,7 @@
         "email": "sebastien.valette@creatis.insa-lyon.fr"
       }
     ],
-    "version": "3.1"
+    "version": "3.1.2"
   },
   "provides": {
     "namespace": "desk",
@@ -22,7 +22,7 @@
   },
   "requires": {
     "johnspackman/UploadMgr": "2.0.0",
-    "@qooxdoo/framework": "^7.3.3",
+    "@qooxdoo/framework": "^7.4.2",
     "qooxdoo/qxl.apiviewer": "^2.0.0"
   },
   "$schema": "https://qooxdoo.org/schema/Manifest-2-0-0.json"
