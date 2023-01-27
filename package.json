@@ -14,10 +14,10 @@
     "shelljs": "0.8.5"
   },
   "devDependencies": {
-    "@qooxdoo/framework": "7.4.2",
+    "@qooxdoo/framework": "7.5.0",
     "ace-builds": "1.14.0",
     "async": "3.2.4",
-    "billboard.js": "3.6.3",
+    "billboard.js": "3.7.1",
     "bowser": "2.11.0",
     "chalk": "4.1.2",
     "chroma-js": "2.4.2",
