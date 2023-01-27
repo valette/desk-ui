@@ -64,7 +64,13 @@ qx.Class.define("desk.Action",
 		/**
 		* Fired whenever the action has been triggered
 		*/
-		"actionTriggered" : "qx.event.type.Data"
+		"actionTriggered" : "qx.event.type.Data",
+
+		/**
+		* Fired whenever a parameter has been modified
+		*/
+		"changeParameter" : "qx.event.type.Data",
+
 	},
 
 	members : {
@@ -674,6 +680,15 @@ qx.Class.define("desk.Action",
 						this.setInvalidMessage('');
 					}, form);
 				}
+
+				form.addListener( "changeValue", () => {
+
+					const data = {}
+					data[ parameter.name ] = form.getValue();
+					this.fireDataEvent( "changeParameter", data );
+
+				} );
+
 			}, this);
 
 			this.__controls = new qx.ui.container.Composite();
