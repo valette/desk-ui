@@ -58,7 +58,7 @@ qx.Class.define("desk.MPR.SegTools",
 
 		} );
 
-		this.addListener( "close", function ( e ) {
+		this.addListener( "beforeClose", function ( e ) {
 
 			for ( let viewer of master.getViewers() ) {
 
@@ -74,7 +74,7 @@ qx.Class.define("desk.MPR.SegTools",
 
 		} );
 
-		master.getWindow().addListener( 'close' , this.destroy, this );
+		master.getWindow().addListener( 'beforeClose' , this.destroy, this );
 		this.__labels = [];
 		this.open();
         this.center();
@@ -555,7 +555,7 @@ qx.Class.define("desk.MPR.SegTools",
 
 					this.__meshViewer = new desk.THREE.Viewer( this.getSessionDirectory() + "/meshes/meshes.xml" );
 
-					this.__meshViewer.getWindow().addListener( "close", function () {
+					this.__meshViewer.getWindow().addListener( "beforeClose", function () {
 
 						this.__meshViewer = null;
 
@@ -1258,7 +1258,7 @@ qx.Class.define("desk.MPR.SegTools",
 					return;
 				}
 				response = (new DOMParser()).parseFromString(response, "text/xml");
-				["seed", "correction"].forEach(function (tag, index) {
+				desk.MPR.SegTools.filePrefixes.forEach(function (tag, index) {
 					var slices = response.getElementsByTagName(tag);
 
 					for(var j = 0; j < slices.length; j++) {
@@ -1603,7 +1603,7 @@ qx.Class.define("desk.MPR.SegTools",
 					for ( let slice of list.getChildren() ) {
 
 						var sliceId = slice.getUserData("slice");
-						const seed = doc.createElement("seed");
+						const seed = doc.createElement(desk.MPR.SegTools.filePrefixes[ type] );
 						seed.setAttribute( "slice", sliceId );
 						seed.setAttribute( "orientation", viewer.getOrientation() );
 						const txt = doc.createTextNode( this.__getSeedFileName( viewer, sliceId, type ) );
@@ -1762,7 +1762,7 @@ qx.Class.define("desk.MPR.SegTools",
 						sliceView.setSlice(slice.getUserData("slice"));
 					}
 				});
-				this.addListener("close", function (e) {
+				this.addListener("beforeClose", function (e) {
 					list.destroy();
 				});
 			}, this);
@@ -1930,7 +1930,7 @@ qx.Class.define("desk.MPR.SegTools",
 				});
 			}
 			win.open();
-			win.addListener("close", function () {
+			win.addListener("beforeClose", function () {
 				this.__labels = list.getChildren().map(function (item) {
 					return item.getUserData("label");
 				});
