@@ -242,8 +242,7 @@ qx.Class.define("desk.Action",
         /**
 		* Defines UI input parameter visibility
 		* @param parameter {String} parameter
-		* @param value {String} hide parameter in UI
-		* @param hide {Boolean} hide/don't hide provided parameter forms
+		* @param visible {Boolean} set to true for visible, false for invisible
 		*/
 		setParameterVisibility : function ( parameter, visible ) {
 
