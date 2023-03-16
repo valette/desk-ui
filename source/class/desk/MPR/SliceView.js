@@ -1332,6 +1332,7 @@ qx.Class.define("desk.MPR.SliceView",
 			label.addListener("mousedown", function(event) {
 				event.stopPropagation();
 			});
+			label.setCursor( "pointer" );
 
 			label.addListener( 'changeValue', function () {
 
@@ -1386,6 +1387,7 @@ qx.Class.define("desk.MPR.SliceView",
 				new qx.ui.container.Composite(new qx.ui.layout.VBox());
 			container.add(new qx.ui.core.Spacer(25, 25));
 			container.add(slider, {flex : 1});
+			container.setCursor( "pointer" );
 
 			if (!this.__alwaysDisplaySlider) {
 				container.setVisibility("hidden");
