@@ -52,7 +52,7 @@ qx.Class.define("desk.Xterm.Container", {
 
 		__onResize : async function () {
 
-			await new Promise( res => setTimeout( res, 2 ) );
+			await new Promise( res => setTimeout( res, 100 ) );
 			this.__fitAddon.fit();
 			const nCols = this._terminal.cols;
 			const nRows = this._terminal.rows;
