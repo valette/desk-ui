@@ -15,9 +15,9 @@
   },
   "devDependencies": {
     "@qooxdoo/framework": "7.6.1",
-    "ace-builds": "1.24.1",
+    "ace-builds": "1.27.0",
     "async": "3.2.4",
-    "billboard.js": "3.9.3",
+    "billboard.js": "3.9.4",
     "bowser": "2.11.0",
     "chalk": "4.1.2",
     "chroma-js": "2.4.2",
@@ -32,8 +32,8 @@
     "random-js": "2.1.0",
     "socket.io-client": "4.7.2",
     "three": "0.147",
-    "xterm": "5.2.1",
-    "xterm-addon-fit": "^0.7.0"
+    "xterm": "5.3.0",
+    "xterm-addon-fit": "^0.8.0"
   },
   "engines": {
     "node": ">=8.0.0"
