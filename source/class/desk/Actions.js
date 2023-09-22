@@ -1126,7 +1126,7 @@ qx.Class.define("desk.Actions",
 
 			}
 
-			if ( this.__ongoingActions.getChildren().length == 0 )
+			if ( this.__settingsButton && ( this.__ongoingActions.getChildren().length == 0 ) )
 				this.__settingsButton.setBackgroundColor( "transparent" );
 
 			try {
@@ -1175,7 +1175,7 @@ qx.Class.define("desk.Actions",
 			params.item = item;
 			item.setUserData( "params" , params );
 			if ( this.__ongoingActions ) this.__ongoingActions.add( item );
-			this.__settingsButton.setBackgroundColor( "green" );
+			if ( this.__settingsButton ) this.__settingsButton.setBackgroundColor( "green" );
 			return item;
 
 		},
