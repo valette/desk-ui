@@ -19,11 +19,11 @@ qx.Class.define( "desk.core.AddLibs",
 		const manager = qx.util.ResourceManager.getInstance();
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/xterm.css") );
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/billboard.css") );
-		window.THREE = require( "three" );
-		require( "three/examples/js/loaders/STLLoader.js" );
-		require( "three/examples/js/controls/TransformControls.js" );
-		require( "three/examples/js/controls/DragControls.js" );
-		require( "three/examples/js/utils/BufferGeometryUtils.js" );
+		const THREE = window.THREE = require( "three" );
+		THREE.STLLoader = require( "three/examples/jsm/loaders/STLLoader.js" ).STLLoader;
+		THREE.TransformControls = require( "three/examples/jsm/controls/TransformControls.js" );
+		THREE.DragControls = require( "three/examples/jsm/controls/DragControls.js" ).DragControls;
+		THREE.BufferGeometryUtils = require( "three/examples/jsm/utils/BufferGeometryUtils.js" );
 
 		if ( qx.core.Environment.get( "qx.application") == "desk.Application" ) {
 
@@ -51,16 +51,16 @@ qx.Class.define( "desk.core.AddLibs",
 
 			const URL = desk.FileSystem.getBaseURL();
 			if ( URL?.startsWith( "http" ) ) operative.setBaseURL( URL );
-			else operative.setBaseURL(self.location.protocol + '//'
-				+ self.location.host
-				+ ( URL || self.location.pathname )
+			else operative.setBaseURL(window.location.protocol + '//'
+				+ window.location.host
+				+ ( URL || window.location.pathname )
 				+ '/');
 
 		}
 
 		const libs = [
 
-			"chalk", { events : "EventEmitter" },
+			{ chalk : "chalk", subField : "chalk" }, { events : "EventEmitter" },
 			"heap", { heap : "Heap" }, { kdt : "kdTree" },
 			"numeric", { "random-js" : "randomJS" }, "jstat", { "chroma-js" : "chroma" },
 			"d3", { "billboard.js" : "c3", subField : "bb" },
