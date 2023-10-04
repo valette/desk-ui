@@ -440,13 +440,13 @@ qx.Class.define("desk.MPR.Volume",
 
 			var brightnessButton = new qx.ui.menu.Button("set brightness");
 			brightnessButton.addListener("execute", () => {
-				this.setBrightness( parseFloat( prompt( "brightness?" ) ) );
+				this.setBrightness( parseFloat( window.prompt( "brightness?" ) ) );
 			} );
 			appearanceMenu.add(brightnessButton);
 
 			var contrastButton = new qx.ui.menu.Button("set contrast");
 			contrastButton.addListener("execute", () => {
-				this.setContrast( parseFloat( prompt( "contrast?" ) ) );
+				this.setContrast( parseFloat( window.prompt( "contrast?" ) ) );
 			} );
 			appearanceMenu.add(contrastButton);
 
@@ -512,7 +512,7 @@ qx.Class.define("desk.MPR.Volume",
 		__addVolumeToViewers : async function () {
 
 			if (typeof this.__file == "string") this.__fileObject = this.__file;
-			else if ( this.__file.constructor == File) {
+			else if ( this.__file.constructor == window.File) {
 
 				this.__fileObject = this.__file;
 				this.__file = this.__file.name;
@@ -535,7 +535,7 @@ qx.Class.define("desk.MPR.Volume",
 							res( slicer );
 						},
 
-						local: this.__fileObject.constructor == File || typeof this.__fileObject == "string" ,
+						local: this.__fileObject.constructor == window.File || typeof this.__fileObject == "string" ,
 						worker : this.__options.worker
 					};
 

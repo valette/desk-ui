@@ -22,7 +22,7 @@ qx.Class.define("desk.Ace.Container", {
 		this.addListener('appear', this.__onAppear, this);
 		if ( window.ace ) return;
 		const manager = qx.util.ResourceManager.getInstance();
-		window.ace = require('ace-builds/src-noconflict/ace');
+		const ace = window.ace = require('ace-builds/src-noconflict/ace');
 		require('ace-builds/src-noconflict/mode-c_cpp');
 		require('ace-builds/src-noconflict/mode-html');
 		require('ace-builds/src-noconflict/mode-javascript');

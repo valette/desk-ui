@@ -30,7 +30,7 @@ qx.Class.define("desk.MPR.CropTool",
         this.__init();
         qx.util.DisposeUtil.disposeTriggeredBy( this, MPRContainer );
         qx.util.DisposeUtil.disposeTriggeredBy( this, volume );
-        setImmediate( () => this.getWindow().setAlwaysOnTop( true ) );
+        window.setImmediate( () => this.getWindow().setAlwaysOnTop( true ) );
 
 	},
 

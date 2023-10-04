@@ -57,11 +57,11 @@ qx.Class.define("desk.THREE.Scene",
 		}
 
 		// lights
-		var dirLight = new THREE.DirectionalLight( 0x888888 );
+		var dirLight = new THREE.DirectionalLight( 0xffffff );
 		dirLight.position.set(200, 200, 1000).normalize();
 		camera.add(dirLight);
 		camera.add(dirLight.target);
-		scene.add(new THREE.AmbientLight(0x666666));
+		scene.add(new THREE.AmbientLight(0xffffff));
 
 		// renderer
 		const constr = THREE.useWebGL1 ? THREE.WebGL1Renderer : THREE.WebGLRenderer;

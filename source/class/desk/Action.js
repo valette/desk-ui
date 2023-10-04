@@ -338,7 +338,7 @@ qx.Class.define("desk.Action",
 			var page = this.__logTab = new qx.ui.tabview.Page("Log");
 			this.__tabView.add( page );
 			page.setLayout(new qx.ui.layout.HBox());
-			this.__logContainer = new desk.LogContainer();
+			this.__logContainer = new desk.Xterm.Logger();
 			this.__logContainer.setBackgroundColor('black');
 			page.add( this.__logContainer , { flex : 1 } );
 			return page;

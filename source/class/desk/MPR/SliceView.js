@@ -821,7 +821,7 @@ qx.Class.define("desk.MPR.SliceView",
 				return dim === 1 ? 0 : Math.round(dim / 2);
 			} )
 
-			setImmediate( () => {
+			window.setImmediate( () => {
 
 				if ( slice != this.__firstSlice ) return;
 				this.setCrossPosition( arr );

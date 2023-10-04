@@ -158,11 +158,12 @@ qx.Class.define( "desk.core.AddPromises",
 
 		}
 
-		[ "VertexColors", "NoColors", "FaceColors" ].forEach( field => {
-			Object.defineProperty( THREE, field, { get() {
+		for ( let field of [ "VertexColors", "NoColors", "FaceColors" ] ) {
+			Object.defineProperty( window.THREE, field, { get() {
 				console.warn( "THREE." + field + " is deprecated, use 'true' instead" );
 				return true;
-			} }) } );
+			} })
+		}
 
 	},
 	members : {

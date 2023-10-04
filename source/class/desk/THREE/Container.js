@@ -938,7 +938,7 @@ qx.Class.define("desk.THREE.Container",
 				} else {
 					const manager = qx.util.ResourceManager.getInstance();
 					const url = manager.toUri( "desk/workers/CTMWorkerBundle.js");
-					worker = new Worker( url );
+					worker = new window.Worker( url );
 				}
 
 				this.__ctmLoader.load (opts.url + "?nocache=" + opts.timeStamp, function (geometry) {
