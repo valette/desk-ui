@@ -2,6 +2,8 @@
  * Singleton class which adds external libraries
  * @asset(desk/css/xterm.css)
  * @asset(desk/css/billboard.css)
+ * @asset(dialog/*)
+ * @require(qxl.dialog.Dialog)
  */
 
 qx.Class.define( "desk.core.AddLibs",

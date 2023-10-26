@@ -29,7 +29,8 @@
         "qx.icontheme": "Tango"
       },
       "include": [
-        "qx.ui.*"
+        "qx.ui.*",
+        "qxl.dialog.*"
       ]
     },
     {

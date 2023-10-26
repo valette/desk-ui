@@ -23,7 +23,8 @@
   "requires": {
     "johnspackman/UploadMgr": "2.0.0",
     "@qooxdoo/framework": "^7.6.1",
-    "qooxdoo/qxl.apiviewer": "^2.0.0"
+    "qooxdoo/qxl.apiviewer": "^2.0.0",
+    "qooxdoo/qxl.dialog": "^5.0.0"
   },
   "$schema": "https://qooxdoo.org/schema/Manifest-2-0-0.json"
 }

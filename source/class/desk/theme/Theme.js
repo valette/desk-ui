@@ -15,7 +15,7 @@ qx.Theme.define("desk.theme.Theme",
     color : desk.theme.Color,
     decoration : desk.theme.Decoration,
     font : desk.theme.Font,
-    icon : qx.theme.icon.Tango,
+    icon : desk.theme.Icon,
     appearance : desk.theme.Appearance
   }
 });
