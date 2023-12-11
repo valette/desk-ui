@@ -98,16 +98,6 @@ qx.Class.define( "desk.core.AddPromises",
 
 		};
 
-		if ( window.testfff ) {
-			new desk.Ace.Container();
-			new desk.Ace.Editor();
-			new desk.Ace.TabbedEditor();
-			new desk.Xterm.Logger();
-			new desk.Xterm.Terminal();
-			new desk.Xterm.FileTail();
-
-		}
-
 		Object.entries( classesToDeprecate ).forEach( entry => {
 
 			const [ deprecated, replacement ] = entry;

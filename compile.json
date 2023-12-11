@@ -30,7 +30,8 @@
       },
       "include": [
         "qx.ui.*",
-        "qxl.dialog.*"
+        "qxl.dialog.*",
+        "desk.*"
       ]
     },
     {
