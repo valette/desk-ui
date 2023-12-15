@@ -22,7 +22,10 @@ qx.Class.define( "desk.core.AddLibs",
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/xterm.css") );
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/billboard.css") );
 		const THREE = window.THREE = require( "three" );
+		THREE.OBJLoader = require( "three/examples/jsm/loaders/OBJLoader.js" ).OBJLoader;
+		THREE.PLYLoader = require( "three/examples/jsm/loaders/PLYLoader.js" ).PLYLoader;
 		THREE.STLLoader = require( "three/examples/jsm/loaders/STLLoader.js" ).STLLoader;
+		THREE.XYZLoader = require( "three/examples/jsm/loaders/XYZLoader.js" ).XYZLoader;
 		THREE.TransformControls = require( "three/examples/jsm/controls/TransformControls.js" );
 		THREE.DragControls = require( "three/examples/jsm/controls/DragControls.js" ).DragControls;
 		THREE.BufferGeometryUtils = require( "three/examples/jsm/utils/BufferGeometryUtils.js" );
