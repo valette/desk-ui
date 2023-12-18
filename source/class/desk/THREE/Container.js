@@ -911,7 +911,7 @@ qx.Class.define("desk.THREE.Container",
 
 			var mesh = new THREE.Mesh(geometry, material );
 			if (geometry.attributes && geometry.attributes.color) {
-				mesh.material.vertexColors = THREE.VertexColors;
+				mesh.material.vertexColors = true;
 			}
 			mesh.renderOrder = opts.renderOrder || 0;
             this.addMesh( mesh, opts );
