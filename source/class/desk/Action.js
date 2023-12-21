@@ -33,7 +33,9 @@ qx.Class.define("desk.Action",
 
 	properties : {
 		/** disable caching*/
-		forceUpdate : { init : false, check: "Boolean", event : "changeForceUpdate"}
+		forceUpdate : { init : false, check: "Boolean", event : "changeForceUpdate"},
+		/** force caching*/
+		forceCache : { init : false, check: "Boolean", event : "changeForceCache"}
 	},
 
 	statics : {
@@ -355,6 +357,7 @@ qx.Class.define("desk.Action",
 		__update : null,
 
 		__forceUpdate : null,
+		__forceCache : null,
 
 		__status : null,
 
@@ -461,6 +464,7 @@ qx.Class.define("desk.Action",
 
 			// add the value of the "force update" checkbox
 			params.force_update = this.__forceUpdate.getValue();
+			params.forceCache = this.getForceCache();
 			const id = this.__actionsCounter++;
 			let log, started;
 			const options = {};
@@ -691,22 +695,31 @@ qx.Class.define("desk.Action",
 			}, this);
 
 			this.__controls = new qx.ui.container.Composite();
-			this.__controls.setLayout(new qx.ui.layout.HBox(10));
+			this.__controls.setLayout(new qx.ui.layout.HBox(5));
 			this.add(this.__controls);
 
 			this.__update = new qx.ui.form.Button("Process");
 			this.__update.setWidth( 100 );
 			this.__update.addListener("execute", this.__manager.validate, this.__manager);
 			this.__controls.add(this.__update, {flex : 1});
-
+			this.__controls.add( new qx.ui.core.Spacer( 1 ), { flex : 0.2 } );
+			const cont = new qx.ui.container.Composite();
+			cont.setWidth( 60 );
+			cont.setLayout( new qx.ui.layout.VBox() );
+			this.__controls.add(cont);
+			this.__controls.add( new qx.ui.core.Spacer( 1 ), { flex : 0.2 } );
 			this.__forceUpdate = new qx.ui.form.CheckBox("force");
 			this.__forceUpdate.setToolTipText("Check to disable caching for this action");
 			this.bind("forceUpdate", this.__forceUpdate, "value");
 			this.__forceUpdate.bind("value", this, "forceUpdate");
-			this.__controls.add(this.__forceUpdate, {flex : 1});
-
+			cont.add(this.__forceUpdate, {flex : 1});
+			this.__forceCache = new qx.ui.form.CheckBox("cache");
+			this.__forceCache.setToolTipText("Check to force caching for this action");
+			this.bind("forceCache", this.__forceCache, "value");
+			this.__forceCache.bind("value", this, "forceCache");
+			cont.add(this.__forceCache, {flex : 1});
 			this.__status = new qx.ui.form.TextField().set({readOnly: true});
-			this.__controls.add(this.__status, {flex : 1});
+			this.__controls.add(this.__status, {flex : 2});
 
 			// add a listener to the form manager for the validation complete
 			this.__manager.addListener("complete", this.__afterValidation, this);
