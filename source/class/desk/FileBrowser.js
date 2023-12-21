@@ -723,35 +723,32 @@ qx.Class.define("desk.FileBrowser",
 		*/
 		__updateActions : function () {
 			this.__files.addListenerOnce( "contextmenu", function (e) {
-				var actionMenu = new qx.ui.menu.Menu();
+				const actionMenu = new qx.ui.menu.Menu();
 				this.__actionButton.setMenu( actionMenu );
+				const actions = desk.Actions.getInstance().getSettings().actions;
+				const libs = {};
 
-				var actions = desk.Actions.getInstance().getSettings().actions;
-
-				var libs = {};
-				Object.keys(actions).forEach(function (name) {
-					var action = actions[name];
-					if ( !libs[ action.lib ] ) {
-						libs[ action.lib ] = [];
-					}
+				for ( let [ name, action ] of Object.entries(actions) ) {
+					if ( !libs[ action.lib ] ) libs[ action.lib ] = [];
 					libs[ action.lib ].push( name );
-				}, this);
+				}
 
-				Object.keys( libs ).sort( this.__caseInsensitiveSort ).forEach( function ( lib ) {
-					var menu = new qx.ui.menu.Menu();
-					var menubutton = new qx.ui.menu.Button( lib, null, null, menu );
-					libs[ lib ].sort( this.__caseInsensitiveSort ).forEach( function ( name ) {
-						var button = new qx.ui.menu.Button( name );
-						var description = actions[ name ].description;
+				for ( let lib of Object.keys( libs ).sort( this.__caseInsensitiveSort ) ) {
+					const menu = new qx.ui.menu.Menu();
+					const menubutton = new qx.ui.menu.Button( lib, null, null, menu );
+					for ( let name of libs[ lib ].sort( this.__caseInsensitiveSort ) ) {
+						if ( actions[ name ].alias == name ) continue;
+						const button = new qx.ui.menu.Button( name );
+						const description = actions[ name ].description;
 						if ( description ) {
 							button.setBlockToolTip( false );
 							button.setToolTipText( description );
 						}
 						button.addListener( "execute", this.__launch, this );
 						menu.add( button );
-					}, this);
+					}
 					actionMenu.add( menubutton );
-				}, this );
+				}
 			}, this);
 		},
 
