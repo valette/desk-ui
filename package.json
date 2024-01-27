@@ -11,7 +11,8 @@
   "main": "build/index.html",
   "dependencies": {
     "fs-extra": "11.2.0",
-    "shelljs": "0.8.5"
+    "shelljs": "0.8.5",
+    "three-gpu-pathtracer": "^0.0.17"
   },
   "devDependencies": {
     "@qooxdoo/framework": "7.6.3",
