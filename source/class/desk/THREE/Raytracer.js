@@ -434,10 +434,6 @@ qx.Class.define("desk.THREE.Raytracer",
                             ptRenderer.update();
                         }
             
-                        if (doSnapshot) {
-                            takeSnapshot()
-                            doSnapshot= false
-                        }
                     } else {
                         renderer.render(sourceScene, sourceQxScene.getCamera())
                     }
@@ -448,6 +444,10 @@ qx.Class.define("desk.THREE.Raytracer",
             
                     // copy the current state of the path tracer to canvas to display
                     fsQuad.render(renderer);
+                    if (doSnapshot) {
+                        takeSnapshot()
+                        doSnapshot= false
+                    }
                 }
             
                 function takeSnapshot() {
