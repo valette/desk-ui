@@ -4,35 +4,9 @@
 
 qx.Class.define("desk.THREE.Raytracer",
     {
-        // extend: qx.core.Object,
-
         type: "static",
 
-        // construct: function () {
-
-        // },
-
         statics: {
-
-            // createDisposableResource: function (objConstructor, params) {
-            //     if (typeof objConstructor !== 'function') {
-            //         throw new Error("Arg is not a constructor")
-            //     }
-            //     const obj = new objConstructor(params)
-            //     objToDispose.push(obj)
-            //     return obj
-            // },
-            
-            // disposeResources: function () {
-            //     objToDispose.forEach(obj => {
-            //         if (obj.dispose === undefined) {
-            //             console.error(`Cannot dispose ${obj.constructor.name}`)
-            //             return
-            //         }
-            //         obj.dispose()
-            //     })
-            //     objToDispose.length = 0
-            // },
 
             /**
             * Setup raytracer and run rendering in a new Qx window
@@ -54,7 +28,7 @@ qx.Class.define("desk.THREE.Raytracer",
                 let samplesPerFrame = 1
                 let renderSpeedFactor = 5
             
-                const sourceScene = sourceQxScene.getScene();
+                const sourceThreeScene = sourceQxScene.getScene();
             
                 const qxCanvas = new qx.ui.embed.Canvas();
                 qxCanvas.set({ syncDimension: true, zIndex: 0 });
@@ -67,7 +41,6 @@ qx.Class.define("desk.THREE.Raytracer",
                 tracingWindow.setAllowMaximize(false)
                 tracingWindow.setAllowMinimize(false)
             
-                // Init renderer
                 const renderer = new THREE.WebGLRenderer({
                     canvas: htmlCanvas,
                     antialias: true,
@@ -106,8 +79,8 @@ qx.Class.define("desk.THREE.Raytracer",
                 const fsQuad = new FullScreenQuad(fsQuadMaterial);
             
                 // initialize the scene and update the material properties with the bvh, materials, etc
-                const generator = new DynamicPathTracingSceneGenerator(sourceScene);
-                const { bvh, textures, materials, lights } = generator.generate(sourceScene);
+                const generator = new DynamicPathTracingSceneGenerator(sourceThreeScene);
+                const { bvh, textures, materials, lights } = generator.generate(sourceThreeScene);
                 const geometry = bvh.geometry;
             
                 // update bvh and geometry attribute textures
@@ -128,7 +101,7 @@ qx.Class.define("desk.THREE.Raytracer",
                 ptMaterial.lights.updateFrom(lights);
             
                 ptMaterial.environmentIntensity = 0;
-                const ambientLight = sourceScene.getObjectByProperty("type", "AmbientLight")
+                const ambientLight = sourceThreeScene.getObjectByProperty("type", "AmbientLight")
                 if (ambientLight !== undefined) {
                     ptMaterial.environmentIntensity = ambientLight.intensity * 0.09
                 }
@@ -146,11 +119,11 @@ qx.Class.define("desk.THREE.Raytracer",
                 // // by the ambient light (environmentIntensity)
                 // ptMaterial.backgroundMap = backgroundTexture
             
-                // onResize()
+                // Use this instead of requestAnimationFrame, because the latter isn't able to stop rendering
+                // upon closing the window
                 renderer.setAnimationLoop(animate)
             
                 async function onResize() {
-                    // await new Promise(res => setTimeout(res, 10)); // Maybe delete ?
                     const size = sourceQxScene.getCanvas().getInnerSize();
                     qxCanvas.set(size);
                     const width = size.width;
@@ -170,14 +143,6 @@ qx.Class.define("desk.THREE.Raytracer",
                     renderer.dispose()
                     fsQuadMaterial.dispose()
                     fsQuad.dispose()
-                    // objToDispose.forEach(obj => {
-                    //     if (obj.dispose === undefined) {
-                    //         console.error(`Cannot dispose of ${obj.constructor.name}`)
-                    //         return
-                    //     }
-                    //     obj.dispose()
-                    // })
-                    // objToDispose.length = 0
             
                     renderSettingsWindow.destroy()
                     tracingWindow.destroy();
@@ -215,7 +180,6 @@ qx.Class.define("desk.THREE.Raytracer",
                         renderSettingsWindow.open();
                         renderSettingsWindow.center();
                         renderSettingsWindow.addListener('close', function () {
-                            // renderSettingsWindow.destroy();
                             renderSettingsWindow.close()
                         });
                     });
@@ -402,7 +366,7 @@ qx.Class.define("desk.THREE.Raytracer",
                 }
             
                 function regenerateSceneLights() {
-                    const { lights, bvh, textures, materials } = generator.generate(sourceScene);
+                    const { lights, bvh, textures, materials } = generator.generate(sourceThreeScene);
             
                     const geometry = bvh.geometry;
             
@@ -426,16 +390,15 @@ qx.Class.define("desk.THREE.Raytracer",
                 let doSnapshot = false;
             
                 function animate() {
-                    // update the camera and render one sample
+                    // update the camera before rendering samples
                     ptRenderer.camera.updateMatrixWorld();
             
                     if (doRaytracing) {
                         for (let i = 0; i < samplesPerFrame * renderSpeedFactor; i++) {
                             ptRenderer.update();
                         }
-            
                     } else {
-                        renderer.render(sourceScene, sourceQxScene.getCamera())
+                        renderer.render(sourceThreeScene, sourceQxScene.getCamera())
                     }
             
                     // if using alpha = true then the target texture will change every frame
@@ -445,32 +408,30 @@ qx.Class.define("desk.THREE.Raytracer",
                     // copy the current state of the path tracer to canvas to display
                     fsQuad.render(renderer);
                     if (doSnapshot) {
-                        takeSnapshot()
+                        desk.THREE.Raytracer.takeSnapshot(htmlCanvas)
                         doSnapshot= false
                     }
                 }
-            
-                function takeSnapshot() {
-                    const dataURL = htmlCanvas.toDataURL("image/png");
-                    const binary = atob(dataURL.split(',')[1]);
-                    const array = [];
-                    for (let i = 0; i < binary.length; i++) array.push(binary.charCodeAt(i));
-                    const blob = new Blob([new Uint8Array(array)], { type: 'image/png' });
-                    const a = document.createElement('a');
-                    a.href = window.URL.createObjectURL(blob);
-                    const date = new Date();
-            
-                    a.download = "snapshot-" + date.getFullYear() + "-" +
-                        (date.getMonth() + 1) + "-" + date.getDate() + "_" +
-                        date.getHours() + "h" + date.getMinutes() + "mn" +
-                        date.getSeconds() + "s" + ".png";
-            
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
-            }
-        },
+            },
 
-        // members: {}
+            takeSnapshot: function (htmlCanvas) {
+                const dataURL = htmlCanvas.toDataURL("image/png");
+                const binary = atob(dataURL.split(',')[1]);
+                const array = [];
+                for (let i = 0; i < binary.length; i++) array.push(binary.charCodeAt(i));
+                const blob = new Blob([new Uint8Array(array)], { type: 'image/png' });
+                const a = document.createElement('a');
+                a.href = window.URL.createObjectURL(blob);
+                const date = new Date();
+        
+                a.download = "snapshot-" + date.getFullYear() + "-" +
+                    (date.getMonth() + 1) + "-" + date.getDate() + "_" +
+                    date.getHours() + "h" + date.getMinutes() + "mn" +
+                    date.getSeconds() + "s" + ".png";
+        
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
     });
