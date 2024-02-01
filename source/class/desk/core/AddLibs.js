@@ -30,6 +30,10 @@ qx.Class.define( "desk.core.AddLibs",
 		THREE.DragControls = require( "three/examples/jsm/controls/DragControls.js" ).DragControls;
 		THREE.BufferGeometryUtils = require( "three/examples/jsm/utils/BufferGeometryUtils.js" );
 
+		// Raytracer requirements
+		THREE.pathtracer = require("three-gpu-pathtracer")
+		THREE.FullScreenQuad = require("three/examples/jsm/postprocessing/Pass.js").FullScreenQuad
+
 		if ( qx.core.Environment.get( "qx.application") == "desk.Application" ) {
 
 			require( "three/../../source/ext/CTMLoader.js" );

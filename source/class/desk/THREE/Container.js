@@ -120,6 +120,7 @@ qx.Class.define("desk.THREE.Container",
 		buttons.add(this.__getSnapViewButton(), {flex : 1});
 		buttons.add(this.__getSnapshotButton(), { flex : 1 });
 		buttons.add(this.__getCameraPropertiesButton(), { flex : 1 } );
+		buttons.add(this.__getRaytracingButton(), { flex: 1 })
 		for ( let [ index, b ] of buttons.getChildren().entries() )
 			if ( index > 0 ) b.setWidth( 0 );
 		leftContainer.add(buttons);
@@ -1060,6 +1061,12 @@ qx.Class.define("desk.THREE.Container",
 				});
 			}, this);
 			return button;
+		},
+
+		__getRaytracingButton: function name(params) {
+			const button = new qx.ui.form.Button("Raytracing");
+			button.addListener("execute", () => desk.THREE.Raytracer.setupAndRun(this))
+			return button
 		},
 
 		/**
