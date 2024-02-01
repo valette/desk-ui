@@ -48,8 +48,7 @@ qx.Class.define("desk.THREE.Raytracer",
                     premultipliedAlpha: false
                 });
             
-                // Raytracer configuration
-            
+               
                 renderer.autoClear = false
                 const w = qxCanvas.getCanvasWidth(), h = qxCanvas.getCanvasHeight();
                 renderer.setSize(w, h);
@@ -57,6 +56,7 @@ qx.Class.define("desk.THREE.Raytracer",
                 tracingWindow.addListener("resize", onResize);
                 sourceQxScene.addListener("resize", onResize);
             
+                // Raytracer configuration
                 // initialize the path tracing material and renderer
                 const ptMaterial = new PhysicalPathTracingMaterial();
                 const ptRenderer = new PathTracingRenderer(renderer);
@@ -66,9 +66,6 @@ qx.Class.define("desk.THREE.Raytracer",
                 ptRenderer.material = ptMaterial;
                 ptRenderer.alpha = true
                 ptMaterial.backgroundAlpha = 0
-            
-                // ptMaterial.bounces = 5;
-                // ptMaterial.transmissiveBounces = 5;
             
                 // init quad for rendering to the canvas
                 const fsQuadMaterial = new DenoiseMaterial({
@@ -155,12 +152,7 @@ qx.Class.define("desk.THREE.Raytracer",
                 const renderSettingsWindow = new qx.ui.window.Window();
                 initSettingsGui()
             
-                // SETTINGS WIDGETS
                 function initSettingsGui() {
-                    const settingsContainer = new qx.ui.container.Composite(new qx.ui.layout.VBox());
-                    // tracingWindow.add(settingsContainer, { left: 0, top: 30, width: "60%", height: "60%" });
-                    settingsContainer.set({ maxWidth: 300, maxHeight: 600 });
-            
                     const menuContainer = new qx.ui.container.Composite(new qx.ui.layout.HBox())
                     tracingWindow.add(menuContainer)
             
@@ -170,11 +162,11 @@ qx.Class.define("desk.THREE.Raytracer",
                     var snapshotButton = new qx.ui.form.Button(null, "desk/camera-photo.png");
                     snapshotButton.addListener("click", () => doSnapshot = true);
                     menuContainer.add(snapshotButton, { flex: 1 })
+
+                    const settingsContainer = new qx.ui.container.Composite(new qx.ui.layout.VBox());
+                    settingsContainer.set({ width: 300 });
             
                     settingsButton.addListener("click", function () {
-                        // settingsContainer.setVisibility(settingsButton.getValue() ? "visible" : "hidden");
-                        // settingsButton.setLabel(settingsButton.getValue() ? "-" : "+");
-            
                         renderSettingsWindow.setLayout(new qx.ui.layout.VBox());
                         renderSettingsWindow.add(settingsContainer)
                         renderSettingsWindow.open();
@@ -195,55 +187,45 @@ qx.Class.define("desk.THREE.Raytracer",
             
                     const gridContainer = new qx.ui.container.Composite(grid);
                     settingsContainer.add(gridContainer);
-            
-                    const resolutionSlider = new qx.ui.form.Slider().set({
+
+                    function setupSlider(name, qxConfig, realStartValue, startRow, changeValueCallback) {
+                        const slider = new qx.ui.form.Slider().set(qxConfig);
+                        const valueLabel = new qx.ui.basic.Label(realStartValue.toString());
+                        slider.addListener("changeValue", e => changeValueCallback(e.getData(), valueLabel));
+
+                        gridContainer.add(new qx.ui.basic.Label(name), { row: startRow, column: 0 });
+                        gridContainer.add(valueLabel, { row: startRow, column: 1 });
+                        gridContainer.add(new qx.ui.basic.Label("Max"), { row: startRow, column: 2 });
+                        gridContainer.add(slider, {
+                            row: startRow + 1,
+                            column: 0,
+                            colSpan: 3
+                        });
+                    }
+
+                    setupSlider("Resolution", {
                         minimum: 1,
                         maximum: 10,
                         value: resolutionScale * 10,
                         singleStep: 1
-                    });
-                    resolutionSlider.setWidth(300);
-                    const resolutionSliderLabel = new qx.ui.basic.Label(resolutionScale.toString());
-                    resolutionSlider.addListener("changeValue", function (e) {
-                        const newValue = resolutionSlider.getValue()
+                    }, resolutionScale, 0, function (newValue, label) {
                         resolutionScale = newValue / 10
-                        resolutionSliderLabel.setValue(resolutionScale.toString());
-                        // restartPathTracingRenderer()
+                        label.setValue(resolutionScale.toString());
                         onResize()
-                    });
-                    gridContainer.add(new qx.ui.basic.Label("Resolution"), { row: 0, column: 0 });
-                    gridContainer.add(resolutionSliderLabel, { row: 0, column: 1 });
-                    gridContainer.add(new qx.ui.basic.Label("Max"), { row: 0, column: 2 });
-                    gridContainer.add(resolutionSlider, {
-                        row: 1,
-                        column: 0,
-                        colSpan: 3
-                    });
+                    })
             
-            
-                    const renderSpeedSlider = new qx.ui.form.Slider().set({
+                    setupSlider("Render speed", {
                         minimum: 1,
                         maximum: 20,
                         value: renderSpeedFactor,
                         singleStep: 1
-                    });
-                    renderSpeedSlider.setWidth(300);
-                    const renderSpeedSliderLabel = new qx.ui.basic.Label(renderSpeedFactor.toString());
-                    renderSpeedSlider.addListener("changeValue", function (e) {
-                        const newValue = renderSpeedSlider.getValue()
+                    }, renderSpeedFactor, 2, function (newValue, label) {
                         renderSpeedFactor = newValue
-                        renderSpeedSliderLabel.setValue(renderSpeedFactor.toString());
-                    });
-                    gridContainer.add(new qx.ui.basic.Label("Render speed"), { row: 2, column: 0 })
-                    gridContainer.add(renderSpeedSliderLabel, { row: 2, column: 1 });
-                    gridContainer.add(new qx.ui.basic.Label("Max"), { row: 2, column: 2 });
-                    gridContainer.add(renderSpeedSlider, {
-                        row: 3,
-                        column: 0,
-                        colSpan: 3
-                    });
+                        label.setValue(renderSpeedFactor.toString());
+                    })
             
                     const toneMappingButton = new qx.ui.form.Button("None")
+                    toneMappingButton.set({ width: 100 })
                     toneMappingButton.addListener("execute", function (e) {
                         const toneMappingNames = ["None", "Linear", "Reinhard", "Cineon", "ACESFilmic"]
                         const nextToneMappingIndex = (renderer.toneMapping + 1) % toneMappingNames.length
@@ -257,97 +239,49 @@ qx.Class.define("desk.THREE.Raytracer",
                         colSpan: 2
                     })
             
-                    const toneExposureSlider = new qx.ui.form.Slider().set({
+                    setupSlider("Tone exposure", {
                         minimum: -9,
                         maximum: 21,
                         value: 1,
                         singleStep: 1
-                    });
-                    toneExposureSlider.setWidth(300);
-                    const toneExposureSliderLabel = new qx.ui.basic.Label("1");
-                    toneExposureSlider.addListener("changeValue", function (e) {
-                        const newValue = toneExposureSlider.getValue()
+                    }, 1, 5, function (newValue, label) {
                         renderer.toneMappingExposure = (1 + (newValue - 1) / 10)
-                        toneExposureSliderLabel.setValue(renderer.toneMappingExposure.toString());
-                    });
-                    gridContainer.add(new qx.ui.basic.Label("Tone exposure"), { row: 5, column: 0 })
-                    gridContainer.add(toneExposureSliderLabel, { row: 5, column: 1 });
-                    gridContainer.add(new qx.ui.basic.Label("Max"), { row: 5, column: 2 });
-                    gridContainer.add(toneExposureSlider, {
-                        row: 6,
-                        column: 0,
-                        colSpan: 3
-                    });
+                        label.setValue(renderer.toneMappingExposure.toString());
+                    })
             
                     // Denoiser configuration
                     const kSigma = fsQuadMaterial.uniforms.kSigma
-                    const kSigmaSlider = new qx.ui.form.Slider().set({
+                    setupSlider("kSigma", {
                         minimum: 0,
                         maximum: 30,
                         value: kSigma.value * 10,
                         singleStep: 2
-                    });
-                    kSigmaSlider.setWidth(300);
-                    const kSigmaSliderLabel = new qx.ui.basic.Label(kSigma.value.toString());
-                    kSigmaSlider.addListener("changeValue", function (e) {
-                        const newValue = kSigmaSlider.getValue()
+                    }, kSigma.value, 7, function (newValue, label) {
                         kSigma.value = newValue / 10
-                        kSigmaSliderLabel.setValue(kSigma.value.toString());
-                    });
-                    gridContainer.add(new qx.ui.basic.Label("kSigma"), { row: 7, column: 0 })
-                    gridContainer.add(kSigmaSliderLabel, { row: 7, column: 1 });
-                    gridContainer.add(new qx.ui.basic.Label("Max"), { row: 7, column: 2 });
-                    gridContainer.add(kSigmaSlider, {
-                        row: 8,
-                        column: 0,
-                        colSpan: 3
-                    });
+                        label.setValue(kSigma.value.toString());
+                    })
             
                     const sigma = fsQuadMaterial.uniforms.sigma
-                    const sigmaSlider = new qx.ui.form.Slider().set({
+                    setupSlider("Sigma", {
                         minimum: 1,
                         maximum: 30,
                         value: sigma.value * 2,
                         singleStep: 1
-                    });
-                    sigmaSlider.setWidth(300);
-                    const sigmaSliderLabel = new qx.ui.basic.Label(sigma.value.toString());
-                    sigmaSlider.addListener("changeValue", function (e) {
-                        const newValue = sigmaSlider.getValue()
+                    }, sigma.value, 9, function (newValue, label) {
                         sigma.value = newValue / 2
-                        sigmaSliderLabel.setValue(sigma.value.toString());
-                    });
-                    gridContainer.add(new qx.ui.basic.Label("sigma"), { row: 9, column: 0 })
-                    gridContainer.add(sigmaSliderLabel, { row: 9, column: 1 });
-                    gridContainer.add(new qx.ui.basic.Label("Max"), { row: 9, column: 2 });
-                    gridContainer.add(sigmaSlider, {
-                        row: 10,
-                        column: 0,
-                        colSpan: 3
-                    });
+                        label.setValue(sigma.value.toString());
+                    })
             
                     const threshold = fsQuadMaterial.uniforms.threshold
-                    const thresholdSlider = new qx.ui.form.Slider().set({
+                    setupSlider("Edge sharpening threshold", {
                         minimum: 1,
                         maximum: 50,
                         value: threshold.value * 100,
                         singleStep: 1
-                    });
-                    thresholdSlider.setWidth(300);
-                    const thresholdSliderLabel = new qx.ui.basic.Label(threshold.value.toString());
-                    thresholdSlider.addListener("changeValue", function (e) {
-                        const newValue = thresholdSlider.getValue()
+                    }, threshold.value, 11, function (newValue, label) {
                         threshold.value = newValue / 100
-                        thresholdSliderLabel.setValue(threshold.value.toString());
-                    });
-                    gridContainer.add(new qx.ui.basic.Label("threshold"), { row: 11, column: 0 })
-                    gridContainer.add(thresholdSliderLabel, { row: 11, column: 1 });
-                    gridContainer.add(new qx.ui.basic.Label("Max"), { row: 11, column: 2 });
-                    gridContainer.add(thresholdSlider, {
-                        row: 12,
-                        column: 0,
-                        colSpan: 3
-                    });
+                        label.setValue(threshold.value.toString());
+                    })
                 }
             
                 function onMouseWheelOrUp() {
