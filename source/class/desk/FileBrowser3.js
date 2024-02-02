@@ -1056,8 +1056,13 @@ qx.Class.define("desk.FileBrowser3",
 		
 		__changeSelection : function(e) {
 		    let selectedFolder = this.__files.getSelection().getItem(0);
-		    
+		  //  console.log(selectedFolder.getChildren().toArray());
 		    if (selectedFolder && selectedFolder.getChildren) {
+		        // For instance, because of the constraint of time, this code allows us to show the detail of the
+		        // folder in the Gallery form but in another window. Need some changes and add a button to alternate
+		        // between 2 types of view
+		        new desk.WidgetGallery(selectedFolder.getName(), selectedFolder);
+		        
                 var model = qx.data.marshal.Json.createModel(selectedFolder);
 		        this.__treeController.setModel(model);
 		        this.__tree.getRoot().setOpen(true);
@@ -1267,7 +1272,7 @@ qx.Class.define("desk.FileBrowser3",
 			                if(model.getChildren) {
 			                    iconLabel = "icon/22/places/folder.png";
 			                } else {
-			                    iconLabel = "icon/22/mimetypes/office-document.png"
+			                    iconLabel = "icon/22/mimetypes/office-document.png";
 			                }
 			                item.setIcon(iconLabel);
 			                
