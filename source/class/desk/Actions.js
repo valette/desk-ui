@@ -819,15 +819,33 @@ qx.Class.define("desk.Actions",
 			button.addListener('execute', function () {
 				var win = new qx.ui.window.Window();
 				win.setLayout(new qx.ui.layout.VBox());
+				
+				var currPass = new qx.ui.form.PasswordField();
+                win.add(new qx.ui.basic.Label("Enter current password:"));
+                win.add(currPass, {
+                  flex: 1
+                });
+                currPass.addListenerOnce('appear', currPass.focus, currPass);
+
 				var pass = new qx.ui.form.PasswordField();
 				win.add( new qx.ui.basic.Label( "Enter new password:" ) );
 				win.add(pass, {flex : 1});
-				pass.addListenerOnce( 'appear', pass.focus, pass );
+				// pass.addListenerOnce( 'appear', pass.focus, pass );
 				win.add( new qx.ui.basic.Label( "Retype password:" ) );
 				var pass2 = new qx.ui.form.PasswordField();
 				win.add(pass2, {flex : 1});
 				var button = new qx.ui.form.Button( "Save password" );
 				button.addListener( 'execute', function () {
+                    if (!currPass.getValue().length) {
+                        alert('Please enter current password');
+                    } else {
+                        this.__socket.emit('checkPassword', currPass.getValue());
+                        this.__socket.on('checkPasswordResult', (data) => {
+                          if (!data) {
+                            alert('Wrong password! Please retry');
+                          }
+                        });
+                    }
 					if ( pass.getValue().length && ( pass.getValue() === pass2.getValue() ) ){
 						this.__socket.emit( 'password', pass.getValue() );
 						win.close();
