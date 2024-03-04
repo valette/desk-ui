@@ -13,7 +13,7 @@ qx.Class.define("desk.Xterm.Container", {
 
 		this.base(arguments);
 		this.setBackgroundColor( "black" );
-		const term = require( 'xterm' ).Terminal;
+		const term = require( '@xterm/xterm' ).Terminal;
 		this._terminal = new term( { scrollback : 100000 } );
 		this.addListenerOnce( 'appear', this.__onAppear, this );
 
@@ -41,7 +41,7 @@ qx.Class.define("desk.Xterm.Container", {
 		__onAppear : function () {
 
 			this.addListener( 'resize', this.__onResize, this );
-			const fit = require ( "xterm-addon-fit" ).FitAddon;
+			const fit = require ( "@xterm/addon-fit" ).FitAddon;
 			const fitAddon = this.__fitAddon = new fit();
 			this._terminal.loadAddon( fitAddon );
 			const element = this.getContentElement().getDomElement();

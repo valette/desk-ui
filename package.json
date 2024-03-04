@@ -32,8 +32,8 @@
     "random-js": "2.1.0",
     "socket.io-client": "4.7.4",
     "three": "0.162",
-    "xterm": "5.3.0",
-    "xterm-addon-fit": "^0.8.0"
+    "@xterm/addon-fit": "0.9.0",
+    "@xterm/xterm": "5.4.0"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -48,7 +48,7 @@
     "deploy": "qx deploy --source-maps --clean --out compiled/dist",
     "dev": "qx compile --target source --watch",
     "fixCss": "npm run fixBillboard && npm run fixXterm",
-    "fixXterm": "cp node_modules/xterm/css/xterm.css source/resource/desk/css/",
+    "fixXterm": "cp node_modules/@xterm/xterm/css/xterm.css source/resource/desk/css/",
     "fixBillboard": "cp node_modules/billboard.js/dist/billboard.css source/resource/desk/css/",
     "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
