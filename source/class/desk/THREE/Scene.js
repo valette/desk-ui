@@ -23,6 +23,7 @@ qx.Class.define("desk.THREE.Scene",
 		this.base(arguments);
 		desk.THREE.Scene.instances.push( this );
 		this.setLayout(new qx.ui.layout.Canvas());
+		this.setBackgroundColor( "white" )
 		this.__initialCameraFront = new THREE.Vector3().set( 0, 0, -1 );
 		this.__initialCameraUp =  new THREE.Vector3().set( 0, 1, 0 );
 
@@ -161,11 +162,10 @@ qx.Class.define("desk.THREE.Scene",
 		 * configures widget for fullscreen
 		 */
 		 __setupFullscreen : function () {
-			var parent, width, height, color, alpha, props;
+			let parent, width, height, props;
 			this.addListener('changeFullscreen', ( e ) => {
 				if (!e.getData()) {
 					this.set({height : height, width : width});
-					this.__renderer.setClearColor(color, alpha);
 					parent.add(this, props);
 				} else {
 					height = this.getHeight();
@@ -176,9 +176,6 @@ qx.Class.define("desk.THREE.Scene",
 							height : window.innerHeight,
 							zIndex : 500000});
 					qx.core.Init.getApplication().getRoot().add(this);
-					alpha = this.__renderer.getClearAlpha();
-					color = this.__renderer.getClearColor( new THREE.Color() );
-					this.__renderer.setClearColor(color, 1);
 				}
 			} );
 			this.addListener('keydown', (event) => {
