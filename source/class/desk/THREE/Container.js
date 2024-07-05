@@ -658,49 +658,15 @@ qx.Class.define("desk.THREE.Container",
 		 */
 		__addDropSupport : function () {
 			this.setDroppable(true);
-			this.addListener("drop", function(e) {
+			this.addListener("drop", e => {
+				if ( e.getOriginalTarget() != this.getCanvas() ) return;
 				if (e.supportsType("fileBrowser")) {
-					e.getData("fileBrowser").getSelectedFiles().
-						forEach(function (file) {this.addFile(file);}, this);
+					for ( let file of e.getData("fileBrowser").getSelectedFiles() )
+						this.addFile(file);
 				} else if (e.supportsType("volumeSlices")) {
 					this.attachVolumeSlices(e.getData("volumeSlices"));
 				}
-			}, this);
-			this.addListener('appear', function() {
-				var element = this.getContentElement().getDomElement();
-				element.ondrop = function (e) {
-					var files = e.dataTransfer.files;
-					var files2 = [];
-					for (var i = 0; i < files.length; i++) {
-						files2.push(files[i]);
-					}
-					files2.forEach(function (file) {
-						var reader = new FileReader();
-						console.log(file);
-						reader.onload = function() {
-							var loader;
-							switch (desk.FileSystem.getFileExtension(file.name))  {
-							case "vtk" :
-								loader = this.__vtkLoader;
-								break;
-							default :
-								console.error("Error : cannot load " + file.name +
-									" : unrecognized format");
-							}
-							if (!loader) {
-								return;
-							}
-							loader.load(reader.result, function (geometry) {
-								this.addGeometry(geometry, {label : file.name});
-							}.bind(this));
-						}.bind(this);
-						reader.readAsDataURL(file);
-					}.bind(this));
-					e.stopPropagation();
-					e.preventDefault();
-				}.bind(this);
-				element.ondragover = function() {return false;};
-            }, this);
+			} );
 		},
 
 		__filterTouchEvents : function ( events ) {
