@@ -22,7 +22,7 @@
       "class": "desk.Application",
       "theme": "desk.theme.Theme",
       "name": "desk-ui",
-      "type" :  "browser",
+      "type": "browser",
       "bootPath": "source/boot",
       "default": true,
       "environment": {
@@ -33,42 +33,7 @@
         "qxl.dialog.*",
         "desk.*"
       ]
-    },
-    {
-      "class": "qxl.apiviewer.Application",
-      "theme": "qxl.apiviewer.Theme",
-      "name": "apiviewer",
-      "title": "Qooxdoo API Viewer",
-      "type" :  "browser",
-      "environment": {
-        "qx.icontheme": "Tango",
-        "qxl.apiviewer.applications": [ "desk-ui"],
-        "qxl.apiviewer.applicationName": "",
-        "qxl.apiviewer.exclude": [
-          "qxl.apiviewer.*"
-        ],
-        "qxl.apiviewer.include": []
-      },
-      "include": [
-        "qx.*"
-      ],
-      "exclude": [
-        "qx.module.Blocker",
-        "qx.module.Placement"
-      ],
-      "parts": {
-         "boot" : {
-           "include": [
-             "qx.*"
-           ]
-         },
-         "tool" : {
-           "include": [
-             "qx.tool.*"
-           ]
-         }
-       }
-     }
+    }
   ],
   "$schema": "https://qooxdoo.org/schema/compile-1-0-0.json"
 }
