@@ -82,7 +82,8 @@ qx.Class.define("desk.THREE.Scene",
 		this.viewAllSync = this.viewAll;
 		this.viewAll = _.debounce( this.viewAll, 20, { leading : true } );
 
-		this.tempVector3 = new THREE.Vector3();
+		this.__box = new THREE.Box3();
+		this.__box2 = new THREE.Box3();
 
 	},
 
@@ -349,24 +350,75 @@ qx.Class.define("desk.THREE.Scene",
 			this.viewAll.flush();
 		},
 
-		tempVector3 : null,
+		__box : null,
+		__box2 : null,
+
+		objectsTraversalFilter : o => !(!o.visible || o?.userData?.viewerProperties?.ignore ),
+
+		__expandBoxByObject( object ) {
+
+			if ( !this.objectsTraversalFilter( object ) ) return;
+			object.updateWorldMatrix( false, false );
+			const geometry = object.geometry;
+
+			if ( geometry !== undefined ) {
+
+				const positionAttribute = geometry.getAttribute( 'position' );
+
+				if ( object.boundingBox !== undefined ) {
+
+					// object-level bounding box
+
+					if ( object.boundingBox === null ) {
+
+						object.computeBoundingBox();
+
+					}
+
+					this.__box2.copy( object.boundingBox );
+
+
+				} else {
+
+					// geometry-level bounding box
+
+					if ( geometry.boundingBox === null ) {
+
+						geometry.computeBoundingBox();
+
+					}
+
+					this.__box2.copy( geometry.boundingBox );
+
+				}
+
+				this.__box2.applyMatrix4( object.matrixWorld );
+
+				this.__box.union( this.__box2 );
+
+
+			}
+
+			for ( let child of object.children )
+				this.__expandBoxByObject( child );
+
+		},
 
 		/**
 		* Sets the camera to view all objects in the scene
 		*/
 		viewAll : function () {
-			var bbox = new THREE.Box3().setFromObject( this.__scene );
+			this.__box.makeEmpty();
+			this.__expandBoxByObject( this.__scene )
+			if ( this.__box.isEmpty() ) return;
 
-			if ( bbox.isEmpty() ) {
-				return;
-			}
-
-			var bbdl = bbox.getSize( this.tempVector3 ).length();
-			var camera = this.__camera;
-			var controls = this.__controls;
+			const vect = new THREE.Vector3();
+			const bbdl = this.__box.getSize( vect ).length();
+			const camera = this.__camera;
+			const controls = this.__controls;
 
 			if (this.__boudingBoxDiagonalLength === 0) {
-				var center = bbox.getCenter( this.tempVector3 );
+				const center = this.__box.getCenter( vect );
 				this.__boudingBoxDiagonalLength = bbdl;
 				camera.position.copy( center );
 				camera.position.sub(
@@ -374,7 +426,7 @@ qx.Class.define("desk.THREE.Scene",
 				camera.up.copy( this.__initialCameraUp );
 				controls.target.copy( center );
 			} else {
-				var ratio = bbdl / this.__boudingBoxDiagonalLength;
+				const ratio = bbdl / this.__boudingBoxDiagonalLength;
 				this.__boudingBoxDiagonalLength = bbdl;
 				camera.position.sub(controls.target)
 					.multiplyScalar(ratio)
