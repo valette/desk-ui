@@ -434,8 +434,6 @@ qx.Class.define("desk.Action",
 
 			}
 
-			const params = this.getParameters();
-
 			// update parent Actions
 			this.__update.setEnabled( false );
 			this.__update.setLabel( "Parents..." );
@@ -452,11 +450,11 @@ qx.Class.define("desk.Action",
 				const file = connection.action.getOutputDirectory() +
 					desk.FileSystem.getFileName( connection.file )
 
-				params[ connection.parameter ] = file;
 				this.setParameter( connection.parameter, file );
 
 			}
 
+			const params = this.getParameters();
 			this.__update.setLabel( "Processing..." );
 
 			if ( this.__outputDir && !this.__outputDir.startsWith( "cache/" ) )
@@ -522,8 +520,14 @@ qx.Class.define("desk.Action",
 		*/
 		getForm : function ( name ) {
 
-			for ( let item of this.__manager.getItems() )
-				if ( item.getUserData( "name" ) === name ) return item;
+			for ( let item of this.__manager.getItems() ) {
+
+				const parameter = item.getUserData( "parameter" );
+				if ( parameter.name === name ) return item;
+				if ( parameter.alias && parameter.alias === name ) return item;
+				if ( parameter.aliases && parameter.aliases.includes( name ) ) return item;
+
+			}
 
 		},
 
@@ -646,6 +650,7 @@ qx.Class.define("desk.Action",
 				}
 
 				form.setUserData("label", label);
+				form.setUserData("parameter", parameter);
 				form.setUserData("name", parameter.name);
 				form.setUserData("type", parameter.type);
 				if (toolTip.length) {
