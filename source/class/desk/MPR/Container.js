@@ -223,37 +223,22 @@ qx.Class.define("desk.MPR.Container",
 
 			if( this.__standalone && desk.Actions.getInstance().getSettings().permissions ) {
 
-				var segmentMenu = new qx.ui.menu.Menu();
+				const segmentMenu = new qx.ui.menu.Menu();
 				menu.add(new qx.ui.menu.Button("tools", null, null, segmentMenu));
 
-				var segmentButton = new qx.ui.menu.Button("segment(GC)");
-				segmentButton.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volume));
-				},this);
-				segmentMenu.add(segmentButton);
+				const methods = [ "segment(GC)", "segment", "segment (fast)", "edit" ];
+				for ( let [ segmentationMethod, name ] of methods.entries() ) {
+					const button = new qx.ui.menu.Button( name );
+					segmentMenu.add( button );
+					button.addListener( "execute", () => {
+						new desk.MPR.SegTools( this, volume.getFile(), {
+							segmentationMethod } );	} );
+				}
 
-				var segmentButtonGC = new qx.ui.menu.Button("segment");
-				segmentButtonGC.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volume), {segmentationMethod : 1});
-				},this);
-				segmentMenu.add(segmentButtonGC);
-
-				var segmentButtonCVT = new qx.ui.menu.Button("segment (fast)");
-				segmentButtonCVT.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volume), {segmentationMethod : 3});
-				},this);
-				segmentMenu.add(segmentButtonCVT);
-
-				var editButton = new qx.ui.menu.Button("edit");
-				editButton.addListener("execute", function () {
-					new desk.MPR.SegTools(this, this.getVolumeFile(volume), {segmentationMethod : 2});
-				},this);
-				segmentMenu.add(editButton);
-
-				var cropButton = new qx.ui.menu.Button("crop");
+				const cropButton = new qx.ui.menu.Button( "crop" );
 				cropButton.addListener("execute", () => {
-					new desk.MPR.CropTool(this, volume);
-				} );
+					new desk.MPR.CropTool( this, volume ); } );
+
 				segmentMenu.add(cropButton);
 
 			}

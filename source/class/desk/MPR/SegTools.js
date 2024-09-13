@@ -287,14 +287,14 @@ qx.Class.define("desk.MPR.SegTools",
 
 			switch ( this.__segmentationMethod ) {
 
-				case 3:
+				case 2:
 
 					this.__buildActionsCVT();
 					this.setCaption( "Segmentation tool (CVT + region growing)" );
 					this.__sessionType = "gcSegmentation";
 					break;
 
-				case 2:
+				case 3:
 
 					this.__buildActionsEdit();
 					this.setCaption( "Edition Tool" );
