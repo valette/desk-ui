@@ -570,10 +570,10 @@ qx.Class.define("desk.MPR.SliceView",
 		 * refreshes the brush according to the color and width
 		 */
 		__updateBrush : function() {
-			var canvas = this.__brushCanvas;
-			var ctx = canvas.getContext2d();
-			var width = canvas.getCanvasWidth();
-			var height = canvas.getCanvasHeight();
+			const canvas = this.__brushCanvas;
+			const ctx = canvas.getContentElement().getCanvas().getContext( '2d', { willReadFrequently: true } );
+			const width = canvas.getCanvasWidth();
+			const height = canvas.getCanvasHeight();
 
 			// recreate brush image
 			if (this.isEraseMode()) {
@@ -593,21 +593,18 @@ qx.Class.define("desk.MPR.SliceView",
 			}
 
 			// upload image to texture
-			var length = width * height * 4;
-			var data = ctx.getImageData(0, 0, width, height).data;
-			var material = this.__brushMesh.material;
-			var brushData = material.map.image.data;
-			for (var i = length; i--;) {
-				brushData[i] = data[i];
-			}
+			const length = width * height * 4;
+			const data = ctx.getImageData(0, 0, width, height).data;
+			const material = this.__brushMesh.material;
+			const brushData = material.map.image.data;
+			for ( let i = length; i--;)	brushData[i] = data[i];
 			material.map.needsUpdate = true;
-
 			// update vertices coordinates
-			var radius = this.__paintWidth / 2;
-			var ratio = this.__coordinatesRatio;
-			var r0 = radius * ratio[0];
-			var r1 = radius * ratio[1];
-			var positions = this.__brushMesh.geometry.attributes.position;
+			const radius = this.__paintWidth / 2;
+			const ratio = this.__coordinatesRatio;
+			const r0 = radius * ratio[0];
+			const r1 = radius * ratio[1];
+			const positions = this.__brushMesh.geometry.attributes.position;
 			positions.setXYZ(0, -r0, -r1, 0);
 			positions.setXYZ(1, r0, -r1, 0);
 			positions.setXYZ(2, -r0, r1, 0);
@@ -621,9 +618,9 @@ qx.Class.define("desk.MPR.SliceView",
 		 * @param volumeSlice {desk.MPR.Slice} the reference slice
 		 */
 		__setDrawingMesh : function (volumeSlice) {
-			var geometry = new THREE.PlaneGeometry(1, 1);
-			var coords = volumeSlice.get2DCornersCoordinates();
-			var vertices = geometry.attributes.position;
+			const geometry = new THREE.PlaneGeometry(1, 1);
+			const coords = volumeSlice.get2DCornersCoordinates();
+			const vertices = geometry.attributes.position;
 
 			// flip Y axis
 			vertices.setXYZ(0, coords[4], coords[5], 0);
@@ -631,26 +628,24 @@ qx.Class.define("desk.MPR.SliceView",
 			vertices.setXYZ(2, coords[0], coords[1], 0);
 			vertices.setXYZ(3, coords[2], coords[3], 0);
 
-			var width = this.__2DDimensions[0];
-			var height = this.__2DDimensions[1];
+			const width = this.__2DDimensions[0];
+			const height = this.__2DDimensions[1];
+            this.__drawingCanvas.set( { canvasWidth: width, canvasHeight: 	height, width, height } );
+			const ctx = this.__drawingCanvas.getContentElement().getCanvas().getContext( '2d', { willReadFrequently: true } );
+			ctx.clearRect(0, 0, width, height);
 
-			this.__drawingCanvas.set({canvasWidth: width,
-				canvasHeight: height, width: width,	height: height
-			});
-			this.__drawingCanvas.getContext2d().clearRect(0, 0, width, height);
+			const dataColor = new Uint8Array( width * height * 4);
 
-			var dataColor = new Uint8Array( width * height * 4);
-
-			var texture = new THREE.DataTexture(dataColor, width, height, THREE.RGBAFormat);
+			const texture = new THREE.DataTexture(dataColor, width, height, THREE.RGBAFormat);
 			texture.generateMipmaps = false;
 			texture.needsUpdate = true;
 			texture.magFilter = THREE.NearestFilter;
 			texture.minFilter = THREE.NearestFilter;
 
-			var material = new THREE.MeshBasicMaterial( {map:texture, transparent: true});
+			const material = new THREE.MeshBasicMaterial( {map:texture, transparent: true});
 			material.side = THREE.DoubleSide;
 
-			var mesh = new THREE.Mesh(geometry,material);
+			const mesh = new THREE.Mesh(geometry,material);
 			mesh.renderOrder = 800;
 
 			this.getScene().add(mesh);
@@ -667,22 +662,19 @@ qx.Class.define("desk.MPR.SliceView",
 			geometry.computeVertexNormals();
 			geometry.computeBoundingSphere();
 
-			var dl1 = this.addListener('changeDrawing', function() {
-				var data = this.__drawingCanvas.getContext2d().getImageData(
-					0, 0, width, height).data;
-				for (var i = width * height * 4; i--;) {
-					dataColor[i] = data[i];
-				}
+			const dl1 = this.addListener('changeDrawing', () => {
+				const data = ctx.getImageData( 0, 0, width, height ).data;
+				for (let i = width * height * 4; i--;) dataColor[i] = data[i];
 				texture.needsUpdate = true;
 				this.render();
-			}, this);
+			} );
 
-			var dl2 = this.addListener("changePaintOpacity", function (event) {
-				mesh.material.opacity = event.getData();
+			const dl2 = this.addListener("changePaintOpacity", e => {
+				mesh.material.opacity = e.getData();
 				this.render();
-			}, this);
+			} );
 
-			this.__drawingListeners = [dl1, dl2];
+			this.__drawingListeners = [ dl1, dl2 ];
 		},
 
 		// listeners Ids to get rid of when changing drawing canvas
