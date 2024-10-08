@@ -67,7 +67,7 @@ qx.Class.define( "desk.core.AddLibs",
 
 			{ chalk : "chalk", subField : "chalk" }, { events : "EventEmitter" },
 			"heap", { heap : "Heap" }, { kdt : "kdTree" },
-			"numeric", { "random-js" : "randomJS" }, "jstat", { "chroma-js" : "chroma" },
+			"numeric", { "random-js" : "randomJS" }, "jstat", { "chroma-js" : "chroma", subField: "default" },
 			"d3", { "billboard.js" : "c3", subField : "bb" },
 			{ "billboard.js" : "bb", subField : "bb" },
 			{ "operative" : "operative", shim : operativeShim }
