@@ -17,9 +17,9 @@
     "@qooxdoo/framework": "7.7.2",
     "@xterm/addon-fit": "0.10.0",
     "@xterm/xterm": "5.5.0",
-    "ace-builds": "1.36.4",
+    "ace-builds": "1.37.4",
     "async": "3.2.6",
-    "billboard.js": "3.14.0",
+    "billboard.js": "3.14.3",
     "bowser": "2.11.0",
     "chalk": "4.1.2",
     "chroma-js": "3.1.2",
@@ -33,15 +33,15 @@
     "papaya-viewer": "1.0.1455",
     "random-js": "2.1.0",
     "socket.io-client": "4.8.1",
-    "three": "0.170"
+    "three": "0.172"
   },
   "engines": {
     "node": ">=8.0.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run buildDirty",
-    "buildDirty": "npm run fixCss && npm run buildWorkers && npm run qooxdoo",
+    "build": "npm run fixCss && npm run buildWorkers && npm run qooxdoo",
     "buildAddons": "node source/buildAddons.js",
+    "buildClean": "npm run clean && npm run build",
     "buildWorkers": "node source/buildWorkers.js",
     "clean": "rm -rf compiled",
     "compile": "qx compile --target source && qx compile --target build",
