@@ -233,8 +233,9 @@ qx.Class.define("desk.Action",
 
 			if ( form.getUserData( 'type' ) === "flag" )
 				form.setValue( value === "true" || value === true );
-			else
-				form.setValue( value.toString() );
+			else if ( form.getUserData( 'type' ).toLowerCase().includes( "array" ) )
+				form.setValue( value.join( "," ) );
+			else form.setValue( value.toString() );
 
 			if ( hide === undefined ) return;
 			this.setParameterVisibility( parameter, !hide );
@@ -402,16 +403,17 @@ qx.Class.define("desk.Action",
 			for ( let item of this.__manager.getItems() ) {
 
 				const value = item.getValue();
+				const name = item.getUserData( "name" );
 
-				if ( ( typeof value === 'string' )  && value.length  ) {
+				if ( item.getUserData( "type" ).toLowerCase().includes( "array" ) && ( typeof value === 'string' ) && value.length ) {
 
-					params[ item.getUserData( "name" ) ] = value;
+					params[ name ] = value.split( ',' );
 
-				}
+				} else if ( ( ( typeof value === 'string' )  && value.length  ) ||
+					( ( typeof value === 'boolean' ) && value ) )
+				{
 
-				if ( ( typeof value === 'boolean' ) && value ) {
-
-					params[ item.getUserData( "name" ) ] = value;
+					params[ name ] = value;
 
 				}
 
@@ -535,7 +537,7 @@ qx.Class.define("desk.Action",
 		* Validator for int values
 		* @param value {String} the parameter value
 		* @param item {qx.ui.form.TextField} the parameter UI form
-		* @return {Boolean} true if the aprameter is valid
+		* @return {Boolean} true if the parameter is valid
 		*/
         __intValidator : function(value, item) {
 			if ((value == null) || (value == '')) {
@@ -554,7 +556,7 @@ qx.Class.define("desk.Action",
 		* Validator for string values
 		* @param value {String} the parameter value
 		* @param item {qx.ui.form.TextField} the parameter UI form
-		* @return {Boolean} true if the aprameter is valid
+		* @return {Boolean} true if the parameter is valid
 		*/
 		__stringValidator : function(value, item) {
 			if ((value == null) || (value == '')) {
@@ -570,10 +572,27 @@ qx.Class.define("desk.Action",
 		},
 
 		/**
+		* Validator for arrays
+		* @param value {String} the parameter value
+		* @param item {qx.ui.form.TextField} the parameter UI form
+		* @return {Boolean} true if the parameter is valid
+		*/
+		__arrayValidator : function(value, item) {
+			if ((value == null) || (value == '')) {
+				if (this.required) {
+					item.setInvalidMessage('"' + this.name + '" is empty');
+					return false;
+				}
+			}
+			// checks nothing else...
+			return true;
+		},
+
+		/**
 		* Validator for floating point values
 		* @param value {String} the parameter value
 		* @param item {qx.ui.form.TextField} the parameter UI form
-		* @return {Boolean} true if the aprameter is valid
+		* @return {Boolean} true if the parameter is valid
 		*/
 		__floatValidator : function(value, item) {
 			if ((value == null) || (value == '')) {
@@ -592,7 +611,7 @@ qx.Class.define("desk.Action",
 		* Dummy validator (always returns true)
 		* @param value {String} the parameter value
 		* @param item {qx.ui.form.TextField} the parameter UI form
-		* @return {Boolean} true if the aprameter is valid
+		* @return {Boolean} true if the parameter is valid
 		*/
 		__dummyValidator : function(value, item) {
             return true;
@@ -663,11 +682,15 @@ qx.Class.define("desk.Action",
 				var validator = {
 					"int" : this.__intValidator,
 					"string" : this.__stringValidator,
+					"fileString" : this.__stringValidator,
 					"float" : this.__floatValidator,
 					"file" : this.__dummyValidator,
 					"directory" : this.__dummyValidator,
 					"xmlcontent" : this.__dummyValidator,
-					"flag" : this.__dummyValidator
+					"flag" : this.__dummyValidator,
+					"floatArray" : this.__arrayValidator,
+					"numberArray" : this.__arrayValidator,
+					"fileArray" : this.__arrayValidator
 				} [ parameter.type ];
 
 				if (validator) {
