@@ -688,6 +688,7 @@ qx.Class.define("desk.Action",
 					"directory" : this.__dummyValidator,
 					"xmlcontent" : this.__dummyValidator,
 					"flag" : this.__dummyValidator,
+					"intArray" : this.__arrayValidator,
 					"floatArray" : this.__arrayValidator,
 					"numberArray" : this.__arrayValidator,
 					"fileArray" : this.__arrayValidator
