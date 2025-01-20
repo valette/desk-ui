@@ -43,7 +43,7 @@
     "buildAddons": "node source/buildAddons.js",
     "buildClean": "npm run clean && npm run build",
     "buildWorkers": "node source/buildWorkers.js",
-    "clean": "rm -rf compiled",
+    "clean": "rm -rf compiled && rm -rf qx*",
     "compile": "qx compile --target source && qx compile --target build",
     "deploy": "qx deploy --source-maps --clean --out compiled/dist",
     "dev": "qx compile --target source --watch",
