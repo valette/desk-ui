@@ -51,6 +51,6 @@
     "fixXterm": "cp node_modules/@xterm/xterm/css/xterm.css source/resource/desk/css/",
     "fixBillboard": "cp node_modules/billboard.js/dist/billboard.css source/resource/desk/css/",
     "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
-    "updateAll": "rm -rf node_modules && git pull && npm install && npm run build"
+    "updateAll": "rm -rf node_modules && git pull && npm install && npm run buildClean"
   }
 }
