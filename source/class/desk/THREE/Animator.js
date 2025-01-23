@@ -156,6 +156,13 @@ qx.Class.define("desk.THREE.Animator",
 			reorderList(currentListItem);
 		});
 
+		list.addListener( "changeSelection", e => {
+			const selected = list.getSelection();
+			if ( selected.length == 0 ) return;
+			this.setFrame( list.getChildren().findIndex( e => e == selected[ 0 ] ) );
+
+		});
+
 		function reorderList (listItem) {
 			// Only continue if the target is a list item.
 			if (listItem.classname != "qx.ui.form.ListItem") {
