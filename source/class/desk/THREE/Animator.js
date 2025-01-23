@@ -16,7 +16,7 @@
  * // .....
  * viewer.addMesh(objectN);
  * 
- * var animator = new desk.Animator(viewer.render.bind(viewer),
+ * var animator = new desk.THREE.Animator(viewer.render.bind(viewer),
  *   {
  *     visibilityCallback : function (object, visibility) {
  *       object.visible = visibility; // this is what the default callback does
@@ -40,7 +40,7 @@
  * @asset(qx/icon/${qx.icontheme}/16/actions/media-seek-forward.png) 
  */
 
-qx.Class.define("desk.Animator", 
+qx.Class.define("desk.THREE.Animator", 
 {
 	extend : qx.ui.container.Composite,
 
@@ -74,7 +74,7 @@ qx.Class.define("desk.Animator",
 			win.setShowMinimize(false);
 			win.setCaption('animate');
 			win.add(this, {flex : 1});
-			win.addListener('close', function () {
+			win.addListener('beforeClose', function () {
 				this.setPlay(false);
 				this.fireEvent('close');
 			}, this);
@@ -172,6 +172,14 @@ qx.Class.define("desk.Animator",
 		}
 		qx.util.DisposeUtil.disposeTriggeredBy(list, this);
 		qx.util.DisposeUtil.disposeTriggeredBy(indicator, this);
+	},
+
+	events : {
+		/**
+		 * fired when closing the animator
+		 */
+		"close" : "qx.event.type.Event"
+
 	},
 
 	properties : {

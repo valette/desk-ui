@@ -81,6 +81,7 @@ qx.Class.define( "desk.core.AddPromises",
 
 		const classesToDeprecate = {
 
+			"desk.Animator" : "desk.THREE.Animator",
 			"desk.Slicer" : "desk.MPR.Slicer",
 			"desk.VolumeSlice" : "desk.MPR.Slice",
 			"desk.VolumeViewer" : "desk.MPR.Viewer",

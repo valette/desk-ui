@@ -1347,7 +1347,7 @@ qx.Class.define("desk.THREE.Container",
 			animate.addListener('execute', function () {
 				var nodes = this.__meshes.getSelectedNodes();
 				if (!this.__animator) {
-					this.__animator = new desk.Animator(this.render.bind(this), {
+					this.__animator = new desk.THREE.Animator(this.render.bind(this), {
 						standalone : true,
 						snapshotCallback : this.snapshot.bind( this )
 					});
