@@ -75,8 +75,8 @@ qx.Class.define("desk.Actions",
 
 		}
 
-		this.__createOngoingActionsWindow();
-		this.__createHistoryWindow();
+		this.__createActionsWindow();
+		this.__addHistoryToWindow();
 		this.__createErrorContainer();
 
 	},
@@ -234,7 +234,7 @@ qx.Class.define("desk.Actions",
 		__settings : { not_initialised : true, actions : [] },
 		__ongoingActions : null,
 		__actionsGarbageContainer : null,
-		__ongoingActionsWindow : null,
+		__actionsWindow : null,
 		__history : null,
 		__historyWindow : null,
 		__finishedActions : [],
@@ -271,19 +271,26 @@ qx.Class.define("desk.Actions",
 			return this.__socket;
 		},
 
-		__createOngoingActionsWindow : function () {
+		__createActionsWindow : function () {
 
-			const win = this.__ongoingActionsWindow = new qx.ui.window.Window();
+			const win = this.__actionsWindow = new qx.ui.window.Window();
 
 			win.set( {
 				layout :  new qx.ui.layout.VBox(),
 				showMinimize : false,
 				alwaysOnTop : true,
-				caption : "Running actions",
+				caption : "Actions",
 				width : 500,
 				height : 500,
 				zIndex : 1000000
 			} );
+
+			const forceUpdate = new qx.ui.form.CheckBox("Disable cache");
+			forceUpdate.setBlockToolTip(false);
+			forceUpdate.setToolTipText("When active, this options disables actions caching");
+			forceUpdate.bind( 'value', this, 'forceUpdate' );
+			this.bind( 'forceUpdate', forceUpdate, 'value' );
+			win.add( forceUpdate );
 
 			this.__ongoingActions = new qx.ui.form.List();
 			this.__actionsGarbageContainer = new qx.ui.form.List();
@@ -359,7 +366,10 @@ qx.Class.define("desk.Actions",
 			const pane = new qx.ui.splitpane.Pane( "vertical" );
 			pane.add( this.__ongoingActions, 2 );
 			pane.add( action, 1 );
-			win.add( pane, { flex : 1 } );
+			win.add( new qx.ui.basic.Label( "Ongoing actions : " ) );
+			const globalPane = new qx.ui.splitpane.Pane( "vertical" );
+			win.add( globalPane, { flex : 1 } );
+			globalPane.add( pane, 1 );
 
 			this.__ongoingActions.addListener( "changeSelection", ( e ) => {
 
@@ -383,52 +393,48 @@ qx.Class.define("desk.Actions",
 
 			this.__historyItems.push( { name : params.POST.action,
 
-				id : this.__historyItems.length,
+				id : this.__finishedActions.length,
 				color : params.error? "red" : "black"
-
 			} );
 
 			this.__finishedActions.push( params );
-			if ( this.__historyWindowIsOpen ) this.__updateFinishedActions();
+			this.__updateFinishedActions();
 
 		},
 
 		__historyItems : [],
 		__updateFinishedActions : null,
-		__historyWindowIsOpen : false,
 
-		__createHistoryWindow : function () {
+		__addHistoryToWindow : function () {
 
-			const win = this.__historyWindow = new qx.ui.window.Window();
+			const paneH = new qx.ui.splitpane.Pane( "horizontal" );
+			const historyContainer = new qx.ui.container.Composite();
+			historyContainer.setLayout( new qx.ui.layout.VBox() );
+			historyContainer.add( new qx.ui.basic.Label( "Actions history : " ) );
+
+			this.__actionsWindow.getChildren()[ 2 ].add( paneH, 2 );
+			let fileBrowser;
+			paneH.add( historyContainer, 1 );
+
+			this.addListenerOnce("changeReady", () => {
+				fileBrowser = new desk.FileBrowser();
+				paneH.add( fileBrowser, 2 );
+				fileBrowser.hide();
+			} );
+
 			const model = qx.data.marshal.Json.createModel( [] );
 			const list = this.__history = new qx.ui.list.List( model );
 			list.setLabelPath( "name");
-			let throttle = 1000;
 
-			let update = () => {
+			const update = () => {
 
-				const start = performance.now();
 				const model = qx.data.marshal.Json.createModel( this.__historyItems );
-				list.setModel( model );
-				const duration = performance.now() - start;
-				if ( ( duration * 10 ) > throttle ) {
-
-					throttle *= 2;
-					console.warn( "Throttling history update to " + throttle + "ms." );
-					this.__updateFinishedActions = _.throttle( update, throttle );
-
-				}
+				list.getModel().append( model );
+				this.__historyItems.length = 0;
 
 			};
 
-			this.__updateFinishedActions = _.throttle( update, throttle );
-
-			list.addListener( "appear", () => {
-
-				this.__updateFinishedActions()
-				this.__historyWindowIsOpen = true;
-
-			} );
+			this.__updateFinishedActions = _.throttle( update, 1000 );
 
 			list.setDelegate( {
 
@@ -441,30 +447,13 @@ qx.Class.define("desk.Actions",
 
 			} );
 
-			win.addListener( "close", () => {
-
-				this.__historyWindowIsOpen = false
-
-			} );
-
-			win.set( {
-
-				layout :  new qx.ui.layout.VBox(),
-				alwaysOnTop : true,
-				showMinimize : false,
-				caption : "Actions history",
-				width : 500,
-				height : 500,
-				zIndex : 1000000
-
-			} );
-
 			const action = new qx.ui.form.TextArea( "" );
 			action.set( { readOnly : true } );
 			const pane = new qx.ui.splitpane.Pane( "vertical" );
 			pane.add( this.__history, 2 );
 			pane.add( action, 1 );
-			win.add( pane, { flex : 1 } );
+			historyContainer.add( pane, { flex : 1 } );
+			paneH.add( historyContainer, 1 );
 
 			list.getSelection().addListener( "change", () => {
 
@@ -477,6 +466,12 @@ qx.Class.define("desk.Actions",
 				const params = this.__finishedActions[ item.getId() ];
 				console.log( params );
 				action.setValue( JSON.stringify( params, null, 2 ) );
+				const dir = params?.response?.outputDirectory;
+				if ( dir && fileBrowser ) {
+					fileBrowser.updateRoot( dir );
+					fileBrowser.show();
+				}
+				else fileBrowser.hide();
 
 			} );
 
@@ -629,7 +624,7 @@ qx.Class.define("desk.Actions",
 				filesMenu.add(button);
 			}
 
-			var terminalButton = new qx.ui.menu.Button("Terminal");
+			const terminalButton = new qx.ui.menu.Button("Terminal");
 			terminalButton.setBlockToolTip(false);
 			terminalButton.setToolTipText("Open a new terminal window");
 			terminalButton.addListener( 'execute', function () {
@@ -637,35 +632,14 @@ qx.Class.define("desk.Actions",
 			});
 			menu.add(terminalButton);
 
-			var actionsMenu = new qx.ui.menu.Menu();
-			menu.add(new qx.ui.menu.Button("Actions", null, null, actionsMenu));
-
-			var showActionsButton = new qx.ui.menu.Button("Show running actions");
+			const showActionsButton = new qx.ui.menu.Button("Actions");
+			menu.add(showActionsButton);
 			showActionsButton.addListener( "execute", () => {
 
-				this.__ongoingActionsWindow.open();
-				this.__ongoingActionsWindow.center();
+				this.__actionsWindow.open();
+				this.__actionsWindow.center();
 
 			} );
-
-			actionsMenu.add(showActionsButton);
-
-			var showHistoryButton = new qx.ui.menu.Button("Show actions history");
-			showHistoryButton.addListener( "execute", () => {
-
-				this.__historyWindow.open();
-				this.__historyWindow.center();
-
-			} );
-
-			actionsMenu.add(showHistoryButton);
-
-			var forceButton = new qx.ui.menu.CheckBox("Disable cache");
-			forceButton.setBlockToolTip(false);
-			forceButton.setToolTipText("When active, this options disables actions caching");
-			forceButton.bind('value', this, 'forceUpdate');
-			this.bind('forceUpdate', forceButton, 'value');
-			actionsMenu.add(forceButton);
 
 			menu.add(this.__getPasswordButton());
 			var logMenu = new qx.ui.menu.Menu();
