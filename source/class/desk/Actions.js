@@ -149,7 +149,7 @@ qx.Class.define("desk.Actions",
 					actions.__socket.on("actionEvent", parameters.listener);
 			}
 
-			actions.__runingActions[params.handle] = parameters;
+			actions.__runningActions[params.handle] = parameters;
 
 			if (actions.__recordedActions && !actions.__engine) {
 				var response = actions.__recordedActions[actions.__getActionSHA(params)];
@@ -230,7 +230,7 @@ qx.Class.define("desk.Actions",
 
 	members : {
 		__socket : null,
-		__runingActions : {},
+		__runningActions : {},
 		__settings : { not_initialised : true, actions : [] },
 		__ongoingActions : null,
 		__actionsGarbageContainer : null,
@@ -323,7 +323,7 @@ qx.Class.define("desk.Actions",
 					return;
 				}
 
-				for ( let handle of Object.keys(this.__runingActions) ) {
+				for ( let handle of Object.keys(this.__runningActions) ) {
 					this.killAction( handle );
 					const children = this.__ongoingActions.getChildren();
 					for ( let item of children )
@@ -512,8 +512,8 @@ qx.Class.define("desk.Actions",
 			this.__engine = "node";
 			this.__socket.on("action started", POST => {
 
-				const params = this.__runingActions[POST.handle] =
-					this.__runingActions[POST.handle] || { POST : POST };
+				const params = this.__runningActions[POST.handle] =
+					this.__runningActions[POST.handle] || { POST : POST };
 				this.__addActionToList( params );
 
 			} );
@@ -528,7 +528,7 @@ qx.Class.define("desk.Actions",
 				const actions = res.ongoingActions;
 				for ( let handle of Object.keys(actions) ) {
 					this.__addActionToList( actions[ handle ] );
-					this.__runingActions[ handle ] = actions[ handle ];
+					this.__runningActions[ handle ] = actions[ handle ];
 				}
 
 			} );
@@ -1026,7 +1026,7 @@ qx.Class.define("desk.Actions",
 		*/
 		__onActionEnd : async function ( res ) {
 
-			const params = this.__runingActions[ res.handle ];
+			const params = this.__runningActions[ res.handle ];
 			if ( !params ) return;
 			res.action = params.POST.action;
 
@@ -1079,7 +1079,7 @@ qx.Class.define("desk.Actions",
 			if (this.__recordedActions && this.__engine)
 				this.__recordedActions[this.__getActionSHA(params.POST)] = res;
 
-			delete this.__runingActions[ res.handle ];
+			delete this.__runningActions[ res.handle ];
 
 			if ( res.error  ) {
 
