@@ -412,9 +412,12 @@ qx.Class.define("desk.Actions",
 			historyContainer.setLayout( new qx.ui.layout.VBox() );
 			historyContainer.add( new qx.ui.basic.Label( "Actions history : " ) );
 
-			this.__actionsWindow.getChildren()[ 2 ].add( paneH, 2 );
+			this.__actionsWindow.getChildren()[ 2 ].add( historyContainer, 2 );
+			historyContainer.add( paneH, { flex : 1 } );
 			let fileBrowser;
-			paneH.add( historyContainer, 1 );
+			const pane = new qx.ui.splitpane.Pane( "vertical" );
+			pane.setAllowGrowY( true )
+			paneH.add( pane, 1 );
 
 			this.addListenerOnce("changeReady", () => {
 				fileBrowser = new desk.FileBrowser();
@@ -449,11 +452,8 @@ qx.Class.define("desk.Actions",
 
 			const action = new qx.ui.form.TextArea( "" );
 			action.set( { readOnly : true } );
-			const pane = new qx.ui.splitpane.Pane( "vertical" );
 			pane.add( this.__history, 2 );
 			pane.add( action, 1 );
-			historyContainer.add( pane, { flex : 1 } );
-			paneH.add( historyContainer, 1 );
 
 			list.getSelection().addListener( "change", () => {
 
