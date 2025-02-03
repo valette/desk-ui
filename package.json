@@ -14,7 +14,7 @@
     "shelljs": "0.8.5"
   },
   "devDependencies": {
-    "@qooxdoo/framework": "7.7.2",
+    "@qooxdoo/framework": "7.8.0",
     "@xterm/addon-fit": "0.10.0",
     "@xterm/xterm": "5.5.0",
     "ace-builds": "1.37.5",
@@ -33,7 +33,7 @@
     "papaya-viewer": "1.0.1455",
     "random-js": "2.1.0",
     "socket.io-client": "4.8.1",
-    "three": "0.172"
+    "three": "0.173"
   },
   "engines": {
     "node": ">=8.0.0"
