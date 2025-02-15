@@ -2,7 +2,7 @@
  * Singleton class which stores all available actions, handles launching
  * and display actions in progress
  * @asset(desk/desk.png)
- * @asset(qx/icon/${qx.icontheme}/16/categories/system.png) 
+ * @asset(qx/icon/${qx.icontheme}/16/categories/system.png)
  * @asset(qx/icon/${qx.icontheme}/16/actions/dialog-close.png)
  * @ignore (require)
  * @ignore (_.*)
@@ -12,7 +12,7 @@
  * @lint ignoreDeprecated (alert)
  * @require(desk.Random)
  */
-qx.Class.define("desk.Actions", 
+qx.Class.define("desk.Actions",
 {
 	extend : qx.core.Object,
 
@@ -212,14 +212,14 @@ qx.Class.define("desk.Actions",
 	properties : {
 		/**
 		* Defines whether RPC cache is avoided (default : false);
-		*/	
+		*/
 		forceUpdate : { init : false, check: "Boolean", event : "changeForceUpdate"}
 	},
 
 	events : {
 		/**
 		* Fired when the actions list is ready
-		*/	
+		*/
 		"changeReady" : "qx.event.type.Event",
 
 		/**
@@ -236,7 +236,6 @@ qx.Class.define("desk.Actions",
 		__actionsGarbageContainer : null,
 		__actionsWindow : null,
 		__history : null,
-		__historyWindow : null,
 		__finishedActions : [],
 		__errorContainer : null,
 		__disconnectContainer : null,
@@ -915,8 +914,8 @@ qx.Class.define("desk.Actions",
 
 			const button = new qx.ui.form.Button( "Check history" );
 			button.addListener( "execute", () => {
-				this.__historyWindow.open();
-				this.__historyWindow.center();
+				this.__actionsWindow.open();
+				this.__actionsWindow.center();
 				cont.setVisibility( "excluded" );
 			} );
 			cont2.add( button, { flex : 1 } );
@@ -956,7 +955,7 @@ qx.Class.define("desk.Actions",
 		/**
 		* Returns the complete settings object
 		* @return {Object} settings
-		*/	
+		*/
 		getSettings : function () {
 			return JSON.parse(JSON.stringify(this.__settings));
 		},
@@ -965,13 +964,13 @@ qx.Class.define("desk.Actions",
 		* Returns the JSON object defining a specific action
 		* @param name {String} the action name
 		* @return {Object} action parameters as a JSON object
-		*/	
+		*/
 		getAction : function (name) {
 			var action = this.__settings.actions[name];
 			return action ? JSON.parse(JSON.stringify(action)) : null;
 		},
 
-		
+
 		/**
 		* Returns the container which lists all ongoing actions
 		* @return {qx.ui.form.List} actions menu
@@ -1237,7 +1236,7 @@ qx.Class.define("desk.Actions",
 			if (!win) {
 
 				win = this.__statifyWindow = new qx.ui.window.Window( "Statify" );
-				win.set({layout : new qx.ui.layout.VBox(), 
+				win.set({layout : new qx.ui.layout.VBox(),
 					height :400, width : 500, showClose : false});
 				this.__slimStatification = new qx.ui.form.CheckBox( "Slim statification" );
 				this.__slimStatification.setValue( true );
