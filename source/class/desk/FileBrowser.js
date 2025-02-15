@@ -1,6 +1,6 @@
 /**
  * A file browser, with customizable launch options
- * 
+ *
  * @ignore (async.each)
  * @ignore (confirm)
  * @ignore (prompt)
@@ -11,7 +11,7 @@
  * @ignore (_.*)
 */
 
-qx.Class.define("desk.FileBrowser", 
+qx.Class.define("desk.FileBrowser",
 {
 	extend : qx.ui.container.Composite,
 	/**
@@ -121,6 +121,7 @@ qx.Class.define("desk.FileBrowser",
 						break;
 					case "gz" :
 						if ( model.getName().split( "." ).slice( -2 ).join( "." ) !== "nii.gz" ) break;
+					case "mha":
 					case "mhd":
 					case "jpg":
 					case "png":
@@ -137,7 +138,7 @@ qx.Class.define("desk.FileBrowser",
 			}
 		},
 
-		/** 
+		/**
 		* Creates the filter container
 		*/
 		__createFilter : function () {
@@ -175,7 +176,7 @@ qx.Class.define("desk.FileBrowser",
 			}
 		},
 
-		/** 
+		/**
 		* Fired whenever a file is double-clicked
 		* @param e {qx.event.type.Event}
 		*/
@@ -188,7 +189,7 @@ qx.Class.define("desk.FileBrowser",
 			}
 		},
 
-		/** 
+		/**
 		* Fired whenever a directory is opened
 		* @param e {qx.event.type.Event}
 		*/
@@ -197,7 +198,7 @@ qx.Class.define("desk.FileBrowser",
 			this.__expandDirectoryListing(node);
 		},
 
-		/** 
+		/**
 		* Fired whenever a directory is closed
 		* @param e {qx.event.type.Event}
 		*/
@@ -210,7 +211,7 @@ qx.Class.define("desk.FileBrowser",
 			this.__files.refresh();
 		},
 
-		/** 
+		/**
 		* Fired whenever a file drag starts
 		* @param e {qx.event.type.Drag}
 		*/
@@ -226,7 +227,7 @@ qx.Class.define("desk.FileBrowser",
 			this.__draggedNodes = selection;
 		},
 
-		/** 
+		/**
 		* Fired whenever a file drag ends
 		* @param e {qx.event.type.Drag}
 		*/
@@ -234,7 +235,7 @@ qx.Class.define("desk.FileBrowser",
 			this.__draggedNodes = null;
 		},
 
-		/** 
+		/**
 		* Fired at each drop request
 		* @param e {qx.event.type.Drop}
 		*/
@@ -252,7 +253,7 @@ qx.Class.define("desk.FileBrowser",
 			}
 		},
 
-		/** 
+		/**
 		* Fired at each drop
 		* @param e {qx.event.type.Drop}
 		*/
@@ -274,7 +275,7 @@ qx.Class.define("desk.FileBrowser",
 			} else {
 				files = [source];
 			}
-			
+
 			var target = e.getOriginalTarget().getModel();
 			var destination = target.getFullName();
 			if (!target.getChildren) {
@@ -323,7 +324,7 @@ qx.Class.define("desk.FileBrowser",
 		__actionNames : null,
 		__actionCallbacks : null,
 
-		/** 
+		/**
 		* Creates the top shortcuts
 		* @return {qx.ui.container.Composite}
 		*/
@@ -423,7 +424,7 @@ qx.Class.define("desk.FileBrowser",
 		getFileFilter : function() {
 			return this.__filterField;
 		},
-		
+
 		/**
 		* returns the directory for the given file, session type and Id
 		* @param file {String} file
@@ -505,13 +506,14 @@ qx.Class.define("desk.FileBrowser",
 			case "png":
 			case "jpg":
 			case "bmp":
+			case "mha":
 			case "mhd":
 			case "nii":
 			case "hdr":
 			case "tif":
 				new desk.MPR.Viewer(file);
 				break;
-			case "vol": 
+			case "vol":
 				if (desk.Actions.getInstance().getAction("vol_slice") != null) {
 					new desk.MPR.Viewer(file);
 				} else {
@@ -524,7 +526,7 @@ qx.Class.define("desk.FileBrowser",
 			default:
 				alert("no file handler exists for extension "+extension);
 				break;
-			}				
+			}
 		},
 
 		/**
@@ -556,7 +558,7 @@ qx.Class.define("desk.FileBrowser",
 		},
 
 		/**
-		* Launches an uploader 
+		* Launches an uploader
 		* @param node {Object} file node
 		*/
 		__uploadAction : function (node) {
@@ -815,7 +817,7 @@ qx.Class.define("desk.FileBrowser",
 		},
 
 		__draggedNodes : null,
-	
+
 		/**
 		* Returns an array containing currently selected files
 		* @return {Array} array of files (strings)
