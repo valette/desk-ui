@@ -72,19 +72,24 @@ qx.Class.define("desk.THREE.Container",
 		this.addListener("touchstart", this.__onTouchStart, this);
 		this.addListener("touchmove", this.__onTouchMove, this);
 
-		this.addListener('keydown', async function (event) {
+		this.addListener('keydown', async event => {
 			if ((event.getTarget() !== this.getCanvas()) ||
                 (event.getKeyIdentifier() !== 'G')) {
 					return;
 			}
 
-			const mesh = this.getIntersections()[0];
-			if (mesh === undefined) return;
-			console.log("picked mesh : ");
-			console.log(mesh);
+			const intersection = this.getIntersections()[0];
+			if (intersection === undefined) return;
+			console.log("picked : ");
+			console.log(intersection);
+			const node = intersection?.object?.userData?.viewerProperties?.branch;
+			const tree = this.__meshes;
+			if ( !isNaN( node ) )
+				tree.nodeSetSelected( tree.nodeGet( node), true )
+
 			const controls = this.getControls();
 			const init = controls.target.clone();
-			const final = mesh.point.clone();
+			const final = intersection.point.clone();
 			const nFrames = 30;
 			for ( let i = 0; i <= nFrames; i++ ) {
 				controls.target.lerpVectors ( init, final, i / nFrames );
@@ -94,7 +99,7 @@ qx.Class.define("desk.THREE.Container",
 				await new Promise ( r => setTimeout( r, 10 ) );
 			}
 
-		}, this);
+		} );
 
 		var button = this.__optionsButton = new qx.ui.form.ToggleButton("+").set({opacity : 0.5, width : 30});
 		if (opts.noOpts === undefined || !opts.noOpts) {
