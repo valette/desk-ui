@@ -224,10 +224,10 @@ qx.Class.define("desk.THREE.Container",
 		 * @return {Array} array of objects
 		 */
 		getMeshes : function() {
-			var meshes = [];
+			const meshes = [];
 			if (!this.getScene()) return [];
 			this.getScene().traverse(function(child) {
-				if (child.userData.viewerProperties) {
+				if (!child.isGroup && child.userData.viewerProperties) {
 					meshes.push(child);
 				}
 			});
@@ -789,22 +789,19 @@ qx.Class.define("desk.THREE.Container",
 		 * @return {Array} array of intersections
 		 */
 		getIntersections : function (meshes) {
-			var origin = this.getContentLocation();
-			var x = this.__x - origin.left;
-			var y = this.__y - origin.top;
+			const origin = this.getContentLocation();
+			const x = this.__x - origin.left;
+			const y = this.__y - origin.top;
 
-			var elementSize = this.getInnerSize();
-			var mouse = new THREE.Vector2();
+			const elementSize = this.getInnerSize();
+			const mouse = new THREE.Vector2();
 			mouse.x = ( x / elementSize.width ) * 2 - 1;
 			mouse.y = - ( y / elementSize.height ) * 2 + 1;
 
-			var raycaster = new THREE.Raycaster();
+			const raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, this.getCamera());
 
-			meshes = meshes || _.filter(this.getMeshes(), function (mesh) {
-				return mesh.visible;
-			});
-
+			meshes = meshes || this.getMeshes().filter( m => m.visible );
 			if ( this.rayCasterParams ) raycaster.params = this.rayCasterParams;
 			return raycaster.intersectObjects(meshes);
 		},
