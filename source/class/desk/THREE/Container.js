@@ -345,6 +345,7 @@ qx.Class.define("desk.THREE.Container",
 					this.__loadFile(file, opt, callback);
 					break;
 				}
+			case "vtp":
 			case "ply":
 			case "obj":
 			case "stl":
@@ -491,6 +492,7 @@ qx.Class.define("desk.THREE.Container",
 				case "obj":
 				case "stl":
 				case "vtk":
+				case "vtp":
 				case "ctm":
 				case "off":
 					this.__readFile (file, opts, after);

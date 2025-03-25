@@ -114,9 +114,11 @@ qx.Class.define("desk.FileBrowser",
 					var image = "icon/22/mimetypes/office-document.png";
 					switch (desk.FileSystem.getFileExtension(model.getName())) {
 					case "vtk":
+					case "vtp":
 					case "ply":
 					case "obj":
 					case "stl":
+					case "ctm":
 						image = "desk/tris.png";
 						break;
 					case "gz" :
@@ -484,6 +486,7 @@ qx.Class.define("desk.FileBrowser",
 				desk.Ace.TabbedEditor.open(file);
 				break;
 			case "vtk":
+			case "vtp":
 			case "ply":
 			case "obj":
 			case "stl":
