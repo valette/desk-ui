@@ -641,10 +641,7 @@ qx.Class.define("desk.Actions",
 			} );
 
 			menu.add(this.__getPasswordButton());
-			var logMenu = new qx.ui.menu.Menu();
-			menu.add(new qx.ui.menu.Button("Logs", null, null, logMenu));
-			logMenu.add(this.__getConsoleLogButton());
-			logMenu.add(this.__getServerLogButton());
+			menu.add(this.__getServerLogButton());
 			this.__addSaveActionButtons(menu);
 
 			var devMenu = new qx.ui.menu.Menu();
@@ -850,46 +847,6 @@ qx.Class.define("desk.Actions",
 			return button;
 		},
 
-		/**
-		* Creates the console log button
-		* @return {qx.ui.menu.Button} the button
-		*/
-		__getConsoleLogButton : function () {
-
-			const button = new qx.ui.menu.Button('Console log');
-			button.setBlockToolTip(false);
-			button.setToolTipText("To display console logs");
-			button.addListener('execute', () => {
-
-				const oldConsoleLog = console.log;
-
-				console.log = function (message) {
-
-					oldConsoleLog.apply( console, arguments );
-					log.log( message.toString() + '\n' );
-
-				};
-
-				const win = new qx.ui.window.Window( 'Console log' ).set(
-					{width : 600, height : 300, layout : new qx.ui.layout.HBox()});
-
-				const log = new desk.Xterm.Logger();
-				win.add(log, { flex : 1 } );
-
-				win.addListener( 'close', function () {
-
-					console.log = oldConsoleLog;
-
-				} );
-
-				win.open();
-				win.center();
-
-			} );
-
-			return button;
-
-		},
 
 		__createErrorContainer : function () {
 
