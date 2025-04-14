@@ -17,9 +17,9 @@
     "@qooxdoo/framework": "7.8.0",
     "@xterm/addon-fit": "0.10.0",
     "@xterm/xterm": "5.5.0",
-    "ace-builds": "1.39.0",
+    "ace-builds": "1.39.1",
     "async": "3.2.6",
-    "billboard.js": "3.14.3",
+    "billboard.js": "3.15.0",
     "bowser": "2.11.0",
     "chalk": "4.1.2",
     "chroma-js": "3.1.2",
@@ -33,7 +33,7 @@
     "papaya-viewer": "1.0.1455",
     "random-js": "2.1.0",
     "socket.io-client": "4.8.1",
-    "three": "0.174"
+    "three": "0.175"
   },
   "engines": {
     "node": ">=8.0.0"
