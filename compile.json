@@ -26,7 +26,8 @@
       "bootPath": "source/boot",
       "default": true,
       "environment": {
-        "qx.icontheme": "Tango"
+        "qx.icontheme": "Tango",
+        "qx.data.marshal.Json.breakOnNonPojos" : true
       },
       "include": [
         "qx.ui.*",
