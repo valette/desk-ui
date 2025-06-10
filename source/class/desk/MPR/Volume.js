@@ -6,7 +6,7 @@
 * @lint ignoreDeprecated(alert)
 */
 
-qx.Class.define("desk.MPR.Volume", 
+qx.Class.define("desk.MPR.Volume",
 {
 	extend : qx.ui.container.Composite,
 
@@ -80,7 +80,7 @@ qx.Class.define("desk.MPR.Volume",
 		this.getUserData = this.__newGetUserData; // deprecate getUserData( "slices" )
 
 		this.__addVolumeToViewers().then( () => callback.call( context, null, this ) )
-			.catch( e => callback.call( context, e, this ) ); 
+			.catch( e => callback.call( context, e, this ) );
 
 	},
 
@@ -153,7 +153,7 @@ qx.Class.define("desk.MPR.Volume",
 			return this.__oldGetUserData( key );
 		},
 
-		
+
 		/**
 		 * waits for the volume to be ready
 		 */
@@ -176,13 +176,13 @@ qx.Class.define("desk.MPR.Volume",
 					baseName.substring(baseLength - 10);
 			}
 
-			const labelcontainer = this.__labelContainer = new qx.ui.container.Composite();
-			labelcontainer.setLayout( new qx.ui.layout.HBox() );
+			const labelContainer = this.__labelContainer = new qx.ui.container.Composite();
+			labelContainer.setLayout( new qx.ui.layout.HBox() );
 			const label = new qx.ui.basic.Label( baseName );
 			if (this.__options.label) label.setValue(this.__options.label);
 			label.setTextAlign("left");
-			labelcontainer.add(label, {flex : 1});		
-			return labelcontainer;
+			labelContainer.add(label, {flex : 1});
+			return labelContainer;
 
 		},
 
@@ -191,7 +191,6 @@ qx.Class.define("desk.MPR.Volume",
 		 * @param LUT {Array} an array of 4 lookuup tables [red, green blue, alpha]
 		 */
 		setLUT : function ( LUT ) {
-
 			this.getSlices().forEach( s => s.setLookupTables( LUT ) );
 
 		},
@@ -286,7 +285,7 @@ qx.Class.define("desk.MPR.Volume",
 		getBrightnessContrastButton : function () {
 			if ( this.__brightnessContrastButton ) return this.__brightnessContrastButton;
 			const button = this.__brightnessContrastButton = new qx.ui.form.Button(null, "desk/contrast.png");
-			
+
 			button.set({toolTipText : "Click and drag to change brightnes, right-click to reset brightness"});
 
 			let x, y;
@@ -461,18 +460,19 @@ qx.Class.define("desk.MPR.Volume",
 		 * @param volume {qx.ui.container.Composite} the volume to modify
 		 */
 		__createColormapWindow : function() {
-			var win = new qx.ui.window.Window().set ({
+			const win = new qx.ui.window.Window().set ({
 				caption : "colors for " + this.__file,
-				layout : new qx.ui.layout.HBox(),
+				layout : new qx.ui.layout.VBox(),
 				showClose : true,
 				showMinimize : false
 			});
 
-			var ramp = new Uint8Array(256);
-			var zeros = new Uint8Array(256);
-			var randomRed = new Uint8Array(256);
-			var randomGreen = new Uint8Array(256);
-			var randomBlue = new Uint8Array(256);
+			const ramp = new Uint8Array(256);
+			const zeros = new Uint8Array(256);
+			const randomRed = new Uint8Array(256);
+			const randomGreen = new Uint8Array(256);
+			const randomBlue = new Uint8Array(256);
+			const zeroAtZero = new Uint8Array(256);
 
 			for (var i = 0; i < 256; i++) {
 				ramp[i] = i;
@@ -480,10 +480,15 @@ qx.Class.define("desk.MPR.Volume",
 				randomRed[i] = Math.floor(Math.random()*255);
 				randomGreen[i] = Math.floor(Math.random()*255);
 				randomBlue[i] = Math.floor(Math.random()*255);
+				zeroAtZero[i] = 255;
 			}
 
-			var group = new qx.ui.form.RadioButtonGroup().set({layout : new qx.ui.layout.VBox()});
+			zeroAtZero[ 0 ] = 0;
+			const group = new qx.ui.form.RadioButtonGroup().set({layout : new qx.ui.layout.VBox()});
 			win.add(group);
+			const transparentZero = new qx.ui.form.CheckBox( "transparent zero" );
+			transparentZero.setValue( true );
+			win.add( transparentZero, {flex : 1} );
 
 			[{name : "reds", lut : [ramp, zeros, zeros]},
 				{name : "greens", lut : [zeros, ramp, zeros]},
@@ -496,15 +501,17 @@ qx.Class.define("desk.MPR.Volume",
 				{name : "other colors", lut : this.getLUT()}
 			].forEach(function (colors, index) {
 				if (!colors.lut && (index > 7)) return;
-				var button = new qx.ui.form.RadioButton(colors.name);
+				const button = new qx.ui.form.RadioButton(colors.name);
 				button.setUserData('lut', colors.lut);
 				group.add(button);
 				group.setSelection([button]);
 			});
 
-			group.addListener("changeSelection", function (e) {
-				this.setLUT( e.getData()[0].getUserData('lut') );
-			}, this);
+			group.addListener("changeSelection", e => {
+				const lut = e.getData()[0].getUserData('lut').slice();
+				if ( transparentZero.getValue() ) lut.push( zeroAtZero );
+				this.setLUT( lut );
+			} );
 			win.open();
 			win.center();
 		},
