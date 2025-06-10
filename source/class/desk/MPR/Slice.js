@@ -7,13 +7,13 @@
 */
 
 /*
- 3 possible orientations : 
+ 3 possible orientations :
 	0 : XY Z
 	1 : ZY X
 	2 : XZ Y
 */
 
-qx.Class.define("desk.MPR.Slice", 
+qx.Class.define("desk.MPR.Slice",
 {
 	extend : qx.core.Object,
 
@@ -1187,7 +1187,7 @@ qx.Class.define("desk.MPR.Slice",
 		 */
 		__onChangePosition : function () {
 			var zi = this.getZIndex();
-			var slice = Math.round( ( this.getPosition() -  this.__origin[ zi ] ) 
+			var slice = Math.round( ( this.getPosition() -  this.__origin[ zi ] )
 				/ this.__spacing[ zi ] );
 
 			slice = Math.max( 0, Math.min( slice, this.getNumberOfSlices() - 1 ) );
