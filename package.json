@@ -10,7 +10,7 @@
   },
   "main": "build/index.html",
   "dependencies": {
-    "fs-extra": "11.3.0",
+    "fs-extra": "11.3.1",
     "shelljs": "0.10.0"
   },
   "devDependencies": {
@@ -33,7 +33,7 @@
     "papaya-viewer": "1.0.1455",
     "random-js": "2.1.0",
     "socket.io-client": "4.8.1",
-    "three": "0.178"
+    "three": "0.179"
   },
   "engines": {
     "node": ">=8.0.0"
