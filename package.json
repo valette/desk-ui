@@ -10,17 +10,17 @@
   },
   "main": "build/index.html",
   "dependencies": {
-    "fs-extra": "11.3.1",
+    "fs-extra": "11.3.2",
     "shelljs": "0.10.0"
   },
   "devDependencies": {
-    "@qooxdoo/framework": "7.9.1",
+    "@qooxdoo/framework": "7.9.2",
     "@xterm/addon-fit": "0.10.0",
     "@xterm/xterm": "5.5.0",
-    "ace-builds": "1.43.2",
+    "ace-builds": "1.43.3",
     "async": "3.2.6",
-    "billboard.js": "3.16.0",
-    "bowser": "2.11.0",
+    "billboard.js": "3.17.0",
+    "bowser": "2.12.1",
     "chalk": "4.1.2",
     "chroma-js": "3.1.2",
     "d3": "7.9",
@@ -33,7 +33,7 @@
     "papaya-viewer": "1.0.1455",
     "random-js": "2.1.0",
     "socket.io-client": "4.8.1",
-    "three": "0.179"
+    "three": "0.180"
   },
   "engines": {
     "node": ">=8.0.0"
