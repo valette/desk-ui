@@ -17,12 +17,12 @@
     "@qooxdoo/framework": "7.9.2",
     "@xterm/addon-fit": "0.10.0",
     "@xterm/xterm": "5.5.0",
-    "ace-builds": "1.43.3",
+    "ace-builds": "1.43.5",
     "async": "3.2.6",
-    "billboard.js": "3.17.0",
-    "bowser": "2.12.1",
+    "billboard.js": "3.17.2",
+    "bowser": "2.13.1",
     "chalk": "4.1.2",
-    "chroma-js": "3.1.2",
+    "chroma-js": "3.2.0",
     "d3": "7.9",
     "heap": "0.2.7",
     "jstat": "1.9.6",
@@ -33,7 +33,7 @@
     "papaya-viewer": "1.0.1455",
     "random-js": "2.1.0",
     "socket.io-client": "4.8.1",
-    "three": "0.180"
+    "three": "0.182"
   },
   "engines": {
     "node": ">=8.0.0"
