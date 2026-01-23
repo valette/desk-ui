@@ -10,7 +10,7 @@
   },
   "main": "build/index.html",
   "dependencies": {
-    "fs-extra": "11.3.2",
+    "fs-extra": "11.3.3",
     "shelljs": "0.10.0"
   },
   "devDependencies": {
@@ -19,7 +19,7 @@
     "@xterm/xterm": "5.5.0",
     "ace-builds": "1.43.5",
     "async": "3.2.6",
-    "billboard.js": "3.17.2",
+    "billboard.js": "3.18.0",
     "bowser": "2.13.1",
     "chalk": "4.1.2",
     "chroma-js": "3.2.0",
@@ -27,12 +27,12 @@
     "heap": "0.2.7",
     "jstat": "1.9.6",
     "kdt": "0.1.0",
-    "lodash": "4.17.21",
+    "lodash": "4.17.23",
     "numeric": "1.2.6",
     "operative": "0.4.6",
     "papaya-viewer": "1.0.1455",
     "random-js": "2.1.0",
-    "socket.io-client": "4.8.1",
+    "socket.io-client": "4.8.3",
     "three": "0.182"
   },
   "engines": {
