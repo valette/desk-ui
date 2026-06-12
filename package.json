@@ -14,7 +14,7 @@
     "shelljs": "0.10.0"
   },
   "devDependencies": {
-    "@qooxdoo/framework": "7.9.2",
+    "@qooxdoo/framework": "7.9.3",
     "@xterm/addon-fit": "0.10.0",
     "@xterm/xterm": "5.5.0",
     "ace-builds": "1.43.5",
