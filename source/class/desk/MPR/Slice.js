@@ -140,6 +140,18 @@ qx.Class.define("desk.MPR.Slice",
 		this.update(callback, context);
 	},
 
+	destruct : function () {
+		if ( this.__texture ) {
+			this.__texture.dispose();
+			this.__texture = null;
+		}
+		if ( this.__lookupTable ) {
+			this.__lookupTable.dispose();
+			this.__lookupTable = null;
+		}
+		this.__slicer = null;
+	},
+
 	properties : {
 		/**
 		 * current slice index
