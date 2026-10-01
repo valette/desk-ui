@@ -366,13 +366,17 @@ qx.Class.define("desk.FileSystem",
 		*/
 		executeScript : function (file, callback, context) {
 			desk.FileSystem.readFile(file, function (err, content) {
+				if (err) {
+					if (typeof callback === "function") callback.call(context, err);
+					return;
+				}
 				var script = document.createElement('script');
 				script.setAttribute('type','text/javascript');
 				script.text = '(function (__dirname) {' + content
 					+ '\n})("' + desk.FileSystem.getFileDirectory(file)
 					+ '")\n//# sourceURL=' + file;
 				document.getElementsByTagName('body')[0].appendChild(script);
-				if (typeof callback === "function") callback.call(context, err);
+				if (typeof callback === "function") callback.call(context, null);
 			});
 		},
 
@@ -388,7 +392,15 @@ qx.Class.define("desk.FileSystem",
 				path : path,
 				stdout : true
 			}, function (err, message) {
-				callback.call(context, err, JSON.parse(message.stdout));
+				if (err || !message?.stdout) {
+					callback.call(context, err || new Error("No response"), false);
+					return;
+				}
+				try {
+					callback.call(context, null, JSON.parse(message.stdout));
+				} catch (e) {
+					callback.call(context, e, false);
+				}
 			});
 			return;
 		},
@@ -405,7 +417,15 @@ qx.Class.define("desk.FileSystem",
 				directory : path,
 				stdout  : true
 			}, function (err, message) {
-				callback.call(context, err, !err ? JSON.parse(message.stdout) :  null );
+				if (err || !message?.stdout) {
+					callback.call(context, err || new Error("No response"), null);
+					return;
+				}
+				try {
+					callback.call(context, null, JSON.parse(message.stdout));
+				} catch (e) {
+					callback.call(context, e, null);
+				}
 			});
 		},
 

@@ -201,7 +201,7 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 - [x] **Task 2.1**: Implement `destruct()` in `desk.MPR.Slice.js` to dispose `__texture` and `__lookupTable`.
 - [x] **Task 2.2**: Update `removeMesh()` in `desk.THREE.Container.js` to dispose geometries and materials.
 - [x] **Task 2.3**: Implement `destruct()` in `desk.MPR.SegTools.js` to cleanly detach all event listeners and canvas elements.
-- [ ] **Task 2.4**: Add `try/catch` and error guards around `JSON.parse` in `desk.FileSystem.js` (`exists`, `readDir`).
+- [x] **Task 2.4**: Add `try/catch` and error guards around `JSON.parse` in `desk.FileSystem.js` (`exists`, `readDir`).
 
 ### Phase 3: Qooxdoo Standards & Cleanups (P2)
 - [ ] **Task 3.1**: Fix `__runningActions` and `__finishedActions` in `desk.Actions.js` (initialize in `construct`, set to `null` in `members`).
