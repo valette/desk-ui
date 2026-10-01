@@ -40,6 +40,9 @@ qx.Class.define("desk.TabView",
 		__onMouseWheel : function ( e ) {
 
 			var children = this.getChildren();
+			if ( !children || !children.length ) {
+				return;
+			}
 
 			var index = _.findIndex( children, function ( child ) {
 
@@ -47,10 +50,15 @@ qx.Class.define("desk.TabView",
 
 			} );
 
+			if ( index === -1 ) {
+				return;
+			}
+
 			var delta = e.getWheelDelta() > 0 ? 1 : -1;
-			children[ ( children.length + index + delta ) % children.length ]
-				.getButton()
-				.execute();
+			var targetPage = children[ ( children.length + index + delta ) % children.length ];
+			if ( targetPage && targetPage.getButton() ) {
+				targetPage.getButton().execute();
+			}
 
 		}
 
