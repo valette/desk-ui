@@ -580,8 +580,10 @@ qx.Class.define("desk.Actions",
 
 				if ( !action ) {
 
-					params.callback = function () {};
-					this.__onActionEnd( { handle : params.POST.handle } );
+					this.__onActionEnd( {
+						handle : params.POST.handle,
+						error : new Error( "Action disconnected or lost on server" )
+					} );
 
 				}
 
