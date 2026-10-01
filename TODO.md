@@ -195,7 +195,7 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 ### Phase 1: Critical Bug Fixes (P0)
 - [x] **Task 1.1**: Replace `window.setImmediate` with `setTimeout(..., 0)` in `CropTool.js`, `SliceView.js`, and `Slice.js` (and add fallback shim in `AddLibs.js`).
 - [x] **Task 1.2**: Fix `__onDisconnect` in `desk.Actions.js` to dispatch an error to `params.callback` instead of setting a silent no-op.
-- [ ] **Task 1.3**: Resolve `workerSlicer.worker.js` reference in `desk.MPR.Slicer.js` or safely guard worker creation.
+- [x] **Task 1.3**: Resolve `workerSlicer.worker.js` reference in `desk.MPR.Slicer.js` or safely guard worker creation.
 
 ### Phase 2: Memory & Resource Leak Fixes (P1)
 - [ ] **Task 2.1**: Implement `destruct()` in `desk.MPR.Slice.js` to dispose `__texture` and `__lookupTable`.
