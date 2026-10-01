@@ -1217,7 +1217,7 @@ qx.Class.define("desk.MPR.Slice",
 
 				if (!this.__waitingForSlicer) {
 
-					window.setImmediate( () => {
+					setTimeout( () => {
 						this.__slicer.getSlice(this.getOrientation(), this.getSlice(), (err, imageData, imgFloatArray) => {
 							if (err) {
 							console.warn(err);

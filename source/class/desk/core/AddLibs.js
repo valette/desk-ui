@@ -18,6 +18,14 @@ qx.Class.define( "desk.core.AddLibs",
 	construct : function() {
 
 		this.base(arguments);
+		if ( typeof window.setImmediate !== "function" ) {
+			window.setImmediate = function ( fn, ...args ) {
+				return setTimeout( fn, 0, ...args );
+			};
+			window.clearImmediate = function ( id ) {
+				return clearTimeout( id );
+			};
+		}
 		const manager = qx.util.ResourceManager.getInstance();
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/xterm.css") );
 		qx.bom.Stylesheet.includeFile( manager.toUri( "desk/css/billboard.css") );
