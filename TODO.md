@@ -206,14 +206,14 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 ### Phase 3: Qooxdoo Standards & Cleanups (P2)
 - [ ] **Task 3.1**: Fix `__runningActions` and `__finishedActions` in `desk.Actions.js` (initialize in `construct`, set to `null` in `members`).
 - [ ] **Task 3.2**: Refactor `eval()` in `desk.core.AddPromises.js` to use safe property access via `qx.Class.getByName()`.
-- [ ] **Task 3.3**: Clean up `desk.FileField.js` to supply context `this` to all listeners.
+- [x] **Task 3.3**: Clean up `desk.FileField.js` to supply context `this` to all listeners.
 - [ ] **Task 3.4**: Clean up `source/ext/` and `AddLibs.js` module imports to eliminate compile-time require errors.
 
 ### Phase 4: Build System & Repository Polish (P3)
 - [x] **Task 4.1**: Update `.gitignore` to include `source/ext/CTMWorkerBundle.js`, `source/resource/webpack-bundle/`, and `*.pdf`.
 - [x] **Task 4.2**: Remove leftover debug code (`myGlobalParam`) in `desk.Uploader.js`.
 - [x] **Task 4.3**: Add null safety to `desk.Xterm.Terminal.destruct()`.
-- [ ] **Task 4.4**: Inconsistent context binding in `desk.FileField.js` (Rule 5).
+- [x] **Task 4.4**: Inconsistent context binding in `desk.FileField.js` (Rule 5).
 - [ ] **Task 4.5**: Fix array mutation inside `forEach` in `desk.LinkMixin.js`.
 - [ ] **Task 4.6**: Fix modulo calculation on empty children in `desk.TabView.js`.
 - [ ] **Task 4.7**: Introduce a test harness for core utility classes.

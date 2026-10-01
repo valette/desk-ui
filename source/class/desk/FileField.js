@@ -17,7 +17,7 @@ qx.Class.define("desk.FileField",
 			}
 		}, this);
 		this.setDraggable(true);
-		this.addListener('dragstart', this.__onDragStart);
+		this.addListener('dragstart', this.__onDragStart, this);
 		this.addListener("droprequest", this.__onDropRequest, this);
 	},
 
