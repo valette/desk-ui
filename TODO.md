@@ -4,22 +4,28 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 
 ---
 
-## 📑 Summary of Findings
+## 📑 Summary of Findings & Progress
 
-| Severity | Category | Description | Count |
-| :--- | :--- | :--- | :---: |
-| 🔴 **P0 (Critical)** | **Runtime Crash** | Browser incompatibility with `window.setImmediate` (Chrome/Firefox/Safari) | 3 |
-| 🔴 **P0 (Critical)** | **Promise Hang** | Silent infinite promise hang on Socket.IO reconnect in `desk.Actions` | 1 |
-| 🔴 **P0 (Critical)** | **Missing Asset** | Broken Web Worker path `desk-ui/workerSlicer.worker.js` in `desk.MPR.Slicer` | 1 |
-| 🟠 **P1 (High)** | **Memory Leak** | Missing `destruct()` in `desk.MPR.Slice` leaks WebGL textures | 1 |
-| 🟠 **P1 (High)** | **Memory Leak** | `desk.THREE.Container.removeMesh` does not dispose geometry/materials | 1 |
-| 🟠 **P1 (High)** | **Memory Leak** | Missing `destruct()` in `desk.MPR.SegTools` leaks listeners and canvases | 1 |
-| 🟠 **P1 (High)** | **Exception Risk** | Unsafe `JSON.parse` in `desk.FileSystem` (`exists`, `readDir`, `executeScript`) | 3 |
-| 🟡 **P2 (Medium)** | **Qooxdoo Violation** | Literal object/array in `desk.Actions.members` (Rule 3) | 2 |
-| 🟡 **P2 (Medium)** | **Build/Compiler** | Outdated framework in `node_modules` (7.7.2 vs 7.9.3 declared) | 1 |
-| 🟡 **P2 (Medium)** | **Build/Compiler** | Fragile relative imports (`three/../../source/ext/...`) in `AddLibs.js` | 1 |
-| 🟡 **P2 (Medium)** | **Security/Lint** | Use of `eval()` in `desk.core.AddPromises` for prototype binding | 1 |
-| 🟢 **P3 (Low)** | **Code Quality** | Missing `destruct` null checks, leftover debug code, missing test suite | Multi |
+| Severity | Category | Description | Status |
+| :--- | :--- | :--- | :--- |
+| 🔴 **P0 (Critical)** | **Runtime Crash** | Non-standard `window.setImmediate` (Chrome/Firefox/Safari) | ✅ Fixed (`5cf277c`) |
+| 🔴 **P0 (Critical)** | **Promise Hang** | Silent infinite promise hang on Socket.IO reconnect in `desk.Actions` | ✅ Fixed (`c21faa2`) |
+| 🔴 **P0 (Critical)** | **Missing Asset** | Broken Web Worker path in `desk.MPR.Slicer` | ✅ Fixed (`0bb712a`) |
+| 🟠 **P1 (High)** | **Memory Leak** | Missing `destruct()` in `desk.MPR.Slice` leaks WebGL textures | ✅ Fixed (`dbc44c9`) |
+| 🟠 **P1 (High)** | **Memory Leak** | `desk.THREE.Container.removeMesh` does not dispose geometry/materials | ✅ Fixed (`02d123f`) |
+| 🟠 **P1 (High)** | **Memory Leak** | Missing `destruct()` in `desk.MPR.SegTools` leaks listeners and canvases | ✅ Fixed (`facba0f`) |
+| 🟠 **P1 (High)** | **Exception Risk** | Unsafe `JSON.parse` in `desk.FileSystem` (`exists`, `readDir`, `executeScript`) | ✅ Fixed (`95a67be`) |
+| 🟢 **P3 (Low)** | **Build/Git** | Cluttered git status with worker bundles, webpack outputs, PDFs | ✅ Fixed (`b199b33`) |
+| 🟢 **P3 (Low)** | **Code Quality** | Leftover debug parameter code in `desk.Uploader` | ✅ Fixed (`643dbb5`) |
+| 🟢 **P3 (Low)** | **Exception Risk** | Missing null check on socket in `desk.Xterm.Terminal.destruct` | ✅ Fixed (`2274ebf`) |
+| 🟢 **P3 (Low)** | **Qooxdoo Violation** | Missing `this` context binding on `dragstart` in `desk.FileField` | ✅ Fixed (`a5679cb`) |
+| 🟢 **P3 (Low)** | **Code Quality** | In-place array mutation during iteration in `desk.LinkMixin.unlink` | ✅ Fixed (`9a24350`) |
+| 🟢 **P3 (Low)** | **Exception Risk** | Modulo by zero on empty children in `desk.TabView.__onMouseWheel` | ✅ Fixed (`bd9beb4`) |
+| 🟡 **P2 (Medium)** | **Qooxdoo Violation** | Literal object/array in `desk.Actions.members` (Rule 3) | ⏳ Pending investigation |
+| 🟡 **P2 (Medium)** | **Build/Compiler** | Outdated framework in `node_modules` (7.7.2 vs 7.9.3 declared) | ⏳ Pending investigation |
+| 🟡 **P2 (Medium)** | **Build/Compiler** | Fragile relative imports (`three/../../source/ext/...`) in `AddLibs.js` | ⏳ Pending investigation |
+| 🟡 **P2 (Medium)** | **Security/Lint** | Use of `eval()` in `desk.core.AddPromises` for prototype binding | ⏳ Pending investigation |
+| 🟢 **P3 (Low)** | **Test Coverage** | Lack of automated test suite | ⏳ Backlog |
 
 ---
 
@@ -30,37 +36,18 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
   - `source/class/desk/MPR/CropTool.js:33`
   - `source/class/desk/MPR/SliceView.js:816`
   - `source/class/desk/MPR/Slice.js:1220`
-- **Issue**: `window.setImmediate` is a non-standard API originally only supported in Node.js and legacy IE. In standard browsers (Google Chrome, Mozilla Firefox, Safari), `window.setImmediate` is `undefined`, throwing:
-  ```
-  TypeError: window.setImmediate is not a function
-  ```
-- **Remedy**: Replace all calls with `setTimeout(..., 0)` or `window.requestAnimationFrame(...)`, or inject a cross-browser shim in `desk.core.AddLibs`.
+- **Issue**: `window.setImmediate` is a non-standard API originally only supported in Node.js and legacy IE. In standard browsers (Google Chrome, Mozilla Firefox, Safari), `window.setImmediate` is `undefined`, throwing `TypeError: window.setImmediate is not a function`.
+- **Status**: ✅ **Fixed in commit [`5cf277c`](file:///home/valette/git/desk-ui/source/class/desk/core/AddLibs.js)**. Replaced calls with standard `setTimeout(..., 0)` and injected a cross-browser fallback shim into `desk.core.AddLibs`.
 
 ### 1.2. Silent Infinite Promise Hang on Socket.IO Reconnect
 - **File**: `source/class/desk/Actions.js:583`
-- **Issue**: In `__onDisconnect`, when a disconnect occurs and an action is no longer present on the server upon reconnect:
-  ```javascript
-  if ( !action ) {
-      params.callback = function () {};
-      this.__onActionEnd( { handle : params.POST.handle } );
-  }
-  ```
-  Overwriting `params.callback` with an empty no-op function means any caller waiting with `await desk.Actions.executeAsync(...)` will **hang forever**. The returned promise will neither resolve nor reject.
-- **Remedy**: Pass an explicit error to the callback:
-  ```javascript
-  params.callback.call( params.context, new Error( "Action disconnected or lost on server" ) );
-  ```
+- **Issue**: In `__onDisconnect`, when a disconnect occurred and an action was no longer present on the server upon reconnect, `params.callback` was overwritten with an empty function (`function () {}`). Any caller waiting with `await desk.Actions.executeAsync(...)` hung indefinitely without resolving or rejecting.
+- **Status**: ✅ **Fixed in commit [`c21faa2`](file:///home/valette/git/desk-ui/source/class/desk/Actions.js)**. Calls `this.__onActionEnd` with an explicit disconnection error.
 
 ### 1.3. Missing Web Worker Path in `desk.MPR.Slicer`
 - **File**: `source/class/desk/MPR/Slicer.js:96-98`
-- **Issue**: When `opts.worker` is enabled:
-  ```javascript
-  // TODO!!!
-  const scriptFile = "desk-ui/workerSlicer.worker.js";
-  this.worker = new Worker(scriptFile);
-  ```
-  `desk-ui/workerSlicer.worker.js` does not exist in the codebase. Invoking with `{ worker: true }` instantly crashes with a 404 network worker error.
-- **Remedy**: Use the bundled worker generated in `source/resource/desk/workers/SlicerWorker.js` via `qx.util.ResourceManager.getInstance().toUri(...)`.
+- **Issue**: When `opts.worker` was enabled, `const scriptFile = "desk-ui/workerSlicer.worker.js"` was requested, crashing with a 404 network worker error.
+- **Status**: ✅ **Fixed in commit [`0bb712a`](file:///home/valette/git/desk-ui/source/class/desk/MPR/Slicer.js)**. Loads bundled worker using `qx.util.ResourceManager.getInstance().toUri("desk/workers/SlicerWorker.js")` and adds error handling.
 
 ---
 
@@ -68,47 +55,27 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 
 ### 2.1. WebGL Texture Leak in `desk.MPR.Slice`
 - **File**: `source/class/desk/MPR/Slice.js`
-- **Issue**: `desk.MPR.Slice` creates `THREE.DataTexture` instances (`this.__texture` and `this.__lookupTable`). However, `desk.MPR.Slice` implements **no `destruct()` method**.
-  When a volume is destroyed (`desk.MPR.Volume.destruct` calls `slice.dispose()`), the WebGL textures are never freed from GPU memory.
-- **Remedy**: Implement a `destruct` block in `desk.MPR.Slice`:
-  ```javascript
-  destruct : function () {
-      if ( this.__texture ) this.__texture.dispose();
-      if ( this.__lookupTable ) this.__lookupTable.dispose();
-      this.__texture = null;
-      this.__lookupTable = null;
-  }
-  ```
+- **Issue**: `desk.MPR.Slice` creates `THREE.DataTexture` instances (`__texture` and `__lookupTable`), but implemented no `destruct()` method. When destroying a volume, textures were left allocated in GPU memory.
+- **Status**: ✅ **Fixed in commit [`dbc44c9`](file:///home/valette/git/desk-ui/source/class/desk/MPR/Slice.js)**. Implemented `destruct()` to dispose `__texture` and `__lookupTable`.
 
 ### 2.2. WebGL Geometry and Material Leaks in `desk.THREE.Container`
 - **File**: `source/class/desk/THREE/Container.js:1243-1250`
-- **Issue**: `removeMesh(mesh)` traverses objects and removes them from the parent Three.js group, but never invokes:
-  ```javascript
-  if ( object.geometry ) object.geometry.dispose();
-  if ( object.material ) {
-      if ( Array.isArray( object.material ) ) object.material.forEach( m => m.dispose() );
-      else object.material.dispose();
-  }
-  ```
-  Buffers and shaders remain permanently allocated on the GPU.
-- **Remedy**: Add optional or default disposal flag in `removeMesh(mesh, dispose = true)`.
+- **Issue**: `removeMesh(mesh)` detached meshes from Three.js scene groups but never disposed geometries, materials (or material arrays), or texture maps, leaking VRAM buffers.
+- **Status**: ✅ **Fixed in commit [`02d123f`](file:///home/valette/git/desk-ui/source/class/desk/THREE/Container.js)**. Updated `removeMesh(mesh, dispose = true)` to recursively dispose geometry, material arrays, and associated texture maps.
 
-### 2.3. Unhandled Exceptions in `desk.FileSystem`
-- **File**: `source/class/desk/FileSystem.js:371, 391, 408`
-- **Issues**:
-  - `exists()`: `JSON.parse(message.stdout)` crashes if `message.stdout` is undefined or malformed JSON (e.g. backend error HTML).
-  - `readDir()`: `!err ? JSON.parse(message.stdout) : null` crashes if the server returns non-JSON text.
-  - `executeScript()`: Appends `<script>` even when `err` is returned, attempting to execute undefined content.
-- **Remedy**: Wrap `JSON.parse` calls in `try/catch` and guard callback dispatches.
-
-### 2.4. Missing `destruct()` in `desk.MPR.SegTools`
+### 2.3. Missing `destruct()` in `desk.MPR.SegTools`
 - **File**: `source/class/desk/MPR/SegTools.js`
-- **Issue**: At 1,940 lines, `SegTools` binds numerous event listeners across volumes and slice views, allocates 2D drawing canvases, and manages UI windows without any `destruct()` method. Closing the tool leaves zombie listeners in memory.
-- **Remedy**: Implement a complete `destruct` lifecycle method unregistering all volume and canvas listeners.
+- **Issue**: At 1,940 lines, `SegTools` attached numerous listeners to viewer containers and volumes, created 2D canvas drawing buffers, and managed modal UI elements without any disposal lifecycle.
+- **Status**: ✅ **Fixed in commit [`facba0f`](file:///home/valette/git/desk-ui/source/class/desk/MPR/SegTools.js)**. Converted listener storage to a `Map` and implemented `destruct()` to detach all listeners, clear canvas drawing contexts, and reset tool state.
+
+### 2.4. Unhandled Exceptions in `desk.FileSystem`
+- **File**: `source/class/desk/FileSystem.js:371, 391, 408`
+- **Issue**: `exists()`, `readDir()`, and `executeScript()` called `JSON.parse` directly on raw server responses without error guards, causing runtime exceptions if non-JSON responses or errors were returned.
+- **Status**: ✅ **Fixed in commit [`95a67be`](file:///home/valette/git/desk-ui/source/class/desk/FileSystem.js)**. Added `try/catch` blocks, empty/error output guards, and protected callback dispatches.
 
 ---
 
-## 3. 🟡 Medium Severity Architecture & Qooxdoo Violations (P2)
+## 3. 🟡 Medium Severity Architecture & Qooxdoo Violations (P2 - Deferred)
 
 ### 3.1. Literal Arrays/Objects in `desk.Actions.members` (Rule 3 Violation)
 - **File**: `source/class/desk/Actions.js:233, 239`
@@ -118,21 +85,14 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
   __finishedActions : [],
   ```
   Declaring literal `{}` and `[]` in `members` attaches references directly to the class prototype. In Qooxdoo, all instances share the same reference.
-- **Remedy**: Set to `null` in `members: { ... }` and initialize in `construct`:
-  ```javascript
-  construct : function() {
-      this.__runningActions = {};
-      this.__finishedActions = [];
-      // ...
-  }
-  ```
+- **Status**: ⏳ **Pending investigation** (Leave P2 issues for later investigation).
 
 ### 3.2. Outdated Dependencies in `node_modules`
 - **Issue**: `package.json` specifies `"@qooxdoo/framework": "7.9.3"` and `Manifest.json` requires `"^7.9.0"`, but `node_modules/@qooxdoo/framework` is still on `7.7.2`. The compiler outputs:
   ```
   desk: Needs @qooxdoo/framework version ^7.9.0, found 7.7.2
   ```
-- **Remedy**: Run `npm install` to synchronize `node_modules` with `package.json`.
+- **Status**: ⏳ **Pending investigation**.
 
 ### 3.3. Fragile Local File Imports in `desk.core.AddLibs`
 - **File**: `source/class/desk/core/AddLibs.js:35-50`
@@ -142,78 +102,76 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
   require( "desk-ui/source/ext/CTMLoader.js" );
   ```
   Navigating out of `node_modules/three/` with `../../` or relying on self-referential `desk-ui` package name causes static module resolution errors during `qx compile`.
-- **Remedy**: Use Qooxdoo asset loader or configure `@asset(desk/ext/*)` with `qx.util.ResourceManager`.
+- **Status**: ⏳ **Pending investigation**.
 
 ### 3.4. Unsafe `eval()` in `desk.core.AddPromises`
 - **File**: `source/class/desk/core/AddPromises.js:145`
 - **Issue**: `eval()` is used to dynamically inject deprecated method wrappers onto prototype objects. This violates strict Content Security Policy (CSP) and prevents V8 optimizations.
-- **Remedy**: Replace `eval()` with direct property assignment:
-  ```javascript
-  const targetClass = qx.Class.getByName( source );
-  if ( targetClass ) {
-      targetClass.prototype[ member ] = function( item, ...args ) {
-          console.warn( `${deprecated} is deprecated. Use item.${target} instead.` );
-          return item[ target ]( ...args );
-      };
-  }
-  ```
+- **Status**: ⏳ **Pending investigation**.
 
 ---
 
 ## 4. 🟢 Quality & Usability Improvements (P3)
 
-### 4.1. Missing Null Check in `desk.Xterm.Terminal.destruct`
-- **File**: `source/class/desk/Xterm/Terminal.js:42`
-- **Issue**: `this.__socket.removeEventListener` throws if the terminal widget is destroyed before socket connection completes.
-- **Remedy**: Use optional chaining `this.__socket?.removeEventListener(...)` and `this.__socket?.disconnect()`.
+### 4.1. Untracked Artifacts in `.gitignore`
+- **Issue**: Running builds generated `source/ext/CTMWorkerBundle.js`, `source/resource/webpack-bundle/`, and documentation `*.pdf` files, cluttering `git status`.
+- **Status**: ✅ **Fixed in commit [`b199b33`](file:///home/valette/git/desk-ui/.gitignore)**. Added generated artifacts to `.gitignore`.
 
-### 4.2. Inconsistent Context Binding in `desk.FileField`
-- **File**: `source/class/desk/FileField.js:20`
-- **Issue**: `this.addListener('dragstart', this.__onDragStart)` lacks the context argument `this` (Rule 5 violation).
-
-### 4.3. Leftover Test Code in `desk.Uploader`
+### 4.2. Leftover Test Code in `desk.Uploader`
 - **File**: `source/class/desk/Uploader.js:50-51`
-- **Issue**:
-  ```javascript
-  if ( uploadCount % 2 == 0)
-      file.setParam("myGlobalParam", "overridden-global-value");
-  ```
-  Dummy example parameter code is present in production upload routine.
+- **Issue**: Hardcoded example parameter `myGlobalParam` and `uploadCount` modulo from external demo was present in production uploader.
+- **Status**: ✅ **Fixed in commit [`643dbb5`](file:///home/valette/git/desk-ui/source/class/desk/Uploader.js)**. Removed leftover test code.
 
-### 4.4. Untracked Artifacts in `.gitignore`
-- **Issue**: Running `npm run build` generates `source/ext/CTMWorkerBundle.js` and `source/resource/webpack-bundle/`, and documentation builds produce `*.pdf`, cluttering `git status`.
-- **Remedy**: Add these paths to `.gitignore`.
+### 4.3. Missing Null Check in `desk.Xterm.Terminal.destruct`
+- **File**: `source/class/desk/Xterm/Terminal.js:42`
+- **Issue**: `this.__socket.removeEventListener` threw if the terminal widget was destroyed before the socket connection finished establishing.
+- **Status**: ✅ **Fixed in commit [`2274ebf`](file:///home/valette/git/desk-ui/source/class/desk/Xterm/Terminal.js)**. Added optional chaining (`this.__socket?.removeEventListener(...)` and `this.__socket?.disconnect()`).
 
-### 4.5. Complete Lack of Automated Tests
-- **Issue**: There are currently **0 test files** and no `test` script in `package.json`.
-- **Remedy**: Configure Qooxdoo testrunner (`qx compile --app-name=test`) or lightweight unit tests with Vitest/Jest for core classes (`desk.Random`, `desk.URLParameters`, `desk.FileSystem`, `desk.Actions`).
+### 4.4. Inconsistent Context Binding in `desk.FileField`
+- **File**: `source/class/desk/FileField.js:20`
+- **Issue**: `this.addListener('dragstart', this.__onDragStart)` omitted the context argument `this` (violating Rule 5).
+- **Status**: ✅ **Fixed in commit [`a5679cb`](file:///home/valette/git/desk-ui/source/class/desk/FileField.js)**. Provided `this` context to the event listener.
+
+### 4.5. In-Place Array Mutation in `desk.LinkMixin.unlink`
+- **File**: `source/class/desk/LinkMixin.js:38-45`
+- **Issue**: `links.splice(index, 1)` mutated the array in-place while iterating over it with `forEach`.
+- **Status**: ✅ **Fixed in commit [`9a24350`](file:///home/valette/git/desk-ui/source/class/desk/LinkMixin.js)**. Replaced iterating splice with clean `indexOf` lookup and removal.
+
+### 4.6. Modulo Calculation on Empty Children in `desk.TabView`
+- **File**: `source/class/desk/TabView.js:40-55`
+- **Issue**: Wheel event handler calculated modulo on `children.length` without checking if children existed, leading to `NaN` indexing and unhandled exceptions.
+- **Status**: ✅ **Fixed in commit [`bd9beb4`](file:///home/valette/git/desk-ui/source/class/desk/TabView.js)**. Added empty check and index guards before triggering tab button execution.
+
+### 4.7. Test Suite / Harness
+- **Issue**: 0 automated test files exist for core classes (`desk.Random`, `desk.URLParameters`, `desk.FileSystem`, `desk.Actions`).
+- **Status**: ⏳ **Backlog / Future Improvement**.
 
 ---
 
 ## 📋 Remediation Plan & Task Checklist
 
 ### Phase 1: Critical Bug Fixes (P0)
-- [x] **Task 1.1**: Replace `window.setImmediate` with `setTimeout(..., 0)` in `CropTool.js`, `SliceView.js`, and `Slice.js` (and add fallback shim in `AddLibs.js`).
-- [x] **Task 1.2**: Fix `__onDisconnect` in `desk.Actions.js` to dispatch an error to `params.callback` instead of setting a silent no-op.
-- [x] **Task 1.3**: Resolve `workerSlicer.worker.js` reference in `desk.MPR.Slicer.js` or safely guard worker creation.
+- [x] **Task 1.1**: Replace `window.setImmediate` with `setTimeout(..., 0)` in `CropTool.js`, `SliceView.js`, and `Slice.js` (and add fallback shim in `AddLibs.js`). *(Commit [`5cf277c`](file:///home/valette/git/desk-ui/source/class/desk/core/AddLibs.js))*
+- [x] **Task 1.2**: Fix `__onDisconnect` in `desk.Actions.js` to dispatch an error to `params.callback` instead of setting a silent no-op. *(Commit [`c21faa2`](file:///home/valette/git/desk-ui/source/class/desk/Actions.js))*
+- [x] **Task 1.3**: Resolve `workerSlicer.worker.js` reference in `desk.MPR.Slicer.js` or safely guard worker creation. *(Commit [`0bb712a`](file:///home/valette/git/desk-ui/source/class/desk/MPR/Slicer.js))*
 
 ### Phase 2: Memory & Resource Leak Fixes (P1)
-- [x] **Task 2.1**: Implement `destruct()` in `desk.MPR.Slice.js` to dispose `__texture` and `__lookupTable`.
-- [x] **Task 2.2**: Update `removeMesh()` in `desk.THREE.Container.js` to dispose geometries and materials.
-- [x] **Task 2.3**: Implement `destruct()` in `desk.MPR.SegTools.js` to cleanly detach all event listeners and canvas elements.
-- [x] **Task 2.4**: Add `try/catch` and error guards around `JSON.parse` in `desk.FileSystem.js` (`exists`, `readDir`).
+- [x] **Task 2.1**: Implement `destruct()` in `desk.MPR.Slice.js` to dispose `__texture` and `__lookupTable`. *(Commit [`dbc44c9`](file:///home/valette/git/desk-ui/source/class/desk/MPR/Slice.js))*
+- [x] **Task 2.2**: Update `removeMesh()` in `desk.THREE.Container.js` to dispose geometries and materials. *(Commit [`02d123f`](file:///home/valette/git/desk-ui/source/class/desk/THREE/Container.js))*
+- [x] **Task 2.3**: Implement `destruct()` in `desk.MPR.SegTools.js` to cleanly detach all event listeners and canvas elements. *(Commit [`facba0f`](file:///home/valette/git/desk-ui/source/class/desk/MPR/SegTools.js))*
+- [x] **Task 2.4**: Add `try/catch` and error guards around `JSON.parse` in `desk.FileSystem.js` (`exists`, `readDir`, `executeScript`). *(Commit [`95a67be`](file:///home/valette/git/desk-ui/source/class/desk/FileSystem.js))*
 
-### Phase 3: Qooxdoo Standards & Cleanups (P2)
+### Phase 3: Qooxdoo Standards & Cleanups (P2 - Deferred)
 - [ ] **Task 3.1**: Fix `__runningActions` and `__finishedActions` in `desk.Actions.js` (initialize in `construct`, set to `null` in `members`).
 - [ ] **Task 3.2**: Refactor `eval()` in `desk.core.AddPromises.js` to use safe property access via `qx.Class.getByName()`.
-- [x] **Task 3.3**: Clean up `desk.FileField.js` to supply context `this` to all listeners.
-- [ ] **Task 3.4**: Clean up `source/ext/` and `AddLibs.js` module imports to eliminate compile-time require errors.
+- [ ] **Task 3.3**: Clean up `source/ext/` and `AddLibs.js` module imports to eliminate compile-time require errors.
+- [ ] **Task 3.4**: Synchronize framework version in `node_modules` with `package.json` (`7.9.3`).
 
 ### Phase 4: Build System & Repository Polish (P3)
-- [x] **Task 4.1**: Update `.gitignore` to include `source/ext/CTMWorkerBundle.js`, `source/resource/webpack-bundle/`, and `*.pdf`.
-- [x] **Task 4.2**: Remove leftover debug code (`myGlobalParam`) in `desk.Uploader.js`.
-- [x] **Task 4.3**: Add null safety to `desk.Xterm.Terminal.destruct()`.
-- [x] **Task 4.4**: Inconsistent context binding in `desk.FileField.js` (Rule 5).
-- [x] **Task 4.5**: Fix array mutation inside `forEach` in `desk.LinkMixin.js`.
-- [x] **Task 4.6**: Fix modulo calculation on empty children in `desk.TabView.js`.
+- [x] **Task 4.1**: Update `.gitignore` to include `source/ext/CTMWorkerBundle.js`, `source/resource/webpack-bundle/`, and `*.pdf`. *(Commit [`b199b33`](file:///home/valette/git/desk-ui/.gitignore))*
+- [x] **Task 4.2**: Remove leftover debug code (`myGlobalParam`) in `desk.Uploader.js`. *(Commit [`643dbb5`](file:///home/valette/git/desk-ui/source/class/desk/Uploader.js))*
+- [x] **Task 4.3**: Add null safety to `desk.Xterm.Terminal.destruct()`. *(Commit [`2274ebf`](file:///home/valette/git/desk-ui/source/class/desk/Xterm/Terminal.js))*
+- [x] **Task 4.4**: Inconsistent context binding in `desk.FileField.js` (Rule 5). *(Commit [`a5679cb`](file:///home/valette/git/desk-ui/source/class/desk/FileField.js))*
+- [x] **Task 4.5**: Fix array mutation inside `forEach` in `desk.LinkMixin.js`. *(Commit [`9a24350`](file:///home/valette/git/desk-ui/source/class/desk/LinkMixin.js))*
+- [x] **Task 4.6**: Fix modulo calculation on empty children in `desk.TabView.js`. *(Commit [`bd9beb4`](file:///home/valette/git/desk-ui/source/class/desk/TabView.js))*
 - [ ] **Task 4.7**: Introduce a test harness for core utility classes.
