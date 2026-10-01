@@ -36,11 +36,10 @@ qx.Mixin.define("desk.LinkMixin",
 		* unlink the object
 		*/
 		unlink : function () {
-			this.__links.forEach(function (link, index, links) {
-				if (link == this) {
-					links.splice(index,1);
-				}
-			}, this);
+			const index = this.__links.indexOf( this );
+			if ( index !== -1 ) {
+				this.__links.splice( index, 1 );
+			}
 			this.__links = [this];
 		},
 

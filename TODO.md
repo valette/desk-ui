@@ -214,6 +214,6 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 - [x] **Task 4.2**: Remove leftover debug code (`myGlobalParam`) in `desk.Uploader.js`.
 - [x] **Task 4.3**: Add null safety to `desk.Xterm.Terminal.destruct()`.
 - [x] **Task 4.4**: Inconsistent context binding in `desk.FileField.js` (Rule 5).
-- [ ] **Task 4.5**: Fix array mutation inside `forEach` in `desk.LinkMixin.js`.
+- [x] **Task 4.5**: Fix array mutation inside `forEach` in `desk.LinkMixin.js`.
 - [ ] **Task 4.6**: Fix modulo calculation on empty children in `desk.TabView.js`.
 - [ ] **Task 4.7**: Introduce a test harness for core utility classes.
