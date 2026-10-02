@@ -92,7 +92,7 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
   ```
   desk: Needs @qooxdoo/framework version ^7.9.0, found 7.7.2
   ```
-- **Status**: ⏳ **Pending investigation**.
+- **Status**: ⏳ **Pending investigation** (See full feasibility report in [docs/QOOXDOO_8_ANALYSIS.md](file:///home/valette/git/desk-ui/docs/QOOXDOO_8_ANALYSIS.md)).
 
 ### 3.3. Fragile Local File Imports in `desk.core.AddLibs`
 - **File**: `source/class/desk/core/AddLibs.js:35-50`
