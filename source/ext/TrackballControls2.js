@@ -3,6 +3,11 @@
  * @author Sebastien Valette
  */
 
+var THREE = (typeof window !== "undefined" && window.THREE) || require( "three" );
+if ( typeof window !== "undefined" && !window.THREE ) {
+	window.THREE = THREE;
+}
+
 THREE.TrackballControls2 = function ( object ) {
 
 	this.STATE = { NONE : -1, ROTATE : 0, ZOOM : 1, PAN : 2 , ROTATE_Z : 3};

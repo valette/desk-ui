@@ -7,6 +7,10 @@
 
 const workers = [];
 
+var THREE = (typeof window !== "undefined" && window.THREE) || require( "three" );
+if ( typeof window !== "undefined" && !window.THREE ) {
+	window.THREE = THREE;
+}
 
 class Model extends THREE.BufferGeometry {
 

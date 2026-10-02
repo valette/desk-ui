@@ -34,6 +34,11 @@
 
 /* global CTM */
 
+var THREE = (typeof window !== "undefined" && window.THREE) || require( "three" );
+if ( typeof window !== "undefined" && !window.THREE ) {
+	window.THREE = THREE;
+}
+
 THREE.CTMLoader = function () {
 
 	this.workerPath = null;
