@@ -21,10 +21,11 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 | 🟢 **P3 (Low)** | **Qooxdoo Violation** | Missing `this` context binding on `dragstart` in `desk.FileField` | ✅ Fixed (`a5679cb`) |
 | 🟢 **P3 (Low)** | **Code Quality** | In-place array mutation during iteration in `desk.LinkMixin.unlink` | ✅ Fixed (`9a24350`) |
 | 🟢 **P3 (Low)** | **Exception Risk** | Modulo by zero on empty children in `desk.TabView.__onMouseWheel` | ✅ Fixed (`bd9beb4`) |
-| 🟡 **P2 (Medium)** | **Qooxdoo Violation** | Literal object/array in `desk.Actions.members` (Rule 3) | ⏳ Pending investigation |
-| 🟡 **P2 (Medium)** | **Build/Compiler** | Outdated framework in `node_modules` (7.7.2 vs 7.9.3 declared) | ⏳ Pending investigation |
-| 🟡 **P2 (Medium)** | **Build/Compiler** | Fragile relative imports (`three/../../source/ext/...`) in `AddLibs.js` | ⏳ Pending investigation |
-| 🟡 **P2 (Medium)** | **Security/Lint** | Use of `eval()` in `desk.core.AddPromises` for prototype binding | ⏳ Pending investigation |
+| 🟡 **P2 (Medium)** | **Qooxdoo Violation** | Literal object/array in `desk.Actions.members` (Rule 3) | ✅ Fixed (`e343264`) |
+| 🟡 **P2 (Medium)** | **Build/Compiler** | Upgrade to Qooxdoo 8 (`branch_8_0_beta` under Node 26) | ✅ Fixed (`7b40f33`, `badf69b`) |
+| 🟡 **P2 (Medium)** | **Build/Compiler** | Fragile relative imports (`three/../../source/ext/...`) in `AddLibs.js` | ✅ Fixed (`badf69b`) |
+| 🟡 **P2 (Medium)** | **Security/Lint** | Use of `eval()` in `desk.core.AddPromises` for prototype binding | ✅ Fixed (`610bb90`) |
+| 🟡 **P2 (Medium)** | **Qooxdoo Violation** | Property-member collision on `ready` in `desk.MPR.Volume` | ✅ Fixed (`0d1774c`) |
 | 🟢 **P3 (Low)** | **Test Coverage** | Lack of automated test suite | ⏳ Backlog |
 
 ---
@@ -161,11 +162,12 @@ This document contains a comprehensive technical audit of the `desk-ui` codebase
 - [x] **Task 2.3**: Implement `destruct()` in `desk.MPR.SegTools.js` to cleanly detach all event listeners and canvas elements. *(Commit [`facba0f`](file:///home/valette/git/desk-ui/source/class/desk/MPR/SegTools.js))*
 - [x] **Task 2.4**: Add `try/catch` and error guards around `JSON.parse` in `desk.FileSystem.js` (`exists`, `readDir`, `executeScript`). *(Commit [`95a67be`](file:///home/valette/git/desk-ui/source/class/desk/FileSystem.js))*
 
-### Phase 3: Qooxdoo Standards & Cleanups (P2 - Deferred)
-- [ ] **Task 3.1**: Fix `__runningActions` and `__finishedActions` in `desk.Actions.js` (initialize in `construct`, set to `null` in `members`).
-- [ ] **Task 3.2**: Refactor `eval()` in `desk.core.AddPromises.js` to use safe property access via `qx.Class.getByName()`.
-- [ ] **Task 3.3**: Clean up `source/ext/` and `AddLibs.js` module imports to eliminate compile-time require errors.
-- [ ] **Task 3.4**: Synchronize framework version in `node_modules` with `package.json` (`7.9.3`).
+### Phase 3: Qooxdoo Standards & Cleanups (P2 - Completed on `qooxdoo8` branch)
+- [x] **Task 3.1**: Fix `__runningActions` and `__finishedActions` in `desk.Actions.js` (initialize in `construct`, set to `null` in `members`). *(Commit [`e343264`](file:///home/valette/git/desk-ui/source/class/desk/Actions.js))*
+- [x] **Task 3.2**: Refactor `eval()` in `desk.core.AddPromises.js` to use safe property access via `qx.Class.getByName()`. *(Commit [`610bb90`](file:///home/valette/git/desk-ui/source/class/desk/core/AddPromises.js))*
+- [x] **Task 3.3**: Clean up `source/ext/` and `AddLibs.js` module imports to eliminate compile-time require errors. *(Commit [`badf69b`](file:///home/valette/git/desk-ui/source/class/desk/core/AddLibs.js))*
+- [x] **Task 3.4**: Upgrade to Qooxdoo 8 (`branch_8_0_beta` under Node 26) with `exports` self-referencing. *(Commits [`7b40f33`](file:///home/valette/git/desk-ui/package.json), [`badf69b`](file:///home/valette/git/desk-ui/package.json))*
+- [x] **Task 3.5**: Add `waitForReady` in `desk.MPR.Volume.js` to avoid property-member name collision. *(Commit [`0d1774c`](file:///home/valette/git/desk-ui/source/class/desk/MPR/Volume.js))*
 
 ### Phase 4: Build System & Repository Polish (P3)
 - [x] **Task 4.1**: Update `.gitignore` to include `source/ext/CTMWorkerBundle.js`, `source/resource/webpack-bundle/`, and `*.pdf`. *(Commit [`b199b33`](file:///home/valette/git/desk-ui/.gitignore))*

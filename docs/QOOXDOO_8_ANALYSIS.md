@@ -12,9 +12,11 @@ Following the upgrade to **Node.js 26 (v26.10.0)** and testing against the lates
 | :--- | :--- | :--- |
 | **CLI Crash (`ERR_REQUIRE_ESM`)** | 🔴 Crashed on startup | 🟢 **RESOLVED** (`require(esm)` supported natively in Node 26) |
 | **Engine Warnings (`EBADENGINE`)** | ⚠️ Multiple package engine warnings | 🟢 **RESOLVED** (Node 26 satisfies all `@inquirer` & `yargs` requirements) |
-| **Module Bundler (`esbuild`)** | 🔴 27 errors (`empty.js` missing exports) | 🟢 **RESOLVED** (Bundles `commonjs-browserify.js` 15.7MB successfully) |
-| **Compilation Exit Code** | 🔴 Failed with error | 🟢 **SUCCESS** (`Applications are made`, exit code 0) |
-| **Package Class Collision** | 🔴 `cannot redefine a class` | 🟡 **RESOLVED WITH WORKAROUND** (Duplicate `CompilerApi` in `qxl.dialog`) |
+| **Module Bundler (`esbuild`)** | 🔴 27 errors (`empty.js` missing exports) | 🟢 **RESOLVED** (All CommonJS/ESM modules bundled, top-level await issue fixed) |
+| **Local Module Resolution (`source/ext`)**| 🔴 Missing modules / relative path hacks | 🟢 **RESOLVED** (`exports` + `node_modules/desk-ui` symlink via `postinstall`) |
+| **Compilation Exit Code** | 🔴 Failed with error | 🟢 **SUCCESS** (`npm run compile` and `npm run deploy` exit code 0) |
+| **Package Class Collision** | 🔴 `cannot redefine a class` | 🟢 **RESOLVED** (Guarded duplicate `CompilerApi` in `qx_packages`) |
+| **Property-Member Collision (`ready`)** | 🟡 Collides with native getter in v8 | 🟢 **RESOLVED** (Added `waitForReady` in `desk.MPR.Volume`) |
 | **Package Manifest Versions** | 🟡 Outdated `^7.0.0` warnings | 🟡 Non-blocking compiler warnings |
 | **Runtime Execution** | ❓ Untested due to build failure | 🟠 **NEXT FOCUS**: Browser runtime testing & constructor ordering |
 
@@ -72,6 +74,35 @@ if (!qx.Class.isDefined("qxl.apiviewer.compile.CompilerApi")) {
 }
 ```
 Once guarded, the compiler boots, processes all dependencies, and compiles `desk-ui` without errors.
+
+---
+
+## Resolved Issues on the `qooxdoo8` Branch
+
+### 1. Local Module Resolution (`source/ext`)
+- **Problem**: In Qooxdoo 7 with browserify, `desk.core.AddLibs` used a path hack `require("three/../../source/ext/CTMLoader.js")` to locate external loaders. In Qooxdoo 8, `esbuild` replaces unresolvable modules with empty stubs (`module.exports = {}`), silently breaking 3D loaders (`CTMLoader`, `VTKLoader`, `TrackballControls2`, `mhdParse`, `WebGL`).
+- **Solution**:
+  1. Added `"exports": { "./*": "./*", "./package.json": "./package.json" }` to `package.json` for standard Node.js package self-referencing.
+  2. Added `"postinstall"` script in `package.json` to ensure `node_modules/desk-ui` symlink is maintained.
+  3. Cleaned up all `require()` calls in `desk.core.AddLibs` to standard `require("desk-ui/source/ext/...")`.
+
+### 2. Bundler Crash: Top-Level Await with IIFE Format
+- **Problem**: Compiling `apiviewer` or running full `npm run compile` crashed with:
+  ```text
+  ERROR: Top-level await is currently not supported with the "iife" output format
+  ERROR: This require call is not allowed because the imported file "node_modules/@jspm/core/nodelibs/browser/worker_threads.js" contains a top-level await
+  ```
+- **Root Cause**:
+  1. In `compile.json`, `apiviewer` configured `"include": ["qx.*"]`, which in Qooxdoo 8 matched Node.js compiler CLI tools (`qx.tool.*`).
+  2. `qx.tool.*` pulled `source-map-support`, which required `worker_threads`.
+  3. In `Browserify.js`, `__getCommonjsModules` iterated over `db.classInfo` globally across all scanned classes rather than filtering by the application's actual dependencies (`this.getAppMeta().getApplication().getDependencies()`).
+- **Solution**:
+  1. In `compile.json`, explicitly excluded `"qx.tool.*"` from `apiviewer`'s boot part.
+  2. In `Browserify.js`, patched `__getCommonjsModules` to restrict CommonJS bundling to `app.getDependencies()`.
+
+### 3. Property & Member Name Collision in `desk.MPR.Volume`
+- **Problem**: `desk.MPR.Volume` declared both a property `ready : { init : false, check: "Boolean", event : "changeReady" }` and an async member method `ready : async function ()`. In Qooxdoo 8, properties generate native prototype getters/setters (`get ready()`), colliding directly with member methods of the same name.
+- **Solution**: Added `waitForReady : async function()` as the primary method, updated `CropTool.js` to call `await volume.waitForReady()`, and retained `ready()` as a backwards-compatible alias.
 
 ---
 
