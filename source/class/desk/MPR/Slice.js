@@ -607,7 +607,7 @@ qx.Class.define("desk.MPR.Slice",
 		 __updateOOC : function (callback, context) {
 			if (this.__mhd) {
 				this.__finalizeUpdate();
-				setTimeout(callback.bind(context), 10);
+				setTimeout( function () { callback.call( context, null, this ); }.bind( this ), 10 );
 				return;
 			} else {
 				desk.FileSystem.readFile(this.__file, function (err, res) {
@@ -625,7 +625,7 @@ qx.Class.define("desk.MPR.Slice",
 					this.__numberOfScalarComponents = mhd.ElementNumberOfChannels || 1;
 					this.__finalizeUpdate();
 
-					if (callback) callback.call(context);
+					if (callback) callback.call( context, null, this );
 				}, this);
 			}
 		},
@@ -649,7 +649,7 @@ qx.Class.define("desk.MPR.Slice",
 			this.__scalarMin = prop.scalarBounds[0];
 			this.__scalarMax = prop.scalarBounds[1];
 			this.__finalizeUpdate();
-			setTimeout( function () { callback.call(context); }, 0 );
+			setTimeout( function () { callback.call( context, null, this ); }.bind( this ), 0 );
 
 		},
 
@@ -689,7 +689,7 @@ qx.Class.define("desk.MPR.Slice",
 		    desk.Actions.execute(params,
 				function (err, response) {
 					if (err) {
-						callback("Error while slicing volume : " + err);
+						callback.call( context, "Error while slicing volume : " + err, this );
 						return;
 					}
 					this.openXMLURL( desk.FileSystem.getFileURL( response.outputDirectory + "volume.xml" ),
@@ -1112,7 +1112,7 @@ qx.Class.define("desk.MPR.Slice",
 					return;
 				}
 				if (typeof callback === 'function') {
-					callback.call(context);
+					callback.call( context, null, this );
 				}
 				req.dispose();
 			} );

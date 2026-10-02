@@ -129,6 +129,14 @@ async function testRuntime() {
               } catch (e) {
                 return "ERR: " + e.message + " at " + e.stack;
               }
+            })(),
+            mprViewerSphereCreated: (() => {
+              try {
+                const v = new desk.MPR.Viewer("data/sphere.mhd");
+                return !!v;
+              } catch (e) {
+                return "ERR: " + e.message + " at " + e.stack;
+              }
             })()
           }, null, 2);
         } catch (e) {
@@ -141,6 +149,10 @@ async function testRuntime() {
     console.log('\n=== RUNTIME CHECK RESULT ===');
     console.log(checkRes.result?.result?.value || JSON.stringify(checkRes.result));
     console.log('============================\n');
+
+    // Wait for async slicing actions to execute and log
+    console.log('Waiting 5s for async slicing actions...');
+    await new Promise(r => setTimeout(r, 5000));
 
   } catch (err) {
     console.error('Error during testing:', err);

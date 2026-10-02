@@ -25,9 +25,9 @@ qx.Class.define("desk.MPR.Volume",
 		this.__fileName = file.name ? file.name : file;
 
 		if (typeof options === "function") {
+			context = callback;
 			callback = options;
 			options = {};
-			context = callback;
 		}
 
 		this.__options = options = options || {};

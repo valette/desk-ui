@@ -703,6 +703,11 @@ qx.Class.define("desk.MPR.SliceView",
 		 * @param context {Object} optional callback context
 		 */
 		__addSlice : function ( slice, callback, context ) {
+			slice = slice || this.getFirstSlice();
+			if ( !slice ) {
+				console.error( "desk.MPR.SliceView.__addSlice: slice is undefined" );
+				return;
+			}
 			var geometry = new THREE.PlaneGeometry( 1, 1 );
 			var coords = slice.get2DCornersCoordinates();
 			var vertices = geometry.attributes.position;
@@ -838,23 +843,32 @@ qx.Class.define("desk.MPR.SliceView",
 		 */
 		addSlice : function (file, parameters, callback, context) {
 			if ( typeof parameters === "function" ) {
-				callback = parameters;
 				context = callback;
+				callback = parameters;
 				parameters = {};
 			}
 			callback = callback || function () {};
 
 			var slice = new desk.MPR.Slice(file, this.__orientation,
-				parameters, () => {
-					if ( this.__slicesToDelete.has( slice ) ) {
-						this.__slices = _.without( this.__slices, slice );
-						slice.dispose();
+				parameters, ( err, sliceInstance ) => {
+					if ( err ) {
+						callback.call( context, err );
+						return;
+					}
+					var s = sliceInstance || slice || this.getFirstSlice();
+					if ( !s ) {
+						console.error( "desk.MPR.SliceView.addSlice: slice is undefined" );
+						return;
+					}
+					if ( this.__slicesToDelete.has( s ) ) {
+						this.__slices = _.without( this.__slices, s );
+						s.dispose();
 						this.__initFromFirstSlice();
-						this.__slicesToDelete.delete( slice )
+						this.__slicesToDelete.delete( s );
 						return;
 					}
 					this.__initFromFirstSlice();
-					this.__addSlice( slice, callback, context );
+					this.__addSlice( s, callback, context );
 			} );
 			this.__slices.push( slice );
 			return slice;
