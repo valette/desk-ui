@@ -243,7 +243,7 @@ qx.Class.define("desk.MPR.CropTool",
 
         __init : async function () {
 
-            await this.__volume.ready();
+            await this.__volume.waitForReady();
             const slice = this.__volume.getSlices()[ 0 ];
             this.__bounds = slice.getBounds();
             const viewers = this.__MPRContainer.getViewers();

@@ -157,9 +157,16 @@ qx.Class.define("desk.MPR.Volume",
 		/**
 		 * waits for the volume to be ready
 		 */
-		ready : async function () {
+		waitForReady : async function () {
 			if ( this.isReady() ) return;
 			await new Promise ( res => this.addListenerOnce( "changeReady", res ) );
+		},
+
+		/**
+		 * waits for the volume to be ready (alias for waitForReady)
+		 */
+		ready : async function () {
+			return this.waitForReady();
 		},
 
 		/**
