@@ -101,8 +101,41 @@ Once guarded, the compiler boots, processes all dependencies, and compiles `desk
   2. In `Browserify.js`, patched `__getCommonjsModules` to restrict CommonJS bundling to `app.getDependencies()`.
 
 ### 3. Property & Member Name Collision in `desk.MPR.Volume`
-- **Problem**: `desk.MPR.Volume` declared both a property `ready : { init : false, check: "Boolean", event : "changeReady" }` and an async member method `ready : async function ()`. In Qooxdoo 8, properties generate native prototype getters/setters (`get ready()`), colliding directly with member methods of the same name.
-- **Solution**: Added `waitForReady : async function()` as the primary method, updated `CropTool.js` to call `await volume.waitForReady()`, and retained `ready()` as a backwards-compatible alias.
+- **Problem**: `desk.MPR.Volume` declared both a property `ready : { init : false, check: "Boolean", event : "changeReady" }` and an async member method `ready : async function ()`. In Qooxdoo 8, properties generate native prototype getters/setters (`get ready()`), colliding directly with member methods of the same name:
+  ```text
+  Uncaught Error: Overwriting member or property "ready" of Class "desk.MPR.Volume" is not allowed. (Members and properties are in the same namespace.)
+  ```
+- **Solution**: Removed `ready` from `members` and introduced `waitForReady : async function()` as the explicit method, updating `CropTool.js` to call `await volume.waitForReady()`.
+
+### 4. Property & Member Collision on `show` in `qxl.dialog.Dialog`
+- **Problem**: `qxl.dialog.Dialog` declared both a property `show: { check: "Boolean", ... }` and a member method `show() { ... }`, causing:
+  ```text
+  Uncaught Error: Overwriting member or property "show" of Class "qxl.dialog.Dialog" is not allowed. (Members and properties are in the same namespace.)
+  ```
+  Because `qxl.dialog.Dialog` failed to define, all subclasses (`Alert`, `Confirm`, `Prompt`, `Select`, `Form`, `Login`, `Progress`, `Wizard`) threw:
+  ```text
+  Uncaught Error: qxl.dialog.Alert: disallowed key in static class configuration: extend
+  ```
+- **Solution**: Removed the unused and conflicting `show` property from `qxl.dialog.Dialog` in `qx_packages`.
+
+### 5. `THREE is not defined` During Bundle Module Evaluation
+- **Problem**: In Qooxdoo 8, `esbuild` evaluates top-level imports eagerly when `commonjs-browserify.js` loads. Because `source/ext/CTMLoader.js`, `VTKLoader.js`, and `TrackballControls2.js` assumed `THREE` was already attached to the global scope (`THREE.CTMLoader = ...`), they threw `ReferenceError: THREE is not defined` before `desk.core.AddLibs` had executed.
+- **Solution**: Added safe module resolution at the top of each loader:
+  ```javascript
+  var THREE = (typeof window !== "undefined" && window.THREE) || require( "three" );
+  if ( typeof window !== "undefined" && !window.THREE ) {
+    window.THREE = THREE;
+  }
+  ```
+
+### 6. ESM Namespace Object Handling for `socket.io-client`
+- **Problem**: When bundled by `esbuild`, `require("socket.io-client")` returns an ESM module namespace object `{ default: [Function: io], io: [Function: io], ... }` instead of a directly callable function. Calling `require('socket.io-client')({...})` directly in `desk.Actions` threw `TypeError: require(...) is not a function`.
+- **Solution**: Updated `desk.Actions.__initNode` and `desk.Xterm.Terminal.__getSocket` to handle both formats:
+  ```javascript
+  const io = require('socket.io-client');
+  const ioFunc = (typeof io === 'function') ? io : (io.default || io.io);
+  this.__socket = ioFunc({ path: desk.FileSystem.getBaseURL() + 'socket.io' });
+  ```
 
 ---
 
