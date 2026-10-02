@@ -688,10 +688,12 @@ qx.Class.define("desk.MPR.SliceView",
 		 */
 		__updateVolumeSlicePosition : function ( volumeSlice ) {
 
-			if ( !this.__origin ) return; // race condition here : first slice might not be ready (to fix...)
+			var origin = this.__origin || volumeSlice.getOrigin();
+			var spacing = this.__spacing || volumeSlice.getSpacing();
+			if ( !origin || !spacing ) return;
 
 			var index = volumeSlice.getZIndex();
-			var position = this.__origin[ index ] + this.getSlice() * this.__spacing[ index ];
+			var position = origin[ index ] + this.getSlice() * spacing[ index ];
 			volumeSlice.setPosition( position );
 
 		},
@@ -730,10 +732,14 @@ qx.Class.define("desk.MPR.SliceView",
 
 			slice.addListener( 'changePosition', function () {
 
+				var origin = this.__origin || slice.getOrigin();
+				var spacing = this.__spacing || slice.getSpacing();
+				if ( !origin || !spacing ) return;
+
 				var position = slice.getPosition();
 				var index = slice.getZIndex();
-				var sliceNumber = Math.round( ( position - this.__origin[ index ] )
-					/ this.__spacing[ index ] );
+				var sliceNumber = Math.round( ( position - origin[ index ] )
+					/ spacing[ index ] );
 				sliceNumber = Math.max( 0, Math.min( sliceNumber, this.__slider.getMaximum() ) );
 				this.setSlice( sliceNumber );
 
@@ -778,8 +784,8 @@ qx.Class.define("desk.MPR.SliceView",
 		 * Inits all objects from given slice
 		 * @param slice {desk.MPR.Slice} first slice
 		 */
-		__initFromFirstSlice : function () {
-			const slice = this.getFirstSlice();
+		__initFromFirstSlice : function ( optionalSlice ) {
+			const slice = optionalSlice || this.getFirstSlice();
 			if ( slice === this.__firstSlice ) return;
 			this.__firstSlice = slice;
 			if ( !slice ) return;
@@ -860,6 +866,9 @@ qx.Class.define("desk.MPR.SliceView",
 						console.error( "desk.MPR.SliceView.addSlice: slice is undefined" );
 						return;
 					}
+					if ( !this.__slices.includes( s ) ) {
+						this.__slices.push( s );
+					}
 					if ( this.__slicesToDelete.has( s ) ) {
 						this.__slices = _.without( this.__slices, s );
 						s.dispose();
@@ -867,10 +876,12 @@ qx.Class.define("desk.MPR.SliceView",
 						this.__slicesToDelete.delete( s );
 						return;
 					}
-					this.__initFromFirstSlice();
+					this.__initFromFirstSlice( s );
 					this.__addSlice( s, callback, context );
 			} );
-			this.__slices.push( slice );
+			if ( slice && !this.__slices.includes( slice ) ) {
+				this.__slices.push( slice );
+			}
 			return slice;
 		},
 
@@ -897,7 +908,9 @@ qx.Class.define("desk.MPR.SliceView",
 		 * @return {THREE.Vector3} xyz coordinates
 		 */
 		getCrossFloatPosition : function () {
-			return new THREE.Vector3().fromArray(this.getCrossPosition().map(
+			var crossPos = this.getCrossPosition();
+			if ( !crossPos || !this.__origin || !this.__spacing ) return null;
+			return new THREE.Vector3().fromArray(crossPos.map(
 				function (coord, index) {
 					return this.__origin[index] + coord * this.__spacing[index];
 			}, this));
@@ -909,6 +922,7 @@ qx.Class.define("desk.MPR.SliceView",
 		 */
 		setCrossFloatPosition : function ( pos ) {
 
+			if ( !this.__origin || !this.__spacing || !this.__dimensions ) return;
 			const arr = [];
 			const posArray = pos.toArray();
 			for ( let i = 0; i < 3; i++ ) {
@@ -1231,6 +1245,7 @@ qx.Class.define("desk.MPR.SliceView",
 		 */
 		get3DPosition : function (event) {
 			var coordinates = this.getPositionOnSlice(event);
+			if ( !this.__origin || !this.__spacing ) return coordinates;
 			var slice = this.getSlice();
 			switch (this.__orientation) {
 			case 0 :

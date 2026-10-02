@@ -158,7 +158,7 @@ qx.Class.define("desk.MPR.Slice",
 		/**
 		 * current slice index
 		 */
-		slice : { init : -1, check: "Number", event : "changeSlice", apply : "__updateImage"},
+		slice : { init : -1, check: "Number", event : "changeSlice", apply : "__updateImage", autoApply : false},
 
 		/**
 		 * current position in object coordinates
@@ -1200,6 +1200,7 @@ qx.Class.define("desk.MPR.Slice",
 		 * changes the image url, sets timeouts
 		 */
 		__onChangePosition : function () {
+			if ( !this.__origin || !this.__spacing ) return;
 			var zi = this.getZIndex();
 			var slice = Math.round( ( this.getPosition() -  this.__origin[ zi ] )
 				/ this.__spacing[ zi ] );
@@ -1222,7 +1223,7 @@ qx.Class.define("desk.MPR.Slice",
 
 			var slice = this.getSlice();
 
-			if ( !this.__isChangePositionInProgress ) {
+			if ( !this.__isChangePositionInProgress && this.__spacing && this.__origin ) {
 				var zi = this.getZIndex();
 				this.setPosition( slice * this.__spacing[ zi ] + this.__origin[ zi ] );
 			}

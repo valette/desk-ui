@@ -52,6 +52,9 @@ async function testRuntime() {
       const text = p.text || (p.args || []).map(a => a.value ?? a.description ?? JSON.stringify(a)).join(' ');
       logs.push({ level: p.level, type: p.type, text });
       console.log(`[BROWSER ${p.level ? p.level.toUpperCase() : 'LOG'}]`, text);
+      if (p.level === 'error') {
+        console.log('[ERROR ENTRY FULL]', JSON.stringify(p, null, 2));
+      }
     }
   };
 
@@ -60,6 +63,14 @@ async function testRuntime() {
     await send('session.subscribe', { events: ['log.entryAdded'] });
     const tree = await send('browsingContext.getTree', {});
     const contextId = tree.result.contexts[0].context;
+
+    console.log('Navigating to http://valette:desk@localhost:8080/ ...');
+    await send('browsingContext.navigate', {
+      context: contextId,
+      url: 'http://valette:desk@localhost:8080/',
+      wait: 'complete'
+    });
+    await new Promise(r => setTimeout(r, 1000));
 
     console.log('Navigating to http://valette:desk@localhost:8080/ui/compiled/source/ ...');
     await send('browsingContext.navigate', {
@@ -137,6 +148,15 @@ async function testRuntime() {
               } catch (e) {
                 return "ERR: " + e.message + " at " + e.stack;
               }
+            })(),
+            mprViewerAddVolume: (() => {
+              try {
+                window.testMpr = new desk.MPR.Viewer();
+                window.testMpr.addVolume("data/sphere.mhd");
+                return "triggered";
+              } catch (e) {
+                return "ERR: " + e.message + " at " + e.stack;
+              }
             })()
           }, null, 2);
         } catch (e) {
@@ -151,8 +171,39 @@ async function testRuntime() {
     console.log('============================\n');
 
     // Wait for async slicing actions to execute and log
-    console.log('Waiting 5s for async slicing actions...');
-    await new Promise(r => setTimeout(r, 5000));
+    console.log('Waiting 10s for async slicing actions...');
+    await new Promise(r => setTimeout(r, 10000));
+
+    const postRes = await send('script.evaluate', {
+      target: { context: contextId },
+      expression: `(() => {
+        try {
+          const mpr = window.testMpr;
+          const viewers = mpr ? mpr.getViewers() : [];
+          return JSON.stringify({
+            mprExists: !!mpr,
+            viewersCount: viewers.length,
+            viewersDetails: viewers.map((v, i) => {
+              const slice = v.getFirstSlice();
+              return {
+                index: i,
+                orientation: v.getOrientation(),
+                slice: v.getSlice(),
+                firstSliceReady: slice ? slice.isReady() : false,
+                crossPosition: v.getCrossPosition()
+              };
+            })
+          }, null, 2);
+        } catch (e) {
+          return "POST_EVAL_ERROR: " + e.message;
+        }
+      })()`,
+      awaitPromise: false
+    });
+
+    console.log('\n=== POST-SLICING CHECK RESULT ===');
+    console.log(postRes.result?.result?.value || JSON.stringify(postRes.result));
+    console.log('=================================\n');
 
   } catch (err) {
     console.error('Error during testing:', err);
