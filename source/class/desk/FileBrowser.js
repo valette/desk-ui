@@ -14,6 +14,45 @@
 qx.Class.define("desk.FileBrowser",
 {
 	extend : qx.ui.container.Composite,
+	statics : {
+		// array to store all file browsers, useful for updates
+		__fileBrowsers : [],
+
+		__iconOptions : {
+			converter : function(value, model) {
+				if (model.getChildren) {
+					return "icon/22/places/folder.png";
+				} else {
+					var image = "icon/22/mimetypes/office-document.png";
+					switch (desk.FileSystem.getFileExtension(model.getName())) {
+					case "vtk":
+					case "vtp":
+					case "ply":
+					case "obj":
+					case "stl":
+					case "ctm":
+						image = "desk/tris.png";
+						break;
+					case "gz" :
+						if ( model.getName().split( "." ).slice( -2 ).join( "." ) !== "nii.gz" ) break;
+					case "mha":
+					case "mhd":
+					case "jpg":
+					case "png":
+					case "hdr":
+					case "tif":
+					case "nii":
+						image = "desk/img.png";
+						break;
+					default:
+						break;
+					}
+					return image;
+				}
+			}
+		}
+	},
+
 	/**
 	* Creates a new file browser
 	* @param baseDir {String} directory to browse. Defaults to "data"
@@ -27,7 +66,9 @@ qx.Class.define("desk.FileBrowser",
 		}
 
 		this.base(arguments);
+		this.__fileBrowsers = desk.FileBrowser.__fileBrowsers;
 		this.__fileBrowsers.push(this);
+		this.__iconOptions = desk.FileBrowser.__iconOptions;
 
 		this.setLayout(new qx.ui.layout.VBox(8));
 		this.__standAlone = standAlone || false;
@@ -106,39 +147,7 @@ qx.Class.define("desk.FileBrowser",
 		__displayHiddenFiles : false,
 		__actionListener: null, // listens for action updates;
 
-		__iconOptions : {
-			converter : function(value, model) {
-				if (model.getChildren) {
-					return "icon/22/places/folder.png";
-				} else {
-					var image = "icon/22/mimetypes/office-document.png";
-					switch (desk.FileSystem.getFileExtension(model.getName())) {
-					case "vtk":
-					case "vtp":
-					case "ply":
-					case "obj":
-					case "stl":
-					case "ctm":
-						image = "desk/tris.png";
-						break;
-					case "gz" :
-						if ( model.getName().split( "." ).slice( -2 ).join( "." ) !== "nii.gz" ) break;
-					case "mha":
-					case "mhd":
-					case "jpg":
-					case "png":
-					case "hdr":
-					case "tif":
-					case "nii":
-						image = "desk/img.png";
-						break;
-					default:
-						break;
-					}
-					return image;
-				}
-			}
-		},
+		__iconOptions : null,
 
 		/**
 		* Creates the filter container
@@ -307,7 +316,7 @@ qx.Class.define("desk.FileBrowser",
 		},
 
 		// array to store all file browsers, usefull for updates
-		__fileBrowsers : [],
+		__fileBrowsers : null,
 
 		// defines whether the file browser is a standalone one
 		// i.e. whether it needs to create a window

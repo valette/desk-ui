@@ -46,6 +46,7 @@ qx.Class.define("desk.THREE.Container",
 		this.options = opts = opts || {};
 
         this.base(arguments, opts);
+		this.__ctmWorkers = [];
 
 		if (opts.convertVTK !== undefined) {
 			this.setConvertVTK(opts.convertVTK);
@@ -169,6 +170,10 @@ qx.Class.define("desk.THREE.Container",
 		this.__meshes.dispose();
 		this.__meshes.getDataModel().dispose();
 		this.__ctmLoader = null;
+		if ( this.__ctmWorkers ) {
+			this.__ctmWorkers.forEach( w => w.terminate() );
+			this.__ctmWorkers = null;
+		}
 	},
 
 	properties : {
@@ -888,7 +893,7 @@ qx.Class.define("desk.THREE.Container",
             return mesh;
         },
 
-		__ctmWorkers : [],
+		__ctmWorkers : null,
 
 		/**
 		 * (really) loads an url

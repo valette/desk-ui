@@ -27,6 +27,7 @@ qx.Class.define("desk.Actions",
 		this.__runningActions = {};
 		this.__settings = { not_initialised : true, actions : [] };
 		this.__finishedActions = [];
+		this.__historyItems = [];
 		desk.core.AddLibs.getInstance();
 		desk.core.AddPromises.getInstance();
 		desk.FileSystem.getInstance();
@@ -404,7 +405,7 @@ qx.Class.define("desk.Actions",
 
 		},
 
-		__historyItems : [],
+		__historyItems : null,
 		__updateFinishedActions : null,
 
 		__addHistoryToWindow : function () {

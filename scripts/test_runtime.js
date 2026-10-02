@@ -89,7 +89,47 @@ async function testRuntime() {
             BufferGeometryUtils: typeof window.THREE?.BufferGeometryUtils,
             MHD: typeof window.MHD,
             Actions: typeof desk?.Actions?.getInstance,
-            FileSystem: typeof desk?.FileSystem?.getInstance
+            FileSystem: typeof desk?.FileSystem?.getInstance,
+            mprViewerCreated: (() => {
+              try {
+                const v = new desk.MPR.Viewer();
+                return !!v;
+              } catch (e) {
+                return "ERR: " + e.message + " at " + e.stack;
+              }
+            })(),
+            fileBrowserCreated: (() => {
+              try {
+                const fb = new desk.FileBrowser();
+                return !!fb;
+              } catch (e) {
+                return "ERR: " + e.message + " at " + e.stack;
+              }
+            })(),
+            threeViewerCreated: (() => {
+              try {
+                const v = new desk.THREE.Viewer();
+                return !!v;
+              } catch (e) {
+                return "ERR: " + e.message + " at " + e.stack;
+              }
+            })(),
+            aceContainerCreated: (() => {
+              try {
+                const ac = new desk.Ace.Container();
+                return !!ac;
+              } catch (e) {
+                return "ERR: " + e.message + " at " + e.stack;
+              }
+            })(),
+            xtermContainerCreated: (() => {
+              try {
+                const xc = new desk.Xterm.Container();
+                return !!xc;
+              } catch (e) {
+                return "ERR: " + e.message + " at " + e.stack;
+              }
+            })()
           }, null, 2);
         } catch (e) {
           return "EVAL_ERROR: " + e.message;

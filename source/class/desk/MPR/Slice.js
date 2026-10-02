@@ -27,6 +27,7 @@ qx.Class.define("desk.MPR.Slice",
 	 */
 	construct : function(file, orientation, opts, callback, context) {
 		this.base(arguments);
+		this.__orientationNames = ['XY', 'ZY', 'XZ'];
 
 		this.__oldGetUserData = this.getUserData; // deprecate getUserData( "mesh" )
 		this.getUserData = this.__newGetUserData; // deprecate getUserData( "mesh" )
@@ -150,6 +151,7 @@ qx.Class.define("desk.MPR.Slice",
 			this.__lookupTable = null;
 		}
 		this.__slicer = null;
+		this.__orientationNames = null;
 	},
 
 	properties : {
@@ -439,7 +441,7 @@ qx.Class.define("desk.MPR.Slice",
 	members : {
 		__opts : null,
 		__slicer : null,
-		__orientationNames : ['XY', 'ZY', 'XZ'],
+		__orientationNames : null,
 
 		__availableImageFormat : 1,
 

@@ -12,6 +12,10 @@ qx.Class.define("desk.MPR.CropTool",
 	construct : function( MPRContainer, volume ) {
 
 		this.base( arguments );
+		this.__toBounds = [ [ [ 0, 2 ], [ 1, 2 ], [ 1, 3 ], [ 0, 3 ] ],
+			[ [ 4, 2 ], [ 5, 2 ], [ 5, 3 ], [ 4, 3 ] ],
+			[ [ 0, 4 ], [ 1, 4 ], [ 1, 5 ], [ 0, 5 ] ]
+		];
 		this.setLayout( new qx.ui.layout.VBox( 5 ) );
 		this.set({ width : 300, height : 100 } );
 		this.__MPRContainer = MPRContainer;
@@ -42,6 +46,7 @@ qx.Class.define("desk.MPR.CropTool",
         }
         this.__MPRContainer.render();
         this.getWindow().close();
+        this.__toBounds = null;
     },
 
     statics : {
@@ -103,10 +108,7 @@ qx.Class.define("desk.MPR.CropTool",
         __checkBox : null,
         __outputDirectory : null,
 
-        __toBounds : [ [ [ 0, 2 ], [ 1, 2 ], [ 1, 3 ], [ 0, 3 ] ],
-             [ [ 4, 2 ], [ 5, 2 ], [ 5, 3 ], [ 4, 3 ] ],
-             [ [ 0, 4 ], [ 1, 4 ], [ 1, 5 ], [ 0, 5 ] ]
-        ],
+        __toBounds : null,
 
         __initSliceView : function( sliceView ) {
 

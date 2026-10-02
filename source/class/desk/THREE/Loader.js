@@ -17,7 +17,16 @@ qx.Class.define("desk.THREE.Loader",
 
 	construct : function() {
 
+		this.base( arguments );
 		const concurrency = navigator?.hardwareConcurrency || 4;
+		this.__availableLoaders = {
+			"ctm" : "CTMLoader",
+			"obj" : "OBJLoader",
+			"ply" : "PLYLoader",
+			"stl" : "STLLoader",
+			"vtk" : "VTKLoader"
+		};
+		this.__CTMworkers = [];
 		this.__CTMqueue = async.queue( this.__CTMLoad.bind( this ), concurrency );
 
 	},
@@ -120,17 +129,8 @@ qx.Class.define("desk.THREE.Loader",
 
 	members : {
 
-		__availableLoaders : {
-
-			"ctm" : "CTMLoader",
-			"obj" : "OBJLoader",
-			"ply" : "PLYLoader",
-			"stl" : "STLLoader",
-			"vtk" : "VTKLoader"
-
-		},
-
-		__CTMworkers : [],
+		__availableLoaders : null,
+		__CTMworkers : null,
 
 		/**
 		 * (really) loads ctm mesh url

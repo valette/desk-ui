@@ -166,8 +166,11 @@ qx.Class.define("desk.THREE.Scene",
 			let parent, width, height, props;
 			this.addListener('changeFullscreen', ( e ) => {
 				if (!e.getData()) {
-					this.set({height : height, width : width});
-					parent.add(this, props);
+					if ( parent ) {
+						this.set({height : height, width : width});
+						parent.add(this, props);
+						parent = null;
+					}
 				} else {
 					height = this.getHeight();
 					width = this.getWidth();

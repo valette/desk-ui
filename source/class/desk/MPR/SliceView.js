@@ -22,6 +22,7 @@ qx.Class.define("desk.MPR.SliceView",
 		this.__slices = [];
 		this.__meshes = new Map();
 		this.__slicesToDelete = new Set();
+		this.__crossMeshes = [];
 		this.__orientation = orientation || 0;
 		this.options = options = options || {};
 		this.__textColor = options.textColor || "yellow";
@@ -61,6 +62,7 @@ qx.Class.define("desk.MPR.SliceView",
 		this.__origin = null;
 		this.__dimensions = null;
 		this.__spacing = null;
+		this.__crossMeshes = null;
 	},
 
 	properties : {
@@ -138,8 +140,8 @@ qx.Class.define("desk.MPR.SliceView",
 		 * @param mode {Boolean} new erase mode
 		 */
 		__applyEraseMode : function (mode) {
-			this.__initDrawing();
 			if (mode) {
+				this.__initDrawing();
 				this.setPaintMode(false);
 				this.__updateBrush();
 			}
@@ -150,8 +152,8 @@ qx.Class.define("desk.MPR.SliceView",
 		 * @param mode {Boolean} new paint mode
 		 */
 		__applyPaintMode : function (mode) {
-			this.__initDrawing();
 			if (mode) {
+				this.__initDrawing();
 				this.setEraseMode(false);
 				this.__updateBrush();
 			}
@@ -184,7 +186,7 @@ qx.Class.define("desk.MPR.SliceView",
 
 		__brushMesh : null,
 
-		__crossMeshes : [],
+		__crossMeshes : null,
 
 		__drawingCanvasModified : false,
 
@@ -759,6 +761,7 @@ qx.Class.define("desk.MPR.SliceView",
 		__initDrawing : function () {
 			if (this.__initDrawingDone) return;
 			var volumeSlice = this.getFirstSlice();
+			if (!volumeSlice) return;
 			this.__setDrawingMesh(volumeSlice);
 			this.__createBrushMesh(volumeSlice);
 			this.__initDrawingDone = true;
@@ -776,6 +779,10 @@ qx.Class.define("desk.MPR.SliceView",
 			this.__firstSlice = slice;
 			if ( !slice ) return;
 			this.__initDrawingDone = false;
+			if ( this.getPaintMode() || this.getEraseMode() ) {
+				this.__initDrawing();
+				this.__updateBrush();
+			}
 			this.__slider.setMaximum(slice.getNumberOfSlices() - 1);
 			if (!this.__alwaysDisplaySlider) {
 				this.__slider.setVisibility(slice.getNumberOfSlices() === 1 ? "hidden" : "visible");

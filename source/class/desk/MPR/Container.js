@@ -27,6 +27,7 @@ qx.Class.define("desk.MPR.Container",
         this.base(arguments);
         this.setLayout(new qx.ui.layout.VBox());
 		desk.MPR.Container.instances.push( this );
+		this.__viewsNames = ["Axial", "Sagittal", "Coronal"];
 
 		options = options || {};
 		this.__gridCoords = options.inGridCoord || {
@@ -88,6 +89,7 @@ qx.Class.define("desk.MPR.Container",
 		this.__viewers.forEach( viewer => viewer.dispose() );
 		this.__volumes.dispose();
 		this.__gridCoords = null;
+		this.__viewsNames = null;
 
 	},
 
@@ -129,7 +131,7 @@ qx.Class.define("desk.MPR.Container",
 		__volumes : null,
 		__viewers : null,
 		__gridCoords :null,
-		__viewsNames : ["Axial", "Sagittal", "Coronal"],
+		__viewsNames : null,
 		__nbUsedOrientations : null,
 
 		/**
