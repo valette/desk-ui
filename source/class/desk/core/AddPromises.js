@@ -142,10 +142,13 @@ qx.Class.define( "desk.core.AddPromises",
 			const arr2 = replacement.split( "." );
 			const target = arr2.pop();
 
-			eval( `${source}.prototype.${member} = function( item, ...args ) {
-				console.warn( "${deprecated}( item, ...args ) is deprecated. Use item.${target}( ...args ) instead" );
-				return item.${target}( ...args );
-			};`);
+			const targetClass = qx.Class.getByName( source );
+			if ( targetClass ) {
+				targetClass.prototype[ member ] = function ( item, ...args ) {
+					console.warn( `${deprecated}( item, ...args ) is deprecated. Use item.${target}( ...args ) instead` );
+					return item[ target ]( ...args );
+				};
+			}
 
 		}
 
