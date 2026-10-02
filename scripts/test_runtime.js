@@ -205,6 +205,69 @@ async function testRuntime() {
     console.log(postRes.result?.result?.value || JSON.stringify(postRes.result));
     console.log('=================================\n');
 
+    const threeLinkRes = await send('script.evaluate', {
+      target: { context: contextId },
+      expression: `(() => {
+        try {
+          const v1 = window.v1 = new desk.THREE.Viewer("data/0.vtk");
+          const v2 = window.v2 = new desk.THREE.Viewer("data/0.vtk");
+          v2.link(v1);
+
+          const c1 = v1.getControls();
+          const c2 = v2.getControls();
+          const cam1 = v1.getCamera();
+          const cam2 = v2.getCamera();
+
+          cam1.position.set(0, 0, 100);
+          cam2.position.set(0, 0, 100);
+          c1.update();
+          c2.update();
+
+          const infoBefore = {
+            c1_zoomUsingZ: c1.zoomUsingZ,
+            c2_zoomUsingZ: c2.zoomUsingZ,
+            isPerspective1: !!cam1.isPerspectiveCamera,
+            isPerspective2: !!cam2.isPerspectiveCamera,
+            cam1_pos: cam1.position.toArray(),
+            cam2_pos: cam2.position.toArray()
+          };
+
+          // Simulate right click zoom on v1: button 1 (drag downward by 50px)
+          c1.mouseDown(1, 100, 100);
+          c1.mouseMove(100, 150);
+          v1.render();
+          v1._propagateLinks();
+          c1.mouseUp();
+
+          const infoAfterV1Zoom = {
+            cam1_pos: cam1.position.toArray(),
+            cam2_pos: cam2.position.toArray()
+          };
+
+          // Simulate right click zoom on v2: button 1 (drag upward by 25px)
+          c2.mouseDown(1, 100, 100);
+          c2.mouseMove(100, 75);
+          v2.render();
+          v2._propagateLinks();
+          c2.mouseUp();
+
+          const infoAfterV2Zoom = {
+            cam1_pos: cam1.position.toArray(),
+            cam2_pos: cam2.position.toArray()
+          };
+
+          return JSON.stringify({ infoBefore, infoAfterV1Zoom, infoAfterV2Zoom }, null, 2);
+        } catch (e) {
+          return "THREE_LINK_ERROR: " + e.message + " at " + e.stack;
+        }
+      })()`,
+      awaitPromise: false
+    });
+
+    console.log('\n=== THREE VIEWER LINKING CHECK RESULT ===');
+    console.log(threeLinkRes.result?.result?.value || JSON.stringify(threeLinkRes.result));
+    console.log('=========================================\n');
+
   } catch (err) {
     console.error('Error during testing:', err);
   } finally {

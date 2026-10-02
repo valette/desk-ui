@@ -3,7 +3,7 @@
  * @author Sebastien Valette
  */
 
-var THREE = (typeof window !== "undefined" && window.THREE) || require( "three" );
+var THREE = (typeof window !== "undefined" && window.THREE) ? window.THREE : require( "three" );
 if ( typeof window !== "undefined" && !window.THREE ) {
 	window.THREE = THREE;
 }
@@ -37,7 +37,7 @@ THREE.TrackballControls2 = function ( object ) {
 	this.minZoom = 0;
 	this.maxZoom = Infinity;
 
-	this.zoomUsingZ = object instanceof THREE.PerspectiveCamera;
+	this.zoomUsingZ = Boolean( object && ( object.isPerspectiveCamera || ( object instanceof THREE.PerspectiveCamera ) ) );
 
 	// internals
 
@@ -72,6 +72,7 @@ THREE.TrackballControls2 = function ( object ) {
 			eye : _eye,
 			objectUp : this.object.up,
 			objectPosition : this.object.position,
+			objectZoom : this.object.zoom,
 			target : this.target
 		};
 	};
@@ -87,6 +88,7 @@ THREE.TrackballControls2 = function ( object ) {
 			this.object.up.copy(state[5]);
 			this.object.position.copy(state[6]);
 			this.target.copy(state[7]);
+			if (state[8] !== undefined) this.object.zoom = state[8];
 		} else {
 			if (state.zoomStart !== undefined) _zoomStart = state.zoomStart;
 			if (state.zoomEnd !== undefined) _zoomEnd = state.zoomEnd;
@@ -95,6 +97,7 @@ THREE.TrackballControls2 = function ( object ) {
 			if (state.eye) _eye.copy(state.eye);
 			if (state.objectUp) this.object.up.copy(state.objectUp);
 			if (state.objectPosition) this.object.position.copy(state.objectPosition);
+			if (state.objectZoom !== undefined) this.object.zoom = state.objectZoom;
 			if (state.target) this.target.copy(state.target);
 		}
 		this.update();
@@ -109,6 +112,9 @@ THREE.TrackballControls2 = function ( object ) {
 		_eye.copy(state1.eye).lerp(state2.eye, ratio).normalize();
 		this.object.up.copy(state1.objectUp).lerp(state2.objectUp, ratio).normalize();
 		this.object.position.copy(state1.objectPosition).lerp(state2.objectPosition, ratio);
+		if (state1.objectZoom !== undefined && state2.objectZoom !== undefined) {
+			this.object.zoom = iRatio * state1.objectZoom + ratio * state2.objectZoom;
+		}
 		this.target.copy(state1.target).lerp(state2.target, ratio);
 		this.update();
 	};

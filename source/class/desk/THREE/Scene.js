@@ -264,7 +264,7 @@ qx.Class.define("desk.THREE.Scene",
 			var height = this.__threeCanvas.getCanvasHeight();
 			this.__renderer.setSize ( width, height, false );
 
-			if (this.__camera instanceof THREE.PerspectiveCamera) {
+			if (this.__camera.isPerspectiveCamera || (this.__camera instanceof THREE.PerspectiveCamera)) {
 				this.__camera.aspect = width / height;
 			} else {
 				this.__camera.left = - 0.5 * width;
@@ -436,7 +436,7 @@ qx.Class.define("desk.THREE.Scene",
 					.add(controls.target);
 			}
 
-			if (camera instanceof THREE.PerspectiveCamera) {
+			if (camera.isPerspectiveCamera || (camera instanceof THREE.PerspectiveCamera)) {
 				camera.near = bbdl / 1000;
 				camera.far = bbdl * 1000;
 				camera.zoom = 1;
