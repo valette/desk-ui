@@ -53,9 +53,12 @@ qx.Class.define("desk.Xterm.Terminal",
 
 			let socket = desk.Actions.getInstance().getSocket().io.nsps[ namespace ];
 
-			if ( !socket )
-				socket = require('socket.io-client')( namespace, {
+			if ( !socket ) {
+				const io = require('socket.io-client');
+				const ioFunc = (typeof io === 'function') ? io : (io.default || io.io);
+				socket = ioFunc( namespace, {
 					path : desk.FileSystem.getBaseURL() + 'socket.io'} );
+			}
 
 			if ( !socket.connected )
 				await new Promise( res => socket.once( 'connect', res ) );

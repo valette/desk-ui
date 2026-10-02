@@ -510,7 +510,9 @@ qx.Class.define("desk.Actions",
 		__initNode : function () {
 
 			this.__createDisconnectContainer();
-			this.__socket = require('socket.io-client')({path : desk.FileSystem.getBaseURL() + 'socket.io'});
+			const io = require('socket.io-client');
+			const ioFunc = (typeof io === 'function') ? io : (io.default || io.io);
+			this.__socket = ioFunc({path : desk.FileSystem.getBaseURL() + 'socket.io'});
 			this.__engine = "node";
 			this.__socket.on("action started", POST => {
 
