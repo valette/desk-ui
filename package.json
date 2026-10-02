@@ -14,7 +14,7 @@
     "shelljs": "0.10.0"
   },
   "devDependencies": {
-    "@qooxdoo/framework": "7.9.3",
+    "@qooxdoo/framework": "github:qooxdoo/qooxdoo#branch_8_0_beta",
     "@xterm/addon-fit": "0.10.0",
     "@xterm/xterm": "5.5.0",
     "ace-builds": "1.44.0",
@@ -36,7 +36,7 @@
     "three": "0.183"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "build": "npm run fixCss && npm run buildWorkers && npm run qooxdoo",
