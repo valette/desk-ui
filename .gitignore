@@ -2,4 +2,7 @@ node_modules/
 compiled/
 qx-lock.json
 qx_packages/
-
+source/ext/CTMWorkerBundle.js
+source/resource/webpack-bundle/
+*.pdf
+.DS_Store

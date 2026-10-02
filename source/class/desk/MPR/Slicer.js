@@ -93,10 +93,14 @@ qx.Class.define("desk.MPR.Slicer", {
 
 			if ( opts.worker ) {
 
-				// TODO!!!
-				const scriptFile = "desk-ui/workerSlicer.worker.js";
+				const manager = qx.util.ResourceManager.getInstance();
+				const scriptFile = manager.toUri( "desk/workers/SlicerWorker.js" );
 				this.worker = new Worker(scriptFile);
 				var self = this;
+
+				this.worker.onerror = function( err ) {
+					console.error( "Slicer worker error:", err );
+				};
 
 				this.worker.onmessage = function(e) {
 

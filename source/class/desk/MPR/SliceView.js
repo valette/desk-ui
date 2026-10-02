@@ -813,13 +813,13 @@ qx.Class.define("desk.MPR.SliceView",
 				return dim === 1 ? 0 : Math.round(dim / 2);
 			} )
 
-			window.setImmediate( () => {
+			setTimeout( () => {
 
 				if ( slice != this.__firstSlice ) return;
 				this.setCrossPosition( arr );
 				this.__applyChangeCrossPosition( arr ); //to force cross position update
 
-			} );
+			}, 0 );
 		},
 
 		/** adds a volume to the view

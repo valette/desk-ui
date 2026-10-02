@@ -39,8 +39,8 @@ qx.Class.define("desk.Xterm.Terminal",
 
 	destruct : function () {
 
-		this.__socket.removeEventListener( 'message', this.__getMessage );
-		this.__socket.disconnect();
+		this.__socket?.removeEventListener( 'message', this.__getMessage );
+		this.__socket?.disconnect();
 
 	},
 

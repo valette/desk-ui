@@ -164,7 +164,7 @@ qx.Class.define("desk.THREE.Container",
 	destruct : function(){
 		this.__setData = function () {};
 		qx.util.DisposeUtil.destroyContainer(this.__leftContainer);
-		this.removeMeshes(this.getScene().children.slice() );
+		this.removeMeshes(this.getScene().children.slice(), true );
 		this.unlink();
 		this.__meshes.dispose();
 		this.__meshes.getDataModel().dispose();
@@ -1197,7 +1197,7 @@ qx.Class.define("desk.THREE.Container",
 		},
 
 
-		__removeReal : function (mesh) {
+		__removeReal : function (mesh, dispose = true) {
 
 			if (mesh.parent) {
 				mesh.parent.remove( mesh );
@@ -1221,30 +1221,41 @@ qx.Class.define("desk.THREE.Container",
 
 			this.__setData();
 
-			if ( mesh.geometry ) mesh.geometry.dispose();
+			if ( dispose ) {
 
-			if ( mesh.material ) {
+				if ( mesh.geometry ) mesh.geometry.dispose();
 
-				if (mesh.material.map) mesh.material.map.dispose();
-				mesh.material.dispose();
+				if ( mesh.material ) {
+
+					const materials = Array.isArray( mesh.material ) ? mesh.material : [ mesh.material ];
+					for ( let mat of materials ) {
+						for ( let prop of [ "map", "alphaMap", "bumpMap", "normalMap", "specularMap" ] ) {
+							if ( mat[ prop ] ) mat[ prop ].dispose();
+						}
+						mat.dispose();
+					}
+
+				}
+
+				if ( mesh.dispose && ( typeof mesh.dispose === "function" ) ) {
+					mesh.dispose();
+				}
 
 			}
 
 			this._deleteMembers( mesh.userData );
-			if ( mesh.dispose && ( typeof mesh.dispose === "function" ) ) {
-				mesh.dispose();
-			}
         },
 
 		/**
 		 * Removes a mesh from the scene
 		 * @param mesh {THREE.Mesh} mesh to remove
+		 * @param dispose {Boolean} dispose geometry and materials (default: true)
 		 */
-		removeMesh : function (mesh) {
+		removeMesh : function (mesh, dispose = true) {
 
 			const objects = [];
 			mesh.traverse( m => objects.push( m ) );
-			for ( let object of objects ) this.__removeReal( object );
+			for ( let object of objects ) this.__removeReal( object, dispose );
 			this.render();
 
         },

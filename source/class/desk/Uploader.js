@@ -27,13 +27,9 @@ qx.Class.define("desk.Uploader",
 
 		var btn = new com.zenesis.qx.upload.UploadButton( "Add File(s)" );
 		var lst = new qx.ui.form.List();
-		var uploadCount = 0;
   
 		var uploader = new com.zenesis.qx.upload.UploadMgr( btn, 
 			desk.FileSystem.getBaseURL() + 'upload');
-  		
-		// Parameter tp be added to all uploads (can be overridden by individual files)
-		//	uploader.setParam("myGlobalParam", "global123");
   		
 		// Optionally restrict the max number of simultaneous uploads (default is 5)
 		uploader.getUploadHandler().setMaxConnections(5);
@@ -43,12 +39,7 @@ qx.Class.define("desk.Uploader",
   				item = new qx.ui.form.ListItem( file.getFilename() + " (queued for upload)", null, file );
   			lst.add(item);
 
-  			// Set a parameter - each uploaded file has their own set, which can override those set
-  			//	globally against the upload manager
-  			++uploadCount;
       		file.setParam( 'uploadDir', uploadDir );
-      		if ( uploadCount % 2 == 0)
-          		file.setParam("myGlobalParam", "overridden-global-value");
       		
   			// On modern browsers (ie not IE) we will get progress updates
   			var progressListenerId = file.addListener("changeProgress", function(evt) {

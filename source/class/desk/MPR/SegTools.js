@@ -44,40 +44,66 @@ qx.Class.define("desk.MPR.SegTools",
 		} );
 
 		this.__buildActionsContainers();
-		var listenersIds = [];
+		this.__listenersIds = new Map();
 
 		master.getViewers().forEach( viewer => {
 
-			listenersIds[ viewer ] = viewer.addListener( "changeSlice", async function ( event ) {
+			this.__listenersIds.set( viewer, viewer.addListener( "changeSlice", async function ( event ) {
 
 				await this.__saveCurrentSeeds();
 				viewer.setUserData( "previousSlice", viewer.getSlice() );
 				this.__reloadSeedImage( viewer );
 
-			}, this );
+			}, this ) );
 
 		} );
 
-		this.addListener( "beforeClose", function ( e ) {
-
-			for ( let viewer of master.getViewers() ) {
-
-				viewer.removeListenerById( listenersIds[ viewer ] );
-				viewer.setPaintMode( false );
-				viewer.setEraseMode( false );
-				var canvas = viewer.getDrawingCanvas();
-				if ( canvas.isDisposed() ) return;
-				canvas.getContext2d().clearRect( 0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight() );
-				viewer.fireEvent( "changeDrawing" );
-
-			}
-
-		} );
-
-		master.getWindow().addListener( 'beforeClose' , this.destroy, this );
+		this.__masterCloseListener = master.getWindow().addListener( 'beforeClose' , this.destroy, this );
 		this.__labels = [];
 		this.open();
         this.center();
+
+	},
+
+	destruct : function () {
+
+		if ( this.__master && this.__listenersIds ) {
+
+			for ( let [ viewer, id ] of this.__listenersIds.entries() ) {
+
+				viewer.removeListenerById( id );
+				viewer.setPaintMode( false );
+				viewer.setEraseMode( false );
+				var canvas = viewer.getDrawingCanvas();
+				if ( canvas && !canvas.isDisposed() ) {
+					canvas.getContext2d().clearRect( 0, 0, canvas.getCanvasWidth(), canvas.getCanvasHeight() );
+					viewer.fireEvent( "changeDrawing" );
+				}
+
+			}
+			this.__listenersIds.clear();
+
+		}
+
+		if ( this.__masterCloseListener && this.__master?.getWindow() ) {
+
+			this.__master.getWindow().removeListenerById( this.__masterCloseListener );
+			this.__masterCloseListener = null;
+
+		}
+
+		if ( this.__labelUnfocusedBorder ) {
+			this.__labelUnfocusedBorder.dispose();
+			this.__labelUnfocusedBorder = null;
+		}
+
+		if ( this.__labelFocusedBorder ) {
+			this.__labelFocusedBorder.dispose();
+			this.__labelFocusedBorder = null;
+		}
+
+		this.__master = null;
+		this.__labels = null;
 
 	},
 
