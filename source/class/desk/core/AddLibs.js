@@ -38,24 +38,12 @@ qx.Class.define( "desk.core.AddLibs",
 		THREE.DragControls = require( "three/examples/jsm/controls/DragControls.js" ).DragControls;
 		THREE.BufferGeometryUtils = require( "three/examples/jsm/utils/BufferGeometryUtils.js" );
 
-		if ( qx.core.Environment.get( "qx.application") == "desk.Application" ) {
-
-			require( "three/../../source/ext/CTMLoader.js" );
-			require( "three/../../source/ext/VTKLoader.js" );
-			require( "three/../../source/ext/TrackballControls2.js" );
-			require( "three/../../source/ext/mhdParse.js" );
-			require( "three/../../source/ext/WebGL.js" );
-			window.MHD = require( "three/../../source/ext/mhdParse.js" );
-
-		} else {
-
-			require( "desk-ui/source/ext/CTMLoader.js" );
-			require( "desk-ui/source/ext/VTKLoader.js" );
-			require( "desk-ui/source/ext/TrackballControls2.js" );
-			require( "desk-ui/source/ext/mhdParse.js" );
-			require( "desk-ui/source/ext/WebGL.js" );
-			window.MHD = require( "desk-ui/source/ext/mhdParse.js" );
-		}
+		require( "desk-ui/source/ext/CTMLoader.js" );
+		require( "desk-ui/source/ext/VTKLoader.js" );
+		require( "desk-ui/source/ext/TrackballControls2.js" );
+		require( "desk-ui/source/ext/mhdParse.js" );
+		require( "desk-ui/source/ext/WebGL.js" );
+		window.MHD = require( "desk-ui/source/ext/mhdParse.js" );
 
 		window._ = require ('lodash');
 		window.async = require( "async" );

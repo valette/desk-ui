@@ -50,7 +50,12 @@
     "fixCss": "npm run fixBillboard && npm run fixXterm",
     "fixXterm": "cp node_modules/@xterm/xterm/css/xterm.css source/resource/desk/css/",
     "fixBillboard": "cp node_modules/billboard.js/dist/billboard.css source/resource/desk/css/",
+    "postinstall": "node -e \"const fs=require('fs'); if (!fs.existsSync('node_modules/desk-ui')) { try { fs.symlinkSync('..', 'node_modules/desk-ui', 'junction'); } catch(e){} }\"",
     "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run buildClean"
+  },
+  "exports": {
+    "./*": "./*",
+    "./package.json": "./package.json"
   }
 }

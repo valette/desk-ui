@@ -60,6 +60,9 @@
         "boot": {
           "include": [
             "qx.*"
+          ],
+          "exclude": [
+            "qx.tool.*"
           ]
         }
       }
