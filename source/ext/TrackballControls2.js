@@ -446,3 +446,12 @@ THREE.TrackballControls2 = function ( object ) {
 		this._state = this.STATE.NONE;
 	};
 };
+
+if ( typeof window !== "undefined" ) {
+	if ( !window.THREE ) window.THREE = THREE;
+	window.THREE.TrackballControls2 = THREE.TrackballControls2;
+}
+
+if ( typeof module !== "undefined" && module.exports ) {
+	module.exports = THREE.TrackballControls2;
+}

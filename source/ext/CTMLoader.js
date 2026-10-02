@@ -288,3 +288,12 @@ THREE.CTMLoader.prototype._createGeometry = function ( file, callback ) {
 	callback( geometry );
 
 };
+
+if ( typeof window !== "undefined" ) {
+	if ( !window.THREE ) window.THREE = THREE;
+	window.THREE.CTMLoader = THREE.CTMLoader;
+}
+
+if ( typeof module !== "undefined" && module.exports ) {
+	module.exports = THREE.CTMLoader;
+}

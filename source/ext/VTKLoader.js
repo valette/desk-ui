@@ -280,3 +280,12 @@ class VTKLoader extends THREE.Loader {
 
 THREE.VTKLoader = VTKLoader;
 
+if ( typeof window !== "undefined" ) {
+	if ( !window.THREE ) window.THREE = THREE;
+	window.THREE.VTKLoader = VTKLoader;
+}
+
+if ( typeof module !== "undefined" && module.exports ) {
+	module.exports = VTKLoader;
+}
+

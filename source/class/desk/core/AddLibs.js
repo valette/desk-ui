@@ -37,10 +37,15 @@ qx.Class.define( "desk.core.AddLibs",
 		THREE.TransformControls = require( "three/examples/jsm/controls/TransformControls.js" );
 		THREE.DragControls = require( "three/examples/jsm/controls/DragControls.js" ).DragControls;
 		THREE.BufferGeometryUtils = require( "three/examples/jsm/utils/BufferGeometryUtils.js" );
+		const CTMLoader = require( "desk-ui/source/ext/CTMLoader.js" );
+		THREE.CTMLoader = CTMLoader.CTMLoader || CTMLoader.default || CTMLoader;
 
-		require( "desk-ui/source/ext/CTMLoader.js" );
-		require( "desk-ui/source/ext/VTKLoader.js" );
-		require( "desk-ui/source/ext/TrackballControls2.js" );
+		const VTKLoader = require( "desk-ui/source/ext/VTKLoader.js" );
+		THREE.VTKLoader = VTKLoader.VTKLoader || VTKLoader.default || VTKLoader;
+
+		const TrackballControls2 = require( "desk-ui/source/ext/TrackballControls2.js" );
+		THREE.TrackballControls2 = TrackballControls2.TrackballControls2 || TrackballControls2.default || TrackballControls2;
+
 		require( "desk-ui/source/ext/mhdParse.js" );
 		require( "desk-ui/source/ext/WebGL.js" );
 		window.MHD = require( "desk-ui/source/ext/mhdParse.js" );
