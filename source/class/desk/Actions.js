@@ -24,6 +24,9 @@ qx.Class.define("desk.Actions",
 	construct : function() {
 
 		this.base(arguments);
+		this.__runningActions = {};
+		this.__settings = { not_initialised : true, actions : [] };
+		this.__finishedActions = [];
 		desk.core.AddLibs.getInstance();
 		desk.core.AddPromises.getInstance();
 		desk.FileSystem.getInstance();
@@ -230,13 +233,13 @@ qx.Class.define("desk.Actions",
 
 	members : {
 		__socket : null,
-		__runningActions : {},
-		__settings : { not_initialised : true, actions : [] },
+		__runningActions : null,
+		__settings : null,
 		__ongoingActions : null,
 		__actionsGarbageContainer : null,
 		__actionsWindow : null,
 		__history : null,
-		__finishedActions : [],
+		__finishedActions : null,
 		__errorContainer : null,
 		__disconnectContainer : null,
 		__recordedActions : null,
