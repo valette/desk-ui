@@ -52,8 +52,8 @@ async function testRuntime() {
       const text = p.text || (p.args || []).map(a => a.value ?? a.description ?? JSON.stringify(a)).join(' ');
       logs.push({ level: p.level, type: p.type, text });
       console.log(`[BROWSER ${p.level ? p.level.toUpperCase() : 'LOG'}]`, text);
-      if (p.level === 'error') {
-        console.log('[ERROR ENTRY FULL]', JSON.stringify(p, null, 2));
+      if (p.level === 'error' || (text && text.includes('mutating'))) {
+        console.log('[MUTATING / ERROR ENTRY FULL]', JSON.stringify(p, null, 2));
       }
     }
   };
@@ -81,6 +81,20 @@ async function testRuntime() {
 
     // Wait for desk.Application to finish initializing
     await new Promise(r => setTimeout(r, 3000));
+
+    await send('script.evaluate', {
+      target: { context: contextId },
+      expression: `(() => {
+        const origWarn = console.warn;
+        console.warn = function(...args) {
+          if (args[0] && typeof args[0] === 'string' && args[0].includes('mutating')) {
+            console.error('MUTATING TRACE:', args[0], '\\n' + new Error().stack);
+          }
+          return origWarn.apply(this, args);
+        };
+      })()`,
+      awaitPromise: false
+    });
 
     const checkRes = await send('script.evaluate', {
       target: { context: contextId },
@@ -267,6 +281,70 @@ async function testRuntime() {
     console.log('\n=== THREE VIEWER LINKING CHECK RESULT ===');
     console.log(threeLinkRes.result?.result?.value || JSON.stringify(threeLinkRes.result));
     console.log('=========================================\n');
+
+    console.log('Creating mpr1 and mpr2 with sphere.mhd...');
+    await send('script.evaluate', {
+      target: { context: contextId },
+      expression: `(() => {
+        window.mpr1 = new desk.MPR.Viewer("data/sphere.mhd");
+        window.mpr2 = new desk.MPR.Viewer("data/sphere.mhd");
+      })()`,
+      awaitPromise: false
+    });
+
+    console.log('Waiting 8s for mpr1 and mpr2 slices to load...');
+    await new Promise(r => setTimeout(r, 8000));
+
+    const mprLinkRes = await send('script.evaluate', {
+      target: { context: contextId },
+      expression: `(() => {
+        try {
+          const v1 = window.mpr1;
+          const v2 = window.mpr2;
+          v2.link(v1);
+
+          // Change cross position on v1 container
+          v1.setCrossPosition([10, 15, 20]);
+
+          const v1Cross = v1.getViewers().map(v => v.getCrossPosition());
+          const v2Cross = v2.getViewers().map(v => v.getCrossPosition());
+
+          // Change cross position on child viewer in v2
+          v2.getViewers()[0].setCrossPosition([5, 8, 12]);
+
+          const v1Cross2 = v1.getViewers().map(v => v.getCrossPosition());
+          const v2Cross2 = v2.getViewers().map(v => v.getCrossPosition());
+
+          // Change slice in v1 viewer 1
+          v1.getViewers()[1].setSlice(7);
+
+          const v1Cross3 = v1.getViewers().map(v => v.getCrossPosition());
+          const v2Cross3 = v2.getViewers().map(v => v.getCrossPosition());
+
+          return JSON.stringify({
+            v1Cross,
+            v2Cross,
+            v1Cross2,
+            v2Cross2,
+            v1Cross3,
+            v2Cross3
+          }, null, 2);
+        } catch (e) {
+          return "MPR_LINK_ERROR: " + e.message + " at " + e.stack;
+        }
+      })()`,
+      awaitPromise: false
+    });
+
+    console.log('\n=== MPR VIEWER LINKING CHECK RESULT ===');
+    console.log(mprLinkRes.result?.result?.value || JSON.stringify(mprLinkRes.result));
+    console.log('=======================================\n');
+
+    const mutatingWarnings = logs.filter(l => (l.text || '').includes('is currently mutating'));
+    console.log('\n=== MUTATING WARNINGS COUNT ===', mutatingWarnings.length);
+    if (mutatingWarnings.length > 0) {
+      console.log('MUTATING WARNINGS:', JSON.stringify(mutatingWarnings, null, 2));
+    }
 
   } catch (err) {
     console.error('Error during testing:', err);

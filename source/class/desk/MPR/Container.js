@@ -125,6 +125,7 @@ qx.Class.define("desk.MPR.Container",
 
 	members : {
 
+		__updatingCrossPosition : false,
 		__standalone : true,
 		__fullscreenContainer : null,
 		__gridContainer : null,
@@ -370,7 +371,20 @@ qx.Class.define("desk.MPR.Container",
 		 */
 		__onChangeCrossPosition : function (e) {
 
-			this.setCrossPosition( e.getTarget().getCrossPosition() );
+			if ( this.__updatingCrossPosition ) return;
+			this.__updatingCrossPosition = true;
+			try {
+				const source = e.getTarget();
+				const pos = source.getCrossPosition();
+				for ( let i = 0; i < this.__viewers.length; i++ ) {
+					const v = this.__viewers[ i ];
+					if ( v !== source ) {
+						v.setCrossPosition( pos );
+					}
+				}
+			} finally {
+				this.__updatingCrossPosition = false;
+			}
 
 		},
 
@@ -390,7 +404,13 @@ qx.Class.define("desk.MPR.Container",
 		 */
 		setCrossPosition : function (pos) {
 
-			this.__viewers.forEach( v => v.setCrossPosition( pos ) );
+			if ( this.__updatingCrossPosition ) return;
+			this.__updatingCrossPosition = true;
+			try {
+				this.__viewers.forEach( v => v.setCrossPosition( pos ) );
+			} finally {
+				this.__updatingCrossPosition = false;
+			}
 
 		},
 

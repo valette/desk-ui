@@ -89,7 +89,18 @@ qx.Class.define("desk.MPR.SliceView",
 		orientationChangesOperateOnCamera : { init : true, check: "Boolean"},
 
 		/** Cross position ( i,j,k integers ) */
-		crossPosition : { init : null, check: "Array", event : "changeCrossPosition", apply : "__applyChangeCrossPosition", transform : "__transformCrossPosition" }
+		crossPosition : {
+			init : null,
+			check: "Array",
+			event : "changeCrossPosition",
+			apply : "__applyChangeCrossPosition",
+			transform : "__transformCrossPosition",
+			isEqual : function ( a, b ) {
+				if ( a === b ) return true;
+				if ( !a || !b ) return false;
+				return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+			}
+		}
 
 	},
 
@@ -467,8 +478,9 @@ qx.Class.define("desk.MPR.SliceView",
 			this.getLinks().forEach(function (link) {
 				if (this === link) return;
 				link.getControls().copy(this.getControls());
-				link.setSlice(this.getSlice());
-				link.setCameraZ(this.getCameraZ());
+				if (link.getCameraZ() !== this.getCameraZ()) {
+					link.setCameraZ(this.getCameraZ());
+				}
 				link.render();
 			}, this);
 		},
@@ -966,7 +978,11 @@ qx.Class.define("desk.MPR.SliceView",
 			this.__crossMeshes[1].position.setX(x);
 			this.setSlice(pos[[2, 0, 1][this.__orientation]]);
 			this.render();
-			this.getLinks().forEach( l => l.setCrossPosition( pos ) );
+			this.getLinks().forEach( l => {
+				if ( l !== this ) {
+					l.setCrossPosition( pos );
+				}
+			} );
 
 		},
 
@@ -1452,9 +1468,13 @@ qx.Class.define("desk.MPR.SliceView",
 			this.__slider.setValue(Math.max(this.__slider.getMinimum(),
 				Math.min(value, this.__slider.getMaximum())));
 
-			var pos = this.getCrossPosition().slice();
-			pos[[2, 0, 1][this.__orientation]] = sliceId;
-			this.setCrossPosition(pos);
+			var currentCross = this.getCrossPosition();
+			var targetCoord = [2, 0, 1][this.__orientation];
+			if (currentCross && currentCross[targetCoord] !== sliceId) {
+				var pos = currentCross.slice();
+				pos[targetCoord] = sliceId;
+				this.setCrossPosition(pos);
+			}
 			this.propagateCameraToLinks();
 		},
 
