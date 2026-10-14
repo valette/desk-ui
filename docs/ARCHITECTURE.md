@@ -208,6 +208,34 @@ flowchart TD
 - **`desk.FileBrowser`**:
   - Virtual tree with multi-selection, drag-and-drop file operations, contextual file actions, search filtering, and extension-based double-click dispatching.
 
+### 4.6. Server Settings the Client Consumes
+
+The backend sends a `settings` object to the client (`{ actions, permissions,
+dataDirs, init, time, version, randomValue }`). Two file-level fields of an
+action-definition JSON are **client concerns** — the server just passes them
+through and does not act on them:
+
+- **`init`** (array of root-relative file paths) — startup scripts loaded by
+  the client once it connects. `desk.Actions` loads each via
+  `desk.FileSystem.includeScriptsAsync( settings.init.map( file =>
+  desk.FileSystem.getFileURL(file) ) )` (see `Actions.js`). In addition, if a
+  `code/init` directory exists on the server, any `*.js` files found there are
+  appended to the init list automatically.
+- **`includes`** (array of other JSON file paths) — additional action-definition
+  files for the client to consider alongside the ones already merged into
+  `settings` by the server.
+
+The client also interprets per-directory **`dataDirs`** flags that the server
+passes through unchanged:
+
+| Key | Consumed by | Meaning |
+|-----|-------------|---------|
+| `listed` | `desk.Actions` / `desk.FileBrowser` | `false` hides the directory from the Files menu (see `Actions.js:618`, `FileBrowser.js:354`). |
+| `hidden` | `desk.FileBrowser` | Directory is grouped under the "Show hidden files" toggle rather than the normal tree (see `FileBrowser.js:359-391`). |
+
+`public` is a desk-server hint (serve without HTTP Basic auth) and is not
+interpreted by the client.
+
 ---
 
 ## 5. Lifecycle, Memory Management, and Disposal
