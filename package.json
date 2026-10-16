@@ -52,5 +52,10 @@
     "fixBillboard": "cp node_modules/billboard.js/dist/billboard.css source/resource/desk/css/",
     "qooxdoo": "qx pkg update && qx pkg install && qx pkg upgrade && npm run compile && npm run deploy",
     "updateAll": "rm -rf node_modules && git pull && npm install && npm run buildClean"
+  },
+  "allowScripts": {
+    "@qooxdoo/framework@7.9.3": true,
+    "core-js-bundle@3.40.0": true,
+    "metalsmith@2.6.3": true
   }
 }
