@@ -3,6 +3,7 @@
  * Singleton helper class for mesh loading
  * @ignore (async.*)
  * @ignore(THREE.*)
+ * @asset(desk/draco/*)
  */
 
 qx.Class.define("desk.THREE.Loader", 
@@ -20,9 +21,25 @@ qx.Class.define("desk.THREE.Loader",
 		const concurrency = navigator?.hardwareConcurrency || 4;
 		this.__CTMqueue = async.queue( this.__CTMLoad.bind( this ), concurrency );
 
+		if ( THREE.DRACOLoader ) {
+
+			this.__drcLoader = new THREE.DRACOLoader();
+			const manager = qx.util.ResourceManager.getInstance();
+			this.__drcLoader.setDecoderPath( manager.toUri( "desk/draco/draco_decoder.js" ).replace( /[^/]*$/, "" ) );
+			this.__drcLoader.setWorkerLimit( concurrency );
+
+		}
+
 	},
 
 	statics : {
+		/**
+		 * If true, meshes are converted to the legacy OpenCTM format
+		 * (mesh2ctm -> mesh.ctm) before loading instead of the default
+		 * Draco format (draco_encoder -> mesh.drc).
+		 */
+		USE_LEGACY_CTM : false,
+
 		/**
 		* Loads a Geometry from a file.
 		*
@@ -40,16 +57,26 @@ qx.Class.define("desk.THREE.Loader",
 			const { compress = true, timeStamp } = opts;
 			const self = desk.THREE.Loader.getInstance();
 			const extension = file.split( "." ).pop().toLowerCase();
+			const nativeLoader = self.__availableLoaders[ extension ];
 
-			if ( compress || !self.__availableLoaders[ extension ] ) {
+			const converter = desk.THREE.Loader.USE_LEGACY_CTM ?
+				{ action : "mesh2ctm", extension : "ctm" } :
+				{ action : "draco_encoder", extension : "drc" };
+			const convertAvailable = !!desk.Actions.getAction( converter.action );
+
+			if ( convertAvailable && ( compress || !nativeLoader ) ) {
 
 				const convert = await desk.Actions.executeAsync( {
-					"action" : "mesh2ctm",
+					"action" : converter.action,
 					"input_mesh" : file
 				} );
 
 				opts = { timeStamp : convert.timeStamp, ...opts };
-				file = convert.outputDirectory + "mesh.ctm";
+				file = convert.outputDirectory + "mesh." + converter.extension;
+
+			} else if ( !nativeLoader ) {
+
+				throw new Error( "Error : action " + converter.action + " is not installed and no native reader is available for ." + extension );
 
 			}
 
@@ -76,6 +103,7 @@ qx.Class.define("desk.THREE.Loader",
 			const self = desk.THREE.Loader.getInstance();
 			url += "?nocache=" + timeStamp;
 			if ( extension == "ctm" ) return await self.__CTMqueue.push( url );
+			if ( extension == "drc" ) return await new Promise( res => self.__drcLoader.load( url, res ) );
 			const loader = new ( THREE[ self.__availableLoaders[ extension ] ] )();
 			return await new Promise( res => loader.load( url, res ) );
 
@@ -98,7 +126,14 @@ qx.Class.define("desk.THREE.Loader",
 		loadMesh : async function ( file, opts = {} ) {
 
 			const geometry = await desk.THREE.Loader.loadGeometry( file, opts );
-			if ( geometry.isObject3D ) return geometry; // OBJLoader returns a THREE.Group
+			if ( geometry.isObject3D ) {
+				geometry.traverse( obj => {
+					if ( obj.geometry && !obj.geometry.attributes.normal )
+						obj.geometry.computeVertexNormals();
+				});
+				return geometry; // OBJLoader returns a THREE.Group
+			}
+			if ( !geometry.attributes.normal ) geometry.computeVertexNormals();
 			geometry.computeBoundingBox();
 			const { opacity = 1, color = [ 1, 1, 1 ], renderOrder = 0 } = opts;
 
@@ -123,6 +158,7 @@ qx.Class.define("desk.THREE.Loader",
 		__availableLoaders : {
 
 			"ctm" : "CTMLoader",
+			"drc" : "DRACOLoader",
 			"obj" : "OBJLoader",
 			"ply" : "PLYLoader",
 			"stl" : "STLLoader",
@@ -131,6 +167,9 @@ qx.Class.define("desk.THREE.Loader",
 		},
 
 		__CTMworkers : [],
+
+		// a THREE.DRACOLoader (with its own parallel worker pool)
+		__drcLoader : null,
 
 		/**
 		 * (really) loads ctm mesh url

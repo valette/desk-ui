@@ -12,9 +12,10 @@
 * @ignore (async.*)
 * @ignore (_.*)
 * @ignore (Float32Array)
-* @asset(desk/workers/CTMWorkerBundle.js)
-* @asset(desk/workers/VTKWorker.js)
-*/
+ * @asset(desk/workers/CTMWorkerBundle.js)
+ * @asset(desk/workers/VTKWorker.js)
+ * @asset(desk/draco/*)
+ */
 
 qx.Class.define("desk.THREE.Container",
 {
@@ -51,7 +52,7 @@ qx.Class.define("desk.THREE.Container",
 			this.setConvertVTK(opts.convertVTK);
 		}
 
-		if (!desk.Actions.getAction('mesh2ctm')) {
+		if (!desk.Actions.getAction(this.__converter().action)) {
 			this.setConvertVTK(false);
 		}
 
@@ -144,13 +145,19 @@ qx.Class.define("desk.THREE.Container",
 
 		this.__meshes.setContextMenu(this.__getContextMenu());
 
+		var concurrency = (navigator && 2 * navigator.hardwareConcurrency) || 4;
+		this.__queue = async.queue(this.__urlLoad.bind(this), concurrency);
+
 		if (THREE.CTMLoader) {
 			this.__ctmLoader = new THREE.CTMLoader();
 		}
+		if (THREE.DRACOLoader) {
+			this.__drcLoader = new THREE.DRACOLoader();
+			const manager = qx.util.ResourceManager.getInstance();
+			this.__drcLoader.setDecoderPath(manager.toUri("desk/draco/draco_decoder.js").replace(/[^/]*$/, ""));
+			this.__drcLoader.setWorkerLimit(concurrency);
+		}
 		this.__vtkLoader = new THREE.VTKLoader();
-
-		var concurrency = (navigator && 2 * navigator.hardwareConcurrency) || 4;
-		this.__queue = async.queue(this.__urlLoad.bind(this), concurrency);
 
 		this.__setData = _.debounce(this.__meshes.getDataModel().setData
 			.bind(this.__meshes.getDataModel()), 500);
@@ -168,6 +175,10 @@ qx.Class.define("desk.THREE.Container",
 		this.unlink();
 		this.__meshes.dispose();
 		this.__meshes.getDataModel().dispose();
+		if (this.__drcLoader && this.__drcLoader.dispose) {
+			this.__drcLoader.dispose();
+		}
+		this.__drcLoader = null;
 		this.__ctmLoader = null;
 	},
 
@@ -202,6 +213,9 @@ qx.Class.define("desk.THREE.Container",
 
 		// a THREE.CTMLLoader
         __ctmLoader : null,
+
+		// a THREE.DRACOLoader (with its own parallel worker pool)
+        __drcLoader : null,
 
 		__setData : null,
 
@@ -329,6 +343,28 @@ qx.Class.define("desk.THREE.Container",
 		},
 
 		/**
+		 * Returns the converter action and output extension to use for
+		 * meshes, based on the USE_LEGACY_CTM static option.
+		 * @return {Object} { action, extension }
+		 */
+		__converter : function () {
+			if (this.constructor.USE_LEGACY_CTM || this.options.legacyCTM) {
+				return {action : "mesh2ctm", extension : "ctm"};
+			}
+			return {action : "draco_encoder", extension : "drc"};
+		},
+
+		/**
+		 * Whether a native THREE.js reader exists for the given extension
+		 * (i.e. it can be loaded without a convert action).
+		 * @param extension {String} file extension
+		 * @return {Boolean} true if a native reader exists
+		 */
+		__hasNativeFallback : function (extension) {
+			return extension === "obj" || extension === "ply" || extension === "stl";
+		},
+
+		/**
 		 * reads the file
 		 * @param file {String} file to read
 		 * @param opt {Object} options
@@ -339,9 +375,14 @@ qx.Class.define("desk.THREE.Container",
             opt.branch = this.__addBranch( {parent : opt.parent,
 				label : opt.label || desk.FileSystem.getFileName(file)});
 
-			switch (desk.FileSystem.getFileExtension(file)) {
+			const converter = this.__converter();
+			const extension = desk.FileSystem.getFileExtension(file);
+			const convertAvailable = !!desk.Actions.getAction(converter.action);
+			const useNative = opt.convert === false || !convertAvailable;
+
+			switch (extension) {
             case "vtk":
-				if (!this.isConvertVTK() || opt.convert === false) {
+				if (opt.convert === false || !this.isConvertVTK() || !convertAvailable) {
 					this.__loadFile(file, opt, callback);
 					break;
 				}
@@ -350,22 +391,31 @@ qx.Class.define("desk.THREE.Container",
 			case "obj":
 			case "stl":
 			case "off":
-				if (!desk.Actions.getAction('mesh2ctm')) {
-					var message = "Error : action mesh2ctm is not installed. Please install binary addons to read more formats than VTK";
-					alert(message);
-					throw new Error(message);
+				if (useNative) {
+					if (!this.__hasNativeFallback(extension)) {
+						var message = "Error : no native reader is available for ." + extension + " and action " + converter.action + " is not installed";
+						alert(message);
+						throw new Error(message);
+					}
+					desk.THREE.Loader.loadMesh(file, Object.assign({}, opt, {compress : false}))
+						.then(mesh => {
+							this.addMesh(mesh, opt);
+							callback(mesh);
+						});
+					break;
 				}
 				desk.Actions.execute({
-                    "action" : "mesh2ctm",
+                    "action" : converter.action,
 					"input_mesh" : file},
                     function (err, response) {
                        var outputDir = response.outputDirectory;
                         opt.timeStamp = response.timeStamp;
-                        this.__loadFile(outputDir + '/mesh.ctm', opt, callback);
+                        this.__loadFile(outputDir + '/mesh.' + converter.extension, opt, callback);
 				}, this);
 				break;
 
 			case "ctm":
+			case "drc":
 				this.__loadFile(file, opt, callback);
 				break;
 			default :
@@ -494,6 +544,7 @@ qx.Class.define("desk.THREE.Container",
 				case "vtk":
 				case "vtp":
 				case "ctm":
+				case "drc":
 				case "off":
 					this.__readFile (file, opts, after);
 					break;
@@ -861,6 +912,9 @@ qx.Class.define("desk.THREE.Container",
 		 */
         addGeometry : function (geometry, opts) {
             opts = opts || {label : 'geometry'};
+			if (!geometry.attributes.normal) {
+				geometry.computeVertexNormals();
+			}
 			geometry.computeBoundingBox();
 
 			var color = opts.color || [1, 1, 1];
@@ -896,8 +950,14 @@ qx.Class.define("desk.THREE.Container",
 		 * @param callback {Function} callback when done
 		 */
 		 __urlLoad : function (opts, callback) {
-			if (desk.FileSystem.getFileExtension(opts.url) === "vtk") {
+			const extension = desk.FileSystem.getFileExtension(opts.url);
+			if (extension === "vtk") {
 				this.__vtkLoader.load (opts.url + "?nocache=" + opts.timeStamp,
+					function (geometry) {
+						callback (this.addGeometry(geometry, opts));
+				}.bind(this));
+			} else if (extension === "drc") {
+				this.__drcLoader.load (opts.url + "?nocache=" + opts.timeStamp,
 					function (geometry) {
 						callback (this.addGeometry(geometry, opts));
 				}.bind(this));

@@ -37,6 +37,7 @@ qx.Class.define( "desk.core.AddLibs",
 		THREE.TransformControls = require( "three/examples/jsm/controls/TransformControls.js" );
 		THREE.DragControls = require( "three/examples/jsm/controls/DragControls.js" ).DragControls;
 		THREE.BufferGeometryUtils = require( "three/examples/jsm/utils/BufferGeometryUtils.js" );
+		THREE.DRACOLoader = require( "three/examples/jsm/loaders/DRACOLoader.js" ).DRACOLoader;
 
 		if ( qx.core.Environment.get( "qx.application") == "desk.Application" ) {
 
