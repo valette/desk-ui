@@ -346,7 +346,7 @@ Adds caption-bar shortcuts:
 
 #### Constructor
 `new desk.MPR.Container(file, options, callback, context)`
-- `file` (*String*, optional): Volume file to open (.nii, .nii.gz, .mhd, .mha, .dcm, image slices).
+- `file` (*String*, optional): Volume file to open (.nii, .nii.gz, .mhd, .mha, .nrrd, .dcm, image slices).
 - `options` (*Object*, optional):
   - `nbOrientations` (*Number*): Number of view panes (1, 2, or 3, default: 3).
   - `inGridCoord` (*Object*): Custom grid positioning for viewers.

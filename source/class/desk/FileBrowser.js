@@ -125,6 +125,7 @@ qx.Class.define("desk.FileBrowser",
 						if ( model.getName().split( "." ).slice( -2 ).join( "." ) !== "nii.gz" ) break;
 					case "mha":
 					case "mhd":
+					case "nrrd":
 					case "jpg":
 					case "png":
 					case "hdr":
@@ -511,6 +512,7 @@ qx.Class.define("desk.FileBrowser",
 			case "bmp":
 			case "mha":
 			case "mhd":
+			case "nrrd":
 			case "nii":
 			case "hdr":
 			case "tif":
